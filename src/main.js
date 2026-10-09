@@ -1,9 +1,11 @@
+let game = null;
 
-function setup() {
+function setup () {}
 
-}
+function draw () {}
 
-function draw() {
+function mouseDragged () {}
 
+function mousePressed () {}
 
-}
+function keyPressed () {}
