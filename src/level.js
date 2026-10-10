@@ -4,7 +4,7 @@ class Level {
     this.data = data;
     this.candy = null;
     this.rope = null;
-    this.mouth = null;
+    this.omnom = null;
   }
 
   build (game) {}

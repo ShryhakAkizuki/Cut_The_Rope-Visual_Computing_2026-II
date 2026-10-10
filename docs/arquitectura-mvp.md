@@ -23,7 +23,7 @@ El juego se resuelve con **tres responsabilidades bien separadas**:
 
 | Capa | Tecnología | Responsabilidad |
 |---|---|---|
-| **Física** | Matter.js | Gravedad, cuerpo del dulcé, constraint (cuerda), colisiones (boca como sensor) |
+| **Física** | Matter.js | Gravedad, cuerpo del dulcé, constraint (cuerda), colisiones (OmNom como sensor) |
 | **Render + Input** | p5.js | Dibujar escena, detectar arrastre del ratón, game loop |
 | **Lógica de juego** | JS propio | Máquina de estados (jugando/ganado/perdido), detección de corte, reinicio |
 
@@ -43,7 +43,7 @@ flowchart LR
     subgraph ENT["Entidades"]
         C["Candy"]
         R["Rope"]
-        MO["Mouth"]
+        MO["OmNom"]
     end
 
     subgraph PHYS["Física (Matter.js)"]
@@ -51,7 +51,7 @@ flowchart LR
     end
 
     subgraph RENDER["Render (p5.js)"]
-        CV["Canvas 800×600"]
+        CV["Canvas 390×844"]
     end
 
     M --> G
@@ -81,7 +81,7 @@ flowchart LR
 2. **Dulcé (candy)**: cuerpo circular que cuelga de la cuerda.
 3. **Cuerda**: 1 constraint (línea recta) entre un ancla fija y el dulcé.
 4. **Corte**: arrastrar el ratón a través de la cuerda la elimina.
-5. **Boca (objetivo)**: círculo sensor; si el dulcé entra → **GANASTE**.
+5. **OmNom (objetivo)**: círculo sensor; si el dulcé entra → **GANASTE**.
 6. **Derrota**: el dulcé sale de la pantalla hacia abajo → **PERDISTE**.
 7. **Reinicio** con un clic o la tecla `R` tras ganar o perder.
 8. Render básico con formas (círculos + línea).
@@ -99,7 +99,7 @@ Máquina de estados mínima de 3 estados:
 ```mermaid
 stateDiagram-v2
     [*] --> PLAYING : cargar nivel
-    PLAYING --> WIN : dulcé entra en la boca
+    PLAYING --> WIN : dulcé entra en OmNom
     PLAYING --> LOSE : dulcé sale de pantalla
     WIN --> PLAYING : clic o tecla R
     LOSE --> PLAYING : clic o tecla R
@@ -107,7 +107,7 @@ stateDiagram-v2
 
 | Estado | `update()` hace | `render()` hace |
 |---|---|---|
-| `PLAYING` | Checa colisión dulcé-boca y salida de pantalla | Escena completa |
+| `PLAYING` | Checa colisión dulcé-OmNom y salida de pantalla | Escena completa |
 | `WIN` | Espera input de reinicio | Escena + mensaje "¡Ganaste!" |
 | `LOSE` | Espera input de reinicio | Escena + mensaje "Perdiste" |
 
@@ -159,7 +159,7 @@ classDiagram
         +render()
     }
 
-    class Mouth {
+    class OmNom {
         +Body sensor
         +int radius
         +render()
@@ -168,10 +168,10 @@ classDiagram
     Game o-- Level : gestiona
     Game o-- Candy : posee
     Game o-- Rope : posee
-    Game o-- Mouth : posee
+    Game o-- OmNom : posee
     Level ..> Candy : crea
     Level ..> Rope : crea
-    Level ..> Mouth : crea
+    Level ..> OmNom : crea
     Rope --> Candy : constraint sobre
     Rope --> Body : ancla estática
 ```
@@ -184,7 +184,7 @@ classDiagram
 | `Level` | `level.js` | Traduce datos del nivel en entidades; limpia el mundo al cambiar de nivel | No tiene lógica de gameplay |
 | `Candy` | `candy.js` | Su `Body` circular, render, detección de salida de pantalla | No decide cuándo se gana |
 | `Rope` | `rope.js` | Su `Constraint` + ancla, `tryCut()` (intersección), render de la línea | No lee el ratón directamente |
-| `Mouth` | `mouth.js` | Su `Body` sensor, render | No detecta colisiones (eso lo hace Matter) |
+| `OmNom` | `omnom.js` | Su `Body` sensor, render | No detecta colisiones (eso lo hace Matter) |
 | datos | `levels.js` | Constante `LEVELS` con posiciones (sin lógica) | — |
 | `main.js` | raíz | Adaptador p5: `setup()`/`draw()`, conecta input a `Game` | Cero lógica de juego |
 
@@ -204,7 +204,7 @@ src/
 ├── levels.js         ← 1. datos de niveles (const LEVELS)
 ├── candy.js          ← 2. clase Candy
 ├── rope.js           ← 3. clase Rope
-├── mouth.js          ← 4. clase Mouth
+├── omnom.js          ← 4. clase OmNom
 ├── level.js          ← 5. clase Level (depende de 2-4)
 └── game.js           ← 6. clase Game (depende de 5)
 ```
@@ -217,9 +217,9 @@ src/
 flowchart TD
     A["p5 draw() — cada frame (~60 fps)"] --> B["Matter.Engine.update(engine, 1000/60)<br/>avanza la física con paso fijo"]
     B --> C{"¿estado del Game?"}
-    C -->|PLAYING| D["update():<br/>¿dulcé en boca? → WIN<br/>¿dulcé fuera? → LOSE"]
+    C -->|PLAYING| D["update():<br/>¿dulcé en OmNom? → WIN<br/>¿dulcé fuera? → LOSE"]
     C -->|WIN / LOSE| E["update():<br/>esperar clic / tecla R"]
-    D --> F["render():<br/>ancla, cuerda, dulcé, boca"]
+    D --> F["render():<br/>ancla, cuerda, dulcé, OmNom"]
     E --> F
     F --> G["UI: título, mensajes de estado"]
     G --> A

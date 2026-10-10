@@ -15,7 +15,7 @@ class Game {
     this.level = null;
     this.candy = null;
     this.rope = null;
-    this.mouth = null;
+    this.omnom = null;
   }
 
   startLevel (idx) {}
