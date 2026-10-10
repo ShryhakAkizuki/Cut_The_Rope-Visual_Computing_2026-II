@@ -1,0 +1,54 @@
+# Despliega el sitio estatico (contenido de src/) a GitHub Pages.
+#
+# Requisitos previos (una sola vez, desde la UI de GitHub):
+#   Settings > Pages > Build and deployment > Source: "Deploy from a branch"
+#   Branch: "main", Folder: "/ (root)"
+#
+# Cada push a main (o disparacion manual desde Actions) genera un deploy inmutable:
+# el contenido de src/ se copia a un artifact y actions/deploy-pages lo publica.
+# Rollback: revertir el commit problematico y push de nuevo a main.
+
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Solo un deploy a la vez; los nuevos pushes cancelan el en curso.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # src/ es la raiz del sitio: index.html queda en la raiz del deploy.
+      - name: Prepare site
+        run: |
+          mkdir -p site
+          cp -r src/. site/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "site"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
