@@ -19,7 +19,7 @@ class Star {
     draw () {
         if (this.collected) return;
         const outer = this.radius;
-        const inner = this.radius * 0.45;
+        const inner = outer * 0.45;
         noStroke();
         fill(255, 220, 60);
         beginShape();

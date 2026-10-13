@@ -1,10 +1,11 @@
 const STATE = {
+  MENU:    'MENU',
   PLAYING: 'PLAYING',
   WIN:     'WIN',
   LOSE:    'LOSE',
 };
 
-const RESTART_BUTTON = { x: 12, y: 844 - 46, w: 98, h: 34, label: 'Reiniciar' };
+const WIN_BUTTON = { w: 100, h: 40, gap: 12 };
 
 const STAR_POINTS = 1000;
 const TIME_BONUS_PER_SECOND = 100;
@@ -15,7 +16,23 @@ class Game {
   constructor (levels) {
     this.levels = levels;
     this.levelIndex = 0;
-    this.state = STATE.PLAYING;
+    this.state = STATE.MENU;
+
+    this.menu = new LevelMenu();
+    this.progress = {
+      bestStars: levels.map(() => 0),
+      completed: levels.map(() => false),
+    };
+
+    this.restartButton = new Button(12, 844 - 46, 98, 34, 'Reiniciar');
+    const rowWidth = 3 * WIN_BUTTON.w + 2 * WIN_BUTTON.gap;
+    const x0 = (390 - rowWidth) / 2;
+    const step = WIN_BUTTON.w + WIN_BUTTON.gap;
+    this.winButtons = {
+      replay: new Button(x0, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Replay'),
+      menu:   new Button(x0 + step, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Menu'),
+      next:   new Button(x0 + 2 * step, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Next'),
+    };
 
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
@@ -66,10 +83,34 @@ class Game {
     this.timeBonus = 0;
     this.score = 0;
 
+    this.winButtons.next.enabled = idx < this.levels.length - 1;
     this.state = STATE.PLAYING;
   }
 
+  showMenu () {
+    if (this.level) {
+      this.level.clear(this);
+      this.level = null;
+    }
+    this.candy = null;
+    this.ropes = [];
+    this.omnom = null;
+    this.stars = [];
+    this.state = STATE.MENU;
+  }
+
+  nextLevel () {
+    if (this.levelIndex < this.levels.length - 1) {
+      this.startLevel(this.levelIndex + 1);
+    }
+  }
+
+  isUnlocked (idx) {
+    return idx === 0 || this.progress.completed[idx - 1];
+  }
+
   update () {
+    if (this.state === STATE.MENU) return;
     if (this.state === STATE.WIN) return;
     if (this.state === STATE.LOSE) return;
 
@@ -95,6 +136,9 @@ class Game {
     if (this.state === STATE.PLAYING) {
       this.state = STATE.WIN;
       this.calculateScore();
+      const idx = this.levelIndex;
+      this.progress.completed[idx] = true;
+      this.progress.bestStars[idx] = Math.max(this.progress.bestStars[idx], this.starsCollected);
     }
   }
 
@@ -113,11 +157,23 @@ class Game {
   }
 
   onInput (px, py) {
-    if (this.isOnRestartButton(px, py)) {
+    if (this.state === STATE.MENU) {
+      const idx = this.menu.levelAt(px, py, this.levels.length);
+      if (idx !== -1 && this.isUnlocked(idx)) this.startLevel(idx);
+      return;
+    }
+
+    if (this.restartButton.contains(px, py)) {
       this.restart();
       return;
     }
-    if (this.state === STATE.WIN || this.state === STATE.LOSE) {
+
+    if (this.state === STATE.WIN) {
+      const b = this.winButtons;
+      if (b.replay.contains(px, py)) this.restart();
+      else if (b.menu.contains(px, py)) this.showMenu();
+      else if (b.next.contains(px, py)) this.nextLevel();
+    } else if (this.state === STATE.LOSE) {
       this.restart();
     }
   }
@@ -126,24 +182,25 @@ class Game {
     this.startLevel(this.levelIndex);
   }
 
-  isOnRestartButton (px, py) {
-    const b = RESTART_BUTTON;
-    return px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
-  }
-
   isCandyOffscreen () {
     return this.candy ? this.candy.isOffscreen(width, height) : false;
   }
 
   draw () {
     background(0);
+
+    if (this.state === STATE.MENU) {
+      this.menu.draw(this.levels, this.progress, (i) => this.isUnlocked(i));
+      return;
+    }
+
     if (this.level) this.level.draw();
 
+    const rb = this.restartButton;
     noStroke();
     fill(150);
     textSize(12);
-    text('arrastra el raton para cortar · R reinicia',
-      RESTART_BUTTON.x + RESTART_BUTTON.w + 12, RESTART_BUTTON.y + RESTART_BUTTON.h / 2 + 4);
+    text('arrastra el raton para cortar · R reinicia', rb.x + rb.w + 12, rb.y + rb.h / 2 + 4);
 
     this.drawHud();
 
@@ -153,24 +210,7 @@ class Game {
       this.drawBanner('Perdiste', 'clic o tecla R para reiniciar');
     }
 
-    this.drawRestartButton();
-  }
-
-  drawRestartButton () {
-    const b = RESTART_BUTTON;
-    const hover = this.isOnRestartButton(mouseX, mouseY);
-
-    stroke(220);
-    strokeWeight(2);
-    fill(hover ? 90 : 50);
-    rect(b.x, b.y, b.w, b.h, 8);
-
-    noStroke();
-    fill(255);
-    textSize(16);
-    textAlign(CENTER, CENTER);
-    text(b.label, b.x + b.w / 2, b.y + b.h / 2);
-    textAlign(LEFT, BASELINE);
+    this.restartButton.draw();
   }
 
   drawHud () {
@@ -225,11 +265,13 @@ class Game {
     fill(255, 220, 60);
     textSize(26);
     text(`Puntaje: ${this.score}`, cx, y);
-    y += 44;
-    fill(200);
-    textSize(16);
-    text('clic o tecla R para reiniciar', cx, y);
+    y += 36;
     textAlign(LEFT, BASELINE);
+
+    for (const button of Object.values(this.winButtons)) {
+      button.y = y;
+      button.draw();
+    }
   }
 
   drawBanner (title, subtitle) {
