@@ -4,6 +4,8 @@ const STATE = {
   LOSE:    'LOSE',
 };
 
+const RESTART_BUTTON = { x: 12, y: 844 - 46, w: 98, h: 34, label: 'Reiniciar' };
+
 class Game {
 
   constructor (levels) {
@@ -65,7 +67,11 @@ class Game {
     for (const rope of this.ropes) rope.tryCut(p1, p2);
   }
 
-  onInput () {
+  onInput (px, py) {
+    if (this.isOnRestartButton(px, py)) {
+      this.restart();
+      return;
+    }
     if (this.state === STATE.WIN || this.state === STATE.LOSE) {
       this.restart();
     }
@@ -73,6 +79,11 @@ class Game {
 
   restart () {
     this.startLevel(this.levelIndex);
+  }
+
+  isOnRestartButton (px, py) {
+    const b = RESTART_BUTTON;
+    return px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
   }
 
   isCandyOffscreen () {
@@ -86,13 +97,33 @@ class Game {
     noStroke();
     fill(150);
     textSize(12);
-    text('arrastra el raton para cortar', 10, height - 12);
+    text('arrastra el raton para cortar · R reinicia',
+      RESTART_BUTTON.x + RESTART_BUTTON.w + 12, RESTART_BUTTON.y + RESTART_BUTTON.h / 2 + 4);
 
     if (this.state === STATE.WIN) {
       this.drawBanner('¡Ganaste!', 'clic o tecla R para reiniciar');
     } else if (this.state === STATE.LOSE) {
       this.drawBanner('Perdiste', 'clic o tecla R para reiniciar');
     }
+
+    this.drawRestartButton();
+  }
+
+  drawRestartButton () {
+    const b = RESTART_BUTTON;
+    const hover = this.isOnRestartButton(mouseX, mouseY);
+
+    stroke(220);
+    strokeWeight(2);
+    fill(hover ? 90 : 50);
+    rect(b.x, b.y, b.w, b.h, 8);
+
+    noStroke();
+    fill(255);
+    textSize(16);
+    textAlign(CENTER, CENTER);
+    text(b.label, b.x + b.w / 2, b.y + b.h / 2);
+    textAlign(LEFT, BASELINE);
   }
 
   drawBanner (title, subtitle) {

@@ -88,8 +88,8 @@ flowchart LR
 5. **Corte**: arrastrar el ratón a través de la cuerda la elimina; la cuerda se convierte en **dos trozos físicos** que cuelgan y se desvanecen (ver [sección 5](#5-corte-de-cuerda-y-trozos)).
 6. **OmNom (objetivo)**: círculo estático sensor; si el dulcé lo toca → **GANASTE** (evento `collisionStart` con labels `candy`/`omnom`).
 7. **Derrota**: el dulcé sale de la pantalla por **cualquier borde** (margen = su radio) → **PERDISTE**.
-8. **Reinicio** con un clic o la tecla `R` tras ganar o perder.
-9. Render básico con formas (círculos + líneas), banner de resultado y texto de ayuda.
+8. **Reinicio**: botón **Reiniciar** (esquina inferior izquierda del canvas, con el texto de ayuda a su derecha) o tecla `R` en cualquier momento; tras ganar o perder, también un clic en cualquier parte.
+9. Render básico con formas (círculos + líneas), banner de resultado, botón de reinicio y texto de ayuda.
 
 ### ❌ Fuera de la MVP (ver [sección 8](#8-fuera-de-alcance-de-la-mvp))
 
@@ -106,17 +106,20 @@ stateDiagram-v2
     [*] --> PLAYING : startLevel(idx)
     PLAYING --> WIN : dulcé entra en OmNom
     PLAYING --> LOSE : dulcé sale de pantalla
-    WIN --> PLAYING : clic o tecla R
-    LOSE --> PLAYING : clic o tecla R
+    PLAYING --> PLAYING : botón Reiniciar o tecla R
+    WIN --> PLAYING : clic, botón Reiniciar o tecla R
+    LOSE --> PLAYING : clic, botón Reiniciar o tecla R
 ```
 
 | Estado | `update()` hace | `draw()` hace |
 |---|---|---|
-| `PLAYING` | Avanza `Matter.Engine.update(engine, 1000/60)`, actualiza trozos de cuerda, evalúa salida de pantalla | Escena completa + texto de ayuda |
-| `WIN` | **Congela la simulación** (return temprano; no llama a `Engine.update`) y espera input de reinicio | Escena congelada + banner "¡Ganaste!" |
-| `LOSE` | **Congela la simulación** igual que `WIN` y espera input de reinicio | Escena congelada + banner "Perdiste" |
+| `PLAYING` | Avanza `Matter.Engine.update(engine, 1000/60)`, actualiza trozos de cuerda, evalúa salida de pantalla | Escena completa + texto de ayuda + botón Reiniciar |
+| `WIN` | **Congela la simulación** (return temprano; no llama a `Engine.update`) y espera input de reinicio | Escena congelada + banner "¡Ganaste!" + botón Reiniciar |
+| `LOSE` | **Congela la simulación** igual que `WIN` y espera input de reinicio | Escena congelada + banner "Perdiste" + botón Reiniciar |
 
-> Decisión de diseño: **al terminar el nivel (ganar o perder), la simulación se congela** — la escena se queda en el último frame hasta reiniciar. El reinicio pasa por `onInput()` → `restart()` → `startLevel(levelIndex)`, que limpia el mundo y reconstruye el nivel completo.
+> Decisión de diseño: **al terminar el nivel (ganar o perder), la simulación se congela** — la escena se queda en el último frame hasta reiniciar. Todo reinicio termina en `restart()` → `startLevel(levelIndex)`, que limpia el mundo y reconstruye el nivel completo:
+> - `onInput(px, py)` reinicia si el clic cae en el botón Reiniciar (en cualquier estado), o con un clic en cualquier parte si el estado es `WIN` o `LOSE`.
+> - La tecla `R` llama a `restart()` directamente, en cualquier estado.
 
 ---
 
@@ -142,11 +145,13 @@ classDiagram
         +update()
         +onCandyEaten()
         +onCutAttempt(p1, p2)
-        +onInput()
+        +onInput(px, py)
         +restart()
+        +isOnRestartButton(px, py) bool
         +isCandyOffscreen() bool
         +draw()
         +drawBanner(title, subtitle)
+        +drawRestartButton()
     }
 
     class Level {
@@ -217,14 +222,14 @@ classDiagram
 
 | Clase / archivo | Responsabilidad | **No hace** |
 |---|---|---|
-| `Game` ([`game.js`](../src/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart`, reinicio, banners | No dibuja las entidades, no define niveles |
+| `Game` ([`game.js`](../src/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart`, reinicio, banners, botón de reinicio (`RESTART_BUTTON`: dibujo y prueba de clic) | No dibuja las entidades, no define niveles |
 | `Level` ([`level.js`](../src/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
 | `Anchor` ([`anchor.js`](../src/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
 | `Candy` ([`candy.js`](../src/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) | No decide cuándo se gana |
 | `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé, `tryCut()` (intersección de segmentos), creación y ciclo de vida de los trozos post-corte, render de línea/trozos | No lee el ratón directamente |
 | `OmNom` ([`omnom.js`](../src/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`, render | No detecta colisiones (eso lo hace Matter) |
 | datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 3 niveles con `name`, `candy`, `anchors`, `omnom` (solo datos) | Sin lógica |
-| [`main.js`](../src/main.js) | Adaptador p5: `setup()`/`draw()`, `LEVEL_INDEX`, conecta `mouseDragged`/`mousePressed`/`keyPressed` a `Game` | Cero lógica de juego |
+| [`main.js`](../src/main.js) | Adaptador p5: `setup()`/`draw()`, `LEVEL_INDEX`, conecta `mouseDragged` → `onCutAttempt`, `mousePressed` → `onInput(mouseX, mouseY)` y la tecla `R` → `restart()` | Cero lógica de juego |
 
 **Regla de oro de la MVP:** cada archivo es pequeño y con un solo trabajo. `main.js` cabe en ~30 líneas.
 
@@ -288,7 +293,7 @@ src/
 flowchart TD
     A["p5 draw() — cada frame (~60 fps)"] --> B["game.update()"]
     B --> C{"¿estado del Game?"}
-    C -->|WIN / LOSE| D["return temprano:<br/>congelar simulación,<br/>esperar clic / tecla R"]
+    C -->|WIN / LOSE| D["return temprano:<br/>congelar simulación,<br/>esperar clic, botón o tecla R"]
     C -->|PLAYING| E["Matter.Engine.update(engine, 1000/60)<br/>paso fijo"]
     E --> F["rope.update(deltaTime)<br/>para cada cuerda: envejece<br/>y limpia sus trozos"]
     F --> G{"¿candy isOffscreen?"}
@@ -300,10 +305,13 @@ flowchart TD
     J --> K{"¿estado final?"}
     K -->|WIN| L["banner '¡Ganaste!'"]
     K -->|LOSE| M["banner 'Perdiste'"]
-    K -->|PLAYING| A
-    L --> A
-    M --> A
+    K -->|PLAYING| N["botón Reiniciar<br/>(encima de todo)"]
+    L --> N
+    M --> N
+    N --> A
 ```
+
+`draw()` termina siempre con `drawRestartButton()`, después del banner, para que el botón quede visible y clicable también sobre "¡Ganaste!" y "Perdiste".
 
 **Eventos de Matter** (fuera del loop explícito): el `collisionStart` registrado en el constructor de `Game` compara los `label` de cada par de bodies; al detectar `candy` + `omnom` llama a `onCandyEaten()`, que pasa a `WIN` (solo si estaba en `PLAYING`).
 

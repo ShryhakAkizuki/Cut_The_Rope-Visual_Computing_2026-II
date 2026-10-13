@@ -18,11 +18,11 @@ function mouseDragged () {
 }
 
 function mousePressed () {
-    game.onInput();
+    game.onInput(mouseX, mouseY);
 }
 
 function keyPressed () {
     if (key === 'r' || key === 'R') {
-        game.onInput();
+        game.restart();
     }
 }
