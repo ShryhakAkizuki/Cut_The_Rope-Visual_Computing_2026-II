@@ -11,6 +11,10 @@ const STAR_POINTS = 1000;
 const TIME_BONUS_PER_SECOND = 100;
 const DEFAULT_LEVEL_TIME = 30;
 
+const BUBBLE_LIFT = 1.5;
+const BUBBLE_FRICTION_AIR = 0.05;
+const CANDY_FRICTION_AIR = 0.01;
+
 class Game {
 
   constructor (levels) {
@@ -43,6 +47,7 @@ class Game {
     this.ropes = [];
     this.omnom = null;
     this.stars = [];
+    this.bubbles = [];
 
     this.starsCollected = 0;
     this.time = 0;
@@ -58,6 +63,8 @@ class Game {
         if (!labels.includes('candy')) continue;
         if (labels.includes('star')) {
           this.onStarCollected(pair.bodyA.label === 'star' ? pair.bodyA : pair.bodyB);
+        } else if (labels.includes('bubble')) {
+          this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
         } else if (labels.includes('omnom')) {
           eaten = true;
         }
@@ -75,6 +82,7 @@ class Game {
     this.ropes = this.level.ropes;
     this.omnom = this.level.omnom;
     this.stars = this.level.stars;
+    this.bubbles = this.level.bubbles;
 
     this.starsCollected = 0;
     this.time = 0;
@@ -96,6 +104,7 @@ class Game {
     this.ropes = [];
     this.omnom = null;
     this.stars = [];
+    this.bubbles = [];
     this.state = STATE.MENU;
   }
 
@@ -115,6 +124,11 @@ class Game {
     if (this.state === STATE.LOSE) return;
 
     this.time += deltaTime / 1000;
+    if (this.candyBubble()) {
+      const b = this.candy.body;
+      const g = this.engine.gravity;
+      Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * BUBBLE_LIFT });
+    }
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(deltaTime);
 
@@ -130,6 +144,26 @@ class Game {
     star.collected = true;
     Matter.Composite.remove(this.world, star.body);
     this.starsCollected += 1;
+  }
+
+  onBubbleTouched (body) {
+    if (this.state !== STATE.PLAYING || this.candyBubble()) return;
+    const bubble = this.bubbles.find((b) => b.body === body);
+    if (!bubble || bubble.captured || bubble.popped) return;
+    bubble.capture(this.candy);
+    Matter.Composite.remove(this.world, bubble.body);
+    this.candy.body.frictionAir = BUBBLE_FRICTION_AIR;
+  }
+
+  candyBubble () {
+    return this.bubbles.find((b) => b.captured) || null;
+  }
+
+  popBubble () {
+    const bubble = this.candyBubble();
+    if (!bubble) return;
+    bubble.pop();
+    this.candy.body.frictionAir = CANDY_FRICTION_AIR;
   }
 
   onCandyEaten () {
@@ -168,7 +202,10 @@ class Game {
       return;
     }
 
-    if (this.state === STATE.WIN) {
+    if (this.state === STATE.PLAYING) {
+      const bubble = this.candyBubble();
+      if (bubble && bubble.contains(px, py)) this.popBubble();
+    } else if (this.state === STATE.WIN) {
       const b = this.winButtons;
       if (b.replay.contains(px, py)) this.restart();
       else if (b.menu.contains(px, py)) this.showMenu();

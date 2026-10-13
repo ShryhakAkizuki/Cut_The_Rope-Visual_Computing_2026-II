@@ -39,4 +39,21 @@ const LEVELS = [
     ],
     omnom:   { x: 195, y: 680, radius: 40 },
   },
+  {
+    name:    'Nivel 4',
+    time:    30,
+    candy:   { x: 195, y: 460, radius: 18 },
+    anchors: [
+      { x: 195, y: 380 },
+    ],
+    bubbles: [
+      { x: 195, y: 560 },
+    ],
+    stars:   [
+      { x: 195, y: 300 },
+      { x: 195, y: 220 },
+      { x: 195, y: 140 },
+    ],
+    omnom:   { x: 195, y: 740, radius: 40 },
+  },
 ];
