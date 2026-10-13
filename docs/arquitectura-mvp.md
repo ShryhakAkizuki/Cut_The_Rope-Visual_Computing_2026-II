@@ -24,9 +24,9 @@ El juego se resuelve con **tres responsabilidades bien separadas**:
 
 | Capa | Tecnología | Responsabilidad |
 |---|---|---|
-| **Física** | Matter.js | Gravedad, cuerpo del dulcé, constraints (cuerdas y trozos), colisiones (OmNom como sensor) |
+| **Física** | Matter.js | Gravedad, cuerpo del dulcé, constraints (cuerdas y trozos), colisiones (OmNom y estrellas como sensores) |
 | **Render + Input** | p5.js | Dibujar la escena, detectar arrastre del ratón, game loop |
-| **Lógica de juego** | JS propio | Máquina de estados (jugando/ganado/perdido), detección de corte, reinicio |
+| **Lógica de juego** | JS propio | Máquina de estados (jugando/ganado/perdido), detección de corte, estrellas, reloj y puntaje, reinicio |
 
 Diagrama de alto nivel:
 
@@ -46,6 +46,8 @@ flowchart LR
         A["Anchor"]
         R["Rope"]
         MO["OmNom"]
+        S["Star"]
+        BU["Bubble"]
     end
 
     subgraph PHYS["Física (Matter.js)"]
@@ -62,6 +64,8 @@ flowchart LR
     L --> A
     L --> R
     L --> MO
+    L --> S
+    L --> BU
     G --> E
     E -. "actualiza posiciones" .-> R
     E -. "actualiza posiciones" .-> C
@@ -71,6 +75,8 @@ flowchart LR
     R --> CV
     A --> CV
     MO --> CV
+    S --> CV
+    BU --> CV
 ```
 
 **Idea central:** p5.js **no** usa el renderizador de Matter (`Matter.Render` ni canvas de Matter). Solo usamos `Matter.Engine` para simular, y p5.js dibuja todo a partir de las posiciones de los bodies. Esto da control total del visual y un solo canvas en pantalla.
@@ -81,42 +87,59 @@ flowchart LR
 
 ### ✅ Dentro (lo mínimo jugable)
 
-1. **Niveles definidos por datos** (`LEVELS` en [`levels.js`](../src/levels.js)): 3 niveles, cada uno con posiciones de dulcé, anclas y OmNom; el nivel inicial se elige con `LEVEL_INDEX` en [`main.js`](../src/main.js).
+1. **Niveles definidos por datos** (`LEVELS` en [`levels.js`](../src/levels.js)): 4 niveles, cada uno con posiciones de dulcé, anclas y OmNom, y opcionalmente `stars` (lista de posiciones; la cantidad es `stars.length`), `bubbles` (lista de posiciones) y `time` (segundos de referencia para el bonus, 30 si falta). El nivel 1 es el básico: una cuerda y 3 estrellas en línea debajo del dulce. El nivel 4 presenta la burbuja: cuerda, burbuja debajo del dulce, 3 estrellas arriba y OmNom abajo.
 2. **Dulcé (candy)**: cuerpo circular (`restitution: 0.3`, `frictionAir: 0.01`, `friction: 0.05`) que cuelga de las cuerdas.
-3. **Cuerdas**: cada ancla fija (`anchors` en los datos del nivel) crea su propio constraint recto (`stiffness: 1`) hacia el dulcé; el dulcé solo cae cuando se cortan todas.
+3. **Cuerdas**: cada ancla fija (`anchors` en los datos del nivel) crea su propio constraint hacia el dulcé; el dulcé solo cae cuando se cortan todas. Cada ancla acepta un `length` opcional en píxeles: si es mayor que la distancia ancla-dulcé la cuerda nace con holgura, se dibuja colgando en curva y solo tira cuando se estira; si falta (o es menor), nace tensa.
 4. **Anclas**: bodies estáticos y sensor (`Anchor`), renderizadas como dos círculos concéntricos.
 5. **Corte**: arrastrar el ratón a través de la cuerda la elimina; la cuerda se convierte en **dos trozos físicos** que cuelgan y se desvanecen (ver [sección 5](#5-corte-de-cuerda-y-trozos)).
 6. **OmNom (objetivo)**: círculo estático sensor; si el dulcé lo toca → **GANASTE** (evento `collisionStart` con labels `candy`/`omnom`).
 7. **Derrota**: el dulcé sale de la pantalla por **cualquier borde** (margen = su radio) → **PERDISTE**.
-8. **Reinicio** con un clic o la tecla `R` tras ganar o perder.
-9. Render básico con formas (círculos + líneas), banner de resultado y texto de ayuda.
+8. **Reinicio**: botón **Reiniciar** (esquina inferior izquierda del canvas, con el texto de ayuda a su derecha) o tecla `R` en cualquier momento dentro de un nivel; tras perder, también un clic en cualquier parte.
+9. **Estrellas**: bodies estáticos sensor (`Star`, label `star`); el dulcé las recoge al tocarlas (evento `collisionStart` con labels `candy`/`star`) y desaparecen del mundo.
+10. **Tiempo y puntaje**: el reloj cuenta los segundos en `PLAYING`. Al ganar, `calculateScore()` aplica la regla del juego original: 1000 puntos por estrella + bonus de tiempo = `max(0, time del nivel − segundos) × 100`, redondeado a decenas. No hay límite: si te pasas, el bonus es 0.
+11. **Menú de niveles** (`LevelMenu` en [`level-menu.js`](../src/level-menu.js)): el juego arranca aquí. Cada nivel es un cuadrado con su número y 3 estrellas debajo, llenas según el mejor resultado. Solo el nivel 1 está abierto al inicio; ganar un nivel desbloquea el siguiente. El progreso (`completed` y `bestStars` por nivel) vive en memoria y se pierde al recargar.
+12. **Botones de victoria**: Replay (repite el nivel), Menu (vuelve a la lista) y Next (siguiente nivel; apagado en el último). En la victoria un clic fuera de los botones no hace nada.
+13. **Burbujas** (`Bubble` en [`bubble.js`](../src/bubble.js), label `bubble`): sensor estático dibujado como círculo azul semitransparente. Cuando el dulcé la toca, la burbuja queda pegada al dulcé (su sensor sale del mundo) y el dulcé sube despacio: `Game` aplica una fuerza hacia arriba de `BUBBLE_LIFT` (1.5) veces su peso y sube su `frictionAir` a `BUBBLE_FRICTION_AIR` (0.05). Un clic sobre el dulcé la revienta y el dulcé vuelve a su gravedad y fricción normales. Si nadie la revienta, el dulcé sale por arriba y se pierde.
+14. Render básico con formas (círculos + líneas), HUD (estrellas y tiempo), pantalla de victoria (un cuadrado por estrella, tiempo, puntaje y botones), banner de derrota, botón de reinicio y texto de ayuda. Los botones son instancias de `Button` ([`button.js`](../src/button.js)).
 
 ### ❌ Fuera de la MVP (ver [sección 8](#8-fuera-de-alcance-de-la-mvp))
 
-Selector de niveles, estrellas, sonido, touch, etc.
+Guardar el progreso entre sesiones, sonido, touch, etc.
 
 ---
 
 ## 3. Estados del juego
 
-Máquina de estados mínima de 3 estados (constante `STATE` en [`game.js`](../src/game.js)):
+Máquina de estados de 4 estados (constante `STATE` en [`game.js`](../src/game.js)):
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PLAYING : startLevel(idx)
+    [*] --> MENU : showMenu()
+    MENU --> PLAYING : clic en nivel desbloqueado
     PLAYING --> WIN : dulcé entra en OmNom
     PLAYING --> LOSE : dulcé sale de pantalla
-    WIN --> PLAYING : clic o tecla R
-    LOSE --> PLAYING : clic o tecla R
+    PLAYING --> PLAYING : botón Reiniciar o tecla R
+    WIN --> PLAYING : Replay, Next, botón Reiniciar o tecla R
+    WIN --> MENU : Menu
+    LOSE --> PLAYING : clic, botón Reiniciar o tecla R
 ```
 
 | Estado | `update()` hace | `draw()` hace |
 |---|---|---|
-| `PLAYING` | Avanza `Matter.Engine.update(engine, 1000/60)`, actualiza trozos de cuerda, evalúa salida de pantalla | Escena completa + texto de ayuda |
-| `WIN` | **Congela la simulación** (return temprano; no llama a `Engine.update`) y espera input de reinicio | Escena congelada + banner "¡Ganaste!" |
-| `LOSE` | **Congela la simulación** igual que `WIN` y espera input de reinicio | Escena congelada + banner "Perdiste" |
+| `MENU` | Nada (return temprano; el mundo está vacío) | Lista de niveles (`LevelMenu.draw`): cuadrado con número, gris si está bloqueado, y 3 estrellas según `bestStars` |
+| `PLAYING` | Suma `time`, aplica la fuerza de la burbuja si el dulcé está en una, avanza `Matter.Engine.update(engine, 1000/60)`, actualiza trozos de cuerda, evalúa salida de pantalla | Escena completa + HUD (estrellas y tiempo) + texto de ayuda + botón Reiniciar |
+| `WIN` | **Congela la simulación y el reloj** (return temprano; no llama a `Engine.update`) y espera input de reinicio | Escena congelada + panel de victoria (`drawWinPanel`: un cuadrado por estrella del nivel, lleno si se recogió; tiempo; puntos de estrellas y bonus; puntaje; botones Replay, Menu y Next) + botón Reiniciar |
+| `LOSE` | **Congela la simulación y el reloj** igual que `WIN` y espera input de reinicio | Escena congelada + banner "Perdiste" + botón Reiniciar |
 
-> Decisión de diseño: **al terminar el nivel (ganar o perder), la simulación se congela** — la escena se queda en el último frame hasta reiniciar. El reinicio pasa por `onInput()` → `restart()` → `startLevel(levelIndex)`, que limpia el mundo y reconstruye el nivel completo.
+> Decisión de diseño: **al terminar el nivel (ganar o perder), la simulación se congela** — la escena se queda en el último frame hasta reiniciar. Todo reinicio termina en `restart()` → `startLevel(levelIndex)`, que limpia el mundo y reconstruye el nivel completo:
+> - `onInput(px, py)` decide según el estado:
+>   - `MENU`: `menu.levelAt()` y, si `isUnlocked(idx)`, `startLevel(idx)`;
+>   - en un nivel, el botón Reiniciar siempre reinicia;
+>   - `PLAYING`: si el dulcé está en una burbuja y el clic cae dentro de ella, `popBubble()` la revienta;
+>   - `WIN`: Replay → `restart()`, Menu → `showMenu()`, Next → `nextLevel()`; fuera de los botones no pasa nada;
+>   - `LOSE`: un clic en cualquier parte reinicia.
+> - La tecla `R` llama a `restart()` directamente, salvo en `MENU`.
+> - Al ganar, `onCandyEaten()` marca el nivel como completado (desbloquea el siguiente) y guarda el máximo de estrellas logradas.
 
 ---
 
@@ -138,21 +161,63 @@ classDiagram
         +Candy candy
         +Rope[] ropes
         +OmNom omnom
+        +Star[] stars
+        +Bubble[] bubbles
+        +int starsCollected
+        +float time
+        +float timeLimit
+        +int starBonus
+        +int timeBonus
+        +int score
+        +LevelMenu menu
+        +object progress
+        +Button restartButton
+        +object winButtons
         +startLevel(idx)
+        +showMenu()
+        +nextLevel()
+        +isUnlocked(idx) bool
         +update()
+        +onStarCollected(body)
+        +onBubbleTouched(body)
+        +candyBubble() Bubble
+        +popBubble()
         +onCandyEaten()
+        +calculateScore()
         +onCutAttempt(p1, p2)
-        +onInput()
+        +onInput(px, py)
         +restart()
         +isCandyOffscreen() bool
         +draw()
+        +drawHud()
+        +drawWinPanel()
         +drawBanner(title, subtitle)
+    }
+
+    class LevelMenu {
+        +cellRect(i)
+        +levelAt(px, py, count) int
+        +draw(levels, progress, isUnlocked)
+        +drawStar(x, y, outer, filled)
+    }
+
+    class Button {
+        +int x
+        +int y
+        +int w
+        +int h
+        +string label
+        +bool enabled
+        +contains(px, py) bool
+        +draw()
     }
 
     class Level {
         +object data
         +Anchor[] anchors
         +Rope[] ropes
+        +Star[] stars
+        +Bubble[] bubbles
         +Candy candy
         +OmNom omnom
         +build(game)
@@ -183,9 +248,12 @@ classDiagram
         +Candy candy
         +Game game
         +Constraint constraint
+        +number length
         +bool isCut
         +object[] pieces
         +create(game)
+        +updateTension()
+        +points() object[]
         +tryCut(p1, p2) bool
         +update(deltaTime)
         +draw()
@@ -200,14 +268,46 @@ classDiagram
         +draw()
     }
 
+    class Star {
+        +int x
+        +int y
+        +int radius
+        +Body body
+        +bool collected
+        +createBody()
+        +draw()
+    }
+
+    class Bubble {
+        +int x
+        +int y
+        +int radius
+        +Body body
+        +Candy candy
+        +bool popped
+        +bool captured
+        +createBody()
+        +capture(candy)
+        +pop()
+        +contains(px, py) bool
+        +draw()
+    }
+
     Game o-- Level : gestiona
     Game o-- Candy : referencia
     Game o-- Rope : referencia (1..N)
     Game o-- OmNom : referencia
+    Game o-- Star : referencia (0..N)
+    Game o-- Bubble : referencia (0..N)
+    Game o-- LevelMenu : vista MENU
+    Game o-- Button : Reiniciar, Replay, Menu, Next
     Level o-- Anchor : crea
     Level o-- Rope : crea
     Level o-- Candy : crea
     Level o-- OmNom : crea
+    Level o-- Star : crea
+    Level o-- Bubble : crea
+    Bubble --> Candy : sigue al dulcé si está capturada
     Rope --> Anchor : constraint sobre
     Rope --> Candy : constraint sobre
     Rope ..> Rope : pieces (trozos post-corte)
@@ -217,14 +317,18 @@ classDiagram
 
 | Clase / archivo | Responsabilidad | **No hace** |
 |---|---|---|
-| `Game` ([`game.js`](../src/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart`, reinicio, banners | No dibuja las entidades, no define niveles |
-| `Level` ([`level.js`](../src/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
+| `Game` ([`game.js`](../src/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart` (dulcé con OmNom, estrellas y burbujas), cuenta estrellas, captura y revienta burbujas (fuerza de subida y `frictionAir`: `BUBBLE_LIFT`, `BUBBLE_FRICTION_AIR`, `CANDY_FRICTION_AIR`), reloj y puntaje (`STAR_POINTS`, `TIME_BONUS_PER_SECOND`, `DEFAULT_LEVEL_TIME`), reinicio, navegación entre niveles (`showMenu`, `nextLevel`, `isUnlocked`), progreso en memoria (`completed`, `bestStars`), HUD, panel de victoria, banners; reparte los clics según el estado | No dibuja las entidades ni la lista de niveles, no define niveles |
+| `LevelMenu` ([`level-menu.js`](../src/level-menu.js)) | Disposición de la lista (cuadrícula de 3 columnas, `LEVEL_MENU`), `levelAt()` para saber qué cuadrado se clicó, dibujo de cuadrados con número y estrellas (`drawStar()` propio, llena o solo borde) | No decide qué nivel está desbloqueado ni guarda progreso (lo recibe de `Game`) |
+| `Button` ([`button.js`](../src/button.js)) | Rectángulo con texto, `contains()` para el clic, `draw()` con hover y estado apagado (`enabled = false`) | No sabe qué hace al pulsarse (lo decide `Game`) |
+| `Level` ([`level.js`](../src/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas, estrellas, burbujas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
 | `Anchor` ([`anchor.js`](../src/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
 | `Candy` ([`candy.js`](../src/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) | No decide cuándo se gana |
-| `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé, `tryCut()` (intersección de segmentos), creación y ciclo de vida de los trozos post-corte, render de línea/trozos | No lee el ratón directamente |
+| `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé con largo opcional (`length`); tensión de un solo lado con `updateTension()` (`stiffness` 1 si está estirada, 0 si tiene holgura); forma con `points()` (recta o curva colgante); `tryCut()` sobre los tramos de esa forma; creación y ciclo de vida de los trozos post-corte; render de cuerda/trozos | No lee el ratón directamente |
 | `OmNom` ([`omnom.js`](../src/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`, render | No detecta colisiones (eso lo hace Matter) |
-| datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 3 niveles con `name`, `candy`, `anchors`, `omnom` (solo datos) | Sin lógica |
-| [`main.js`](../src/main.js) | Adaptador p5: `setup()`/`draw()`, `LEVEL_INDEX`, conecta `mouseDragged`/`mousePressed`/`keyPressed` a `Game` | Cero lógica de juego |
+| `Star` ([`star.js`](../src/star.js)) | Su `Body` circular estático + sensor (radio 20) con label `star`, bandera `collected`, render de estrella de 5 puntas dentro de `draw()` (no se dibuja si está recogida) | No suma puntos ni se quita del mundo (eso lo hace `Game`) |
+| `Bubble` ([`bubble.js`](../src/bubble.js)) | Su `Body` circular estático + sensor (`BUBBLE_RADIUS` 30) con label `bubble`; estado `captured` (tiene dulcé y no está reventada) y `popped`; `contains()` para el clic sobre el dulcé; render de círculo azul semitransparente, en su sitio o alrededor del dulcé | No aplica fuerzas ni se quita del mundo (eso lo hace `Game`) |
+| datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 4 niveles con `name`, `candy`, `anchors` (cada una con `length` opcional), `omnom` y opcionalmente `time`, `stars` y `bubbles` (solo datos) | Sin lógica |
+| [`main.js`](../src/main.js) | Adaptador p5: `setup()` crea el `Game` y abre el menú (`showMenu()`), `draw()`, conecta `mouseDragged` → `onCutAttempt`, `mousePressed` → `onInput(mouseX, mouseY)` y la tecla `R` → `restart()` (salvo en `MENU`) | Cero lógica de juego |
 
 **Regla de oro de la MVP:** cada archivo es pequeño y con un solo trabajo. `main.js` cabe en ~30 líneas.
 
@@ -234,7 +338,7 @@ classDiagram
 
 El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`rope.js`](../src/rope.js):
 
-1. **Detección** — `tryCut(p1, p2)` recibe el segmento del arrastre del ratón y lo interseca con el segmento ancla→dulcé usando `segmentIntersection()` (producto cruzado; devuelve el punto solo si la intersección cae dentro de ambos segmentos). Si ya está cortada o no hay intersección, no hace nada.
+1. **Detección** — `tryCut(p1, p2)` recibe el segmento del arrastre del ratón y lo interseca con cada tramo de `points()` usando `segmentIntersection()` (producto cruzado; devuelve el punto solo si la intersección cae dentro de ambos segmentos). Si la cuerda está tensa, `points()` es solo el segmento ancla→dulcé; si tiene holgura, son 16 tramos de una Bézier cuadrática cuya caída central es `s = sqrt(3·d·(L − d) / 8)`. Si ya está cortada o no hay intersección, no hace nada.
 2. **Remoción** — al cortar, el `Constraint` original se elimina del mundo y `isCut = true`.
 3. **Trozos** — `createPiece(point)` construye dos "pedazos" de cuerda alrededor del punto de corte:
    - `upperBody`: body circular sensor (radio 5) ligado a la **ancla** con un constraint (`stiffness: 1`, longitud = distancia ancla→punto).
@@ -244,11 +348,11 @@ El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`r
    - `ROPE_PIECE_FADE_START = 2000` ms: empieza a desvanecerse (alpha lineal en `pieceAlpha()`).
    - `ROPE_PIECE_LIFETIME = 3000` ms: los 4 objetos (2 bodies + 2 constraints) se eliminan del mundo.
    - Como los trozos son bodies reales, **cuelgan físicamente** tras el corte (el trozo superior pende de la ancla, el inferior sigue al dulcé).
-5. **Render** — `Rope.draw()` dibuja la línea entera si la cuerda vive; si está cortada, dibuja las dos mitades (ancla→`upperBody` y `lowerBody`→dulcé) con el alpha calculado según la edad.
+5. **Render** — `Rope.draw()` dibuja la cuerda entera con `points()` (recta o curva) si vive; si está cortada, dibuja las dos mitades (ancla→`upperBody` y `lowerBody`→dulcé) con el alpha calculado según la edad.
 
 ```mermaid
 flowchart TD
-    A["mouseDragged → onCutAttempt(p1, p2)"] --> B{"para cada Rope:<br/>¿segmento ratón ×<br/>segmento ancla-dulcé?"}
+    A["mouseDragged → onCutAttempt(p1, p2)"] --> B{"para cada Rope:<br/>¿segmento ratón ×<br/>tramos de points()?"}
     B -->|sin intersección| C["no pasa nada"]
     B -->|intersección| D["eliminar Constraint<br/>isCut = true"]
     D --> E["createPiece(punto):<br/>2 bodies sensor + 2 constraints<br/>ancla↔upper / lower↔dulcé"]
@@ -270,14 +374,18 @@ src/
 ├── libraries/
 │   ├── p5.min.js
 │   └── matter.min.js
-├── levels.js            ← 1. datos de niveles (const LEVELS, 3 niveles)
+├── levels.js            ← 1. datos de niveles (const LEVELS, 4 niveles)
 ├── candy.js             ← 2. clase Candy
 ├── anchor.js            ← 3. clase Anchor
 ├── rope.js              ← 4. clase Rope + helpers de intersección
 ├── omnom.js             ← 5. clase OmNom
-├── level.js             ← 6. clase Level (depende de 2-5)
-├── game.js              ← 7. clase Game + STATE (depende de 6)
-└── main.js              ← 8. adaptador p5 (setup/draw/input, LEVEL_INDEX)
+├── star.js              ← 6. clase Star
+├── bubble.js            ← 7. clase Bubble
+├── button.js            ← 8. clase Button (botones de canvas)
+├── level-menu.js        ← 9. clase LevelMenu (con su propio dibujo de estrella)
+├── level.js             ← 10. clase Level (depende de 2-7)
+├── game.js              ← 11. clase Game + STATE + reglas de puntaje y burbuja (depende de 8-10)
+└── main.js              ← 12. adaptador p5 (setup/draw/input)
 ```
 
 ---
@@ -288,24 +396,36 @@ src/
 flowchart TD
     A["p5 draw() — cada frame (~60 fps)"] --> B["game.update()"]
     B --> C{"¿estado del Game?"}
-    C -->|WIN / LOSE| D["return temprano:<br/>congelar simulación,<br/>esperar clic / tecla R"]
-    C -->|PLAYING| E["Matter.Engine.update(engine, 1000/60)<br/>paso fijo"]
+    C -->|MENU| MN["return temprano;<br/>draw() pinta solo la lista de niveles"]
+    MN --> A
+    C -->|WIN / LOSE| D["return temprano:<br/>congelar simulación y reloj,<br/>esperar clic, botón o tecla R"]
+    C -->|PLAYING| T["time += deltaTime / 1000"]
+    T --> BF["si candyBubble(): applyForce<br/>hacia arriba (BUBBLE_LIFT × peso)"]
+    BF --> E["Matter.Engine.update(engine, 1000/60)<br/>paso fijo"]
     E --> F["rope.update(deltaTime)<br/>para cada cuerda: envejece<br/>y limpia sus trozos"]
     F --> G{"¿candy isOffscreen?"}
     G -->|sí| H["state = LOSE"]
     G -->|no| I["game.draw()"]
     H --> I
     D --> I
-    I --> J["escena: anclas, cuerdas/trozos,<br/>OmNom, dulcé + texto de ayuda"]
+    I --> J["escena: anclas, cuerdas/trozos, estrellas,<br/>OmNom, dulcé, burbujas + texto de ayuda + HUD"]
     J --> K{"¿estado final?"}
-    K -->|WIN| L["banner '¡Ganaste!'"]
+    K -->|WIN| L["panel de victoria:<br/>cuadrados, tiempo, puntaje,<br/>Replay / Menu / Next"]
     K -->|LOSE| M["banner 'Perdiste'"]
-    K -->|PLAYING| A
-    L --> A
-    M --> A
+    K -->|PLAYING| N["botón Reiniciar<br/>(encima de todo)"]
+    L --> N
+    M --> N
+    N --> A
 ```
 
-**Eventos de Matter** (fuera del loop explícito): el `collisionStart` registrado en el constructor de `Game` compara los `label` de cada par de bodies; al detectar `candy` + `omnom` llama a `onCandyEaten()`, que pasa a `WIN` (solo si estaba en `PLAYING`).
+Dentro de un nivel, `draw()` termina siempre con `restartButton.draw()`, después del panel o banner, para que el botón quede visible y clicable también sobre "¡Ganaste!" y "Perdiste".
+
+**Eventos de Matter** (fuera del loop explícito): el `collisionStart` registrado en el constructor de `Game` compara los `label` de cada par de bodies:
+- `candy` + `star` llama a `onStarCollected(body)`: marca la estrella como recogida, la quita del mundo y suma `starsCollected` (solo en `PLAYING`).
+- `candy` + `bubble` llama a `onBubbleTouched(body)`: si el dulcé no está ya en otra burbuja, la captura, quita su sensor del mundo y sube el `frictionAir` del dulcé (solo en `PLAYING`).
+- `candy` + `omnom` llama a `onCandyEaten()`, que pasa a `WIN` (solo si estaba en `PLAYING`) y calcula el puntaje con `calculateScore()`.
+
+Las estrellas de un mismo paso se procesan antes que OmNom, así una estrella tocada en el mismo frame en que el dulcé llega a la boca sí cuenta.
 
 ---
 
@@ -315,9 +435,8 @@ Lo que **no** se hace ahora (y cómo encajaría después):
 
 | Feature | Por qué no | Cómo encajaría después |
 |---|---|---|
-| Selector de niveles | Ya hay 3 niveles en `LEVELS` y `startLevel(idx)`, pero el inicial es la constante `LEVEL_INDEX` | UI de menú + navegación con `levelIndex ± 1` |
+| Guardar el progreso entre sesiones | El progreso vive en memoria; al recargar se pierde | Serializar `progress` en `localStorage` al ganar y leerlo en el constructor de `Game` |
 | Cuerdas segmentadas (varios tramos por cuerda) | Cada cuerda es 1 constraint recto (suficiente para jugar) | `Rope` con array de constraints; `tryCut` itera segmentos |
-| Estrellas / puntaje | Añade estado extra | Nuevos bodies sensor + contador en `Game` |
 | Tijera visual que sigue al ratón | Cosmético | Dibujar en `draw()` usando `mouseX/mouseY` |
 | Aire, veneno, nudos deslizantes | Mecánicas nuevas | Nuevos tipos de body/eventos |
 | Sonido y animaciones | Cosmético | `p5.sound` + sprites |

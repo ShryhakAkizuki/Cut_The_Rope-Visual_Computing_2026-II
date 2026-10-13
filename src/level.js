@@ -4,6 +4,8 @@ class Level {
     this.data = data;
     this.anchors = [];
     this.ropes = [];
+    this.stars = [];
+    this.bubbles = [];
     this.candy = null;
     this.omnom = null;
   }
@@ -21,17 +23,31 @@ class Level {
       const anchor = new Anchor(a.x, a.y);
       anchor.createBody();
 
-      const rope = new Rope(anchor, this.candy);
+      const rope = new Rope(anchor, this.candy, a.length);
       rope.create(game);
 
       this.anchors.push(anchor);
       this.ropes.push(rope);
     }
 
+    for (const s of d.stars || []) {
+      const star = new Star(s.x, s.y);
+      star.createBody();
+      this.stars.push(star);
+    }
+
+    for (const b of d.bubbles || []) {
+      const bubble = new Bubble(b.x, b.y);
+      bubble.createBody();
+      this.bubbles.push(bubble);
+    }
+
     Matter.Composite.add(game.world, [
       this.candy.body,
       this.omnom.body,
       ...this.anchors.map((a) => a.body),
+      ...this.stars.map((s) => s.body),
+      ...this.bubbles.map((b) => b.body),
     ]);
   }
 
@@ -39,6 +55,8 @@ class Level {
     Matter.Composite.clear(game.world, false, true);
     this.anchors = [];
     this.ropes = [];
+    this.stars = [];
+    this.bubbles = [];
     this.candy = null;
     this.omnom = null;
   }
@@ -46,7 +64,9 @@ class Level {
   draw () {
     for (const a of this.anchors) a.draw();
     for (const r of this.ropes) r.draw();
+    for (const s of this.stars) s.draw();
     if (this.omnom) this.omnom.draw();
     if (this.candy) this.candy.draw();
+    for (const b of this.bubbles) b.draw();
   }
 }

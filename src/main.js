@@ -1,11 +1,9 @@
 let game = null;
 
-const LEVEL_INDEX = 2;
-
 function setup () {
     createCanvas(390, 844);
     game = new Game(LEVELS);
-    game.startLevel(LEVEL_INDEX);
+    game.showMenu();
 }
 
 function draw () {
@@ -18,11 +16,11 @@ function mouseDragged () {
 }
 
 function mousePressed () {
-    game.onInput();
+    game.onInput(mouseX, mouseY);
 }
 
 function keyPressed () {
-    if (key === 'r' || key === 'R') {
-        game.onInput();
+    if ((key === 'r' || key === 'R') && game.state !== STATE.MENU) {
+        game.restart();
     }
 }
