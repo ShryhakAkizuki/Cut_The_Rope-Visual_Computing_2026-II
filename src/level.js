@@ -22,7 +22,7 @@ class Level {
       const anchor = new Anchor(a.x, a.y);
       anchor.createBody();
 
-      const rope = new Rope(anchor, this.candy);
+      const rope = new Rope(anchor, this.candy, a.length);
       rope.create(game);
 
       this.anchors.push(anchor);

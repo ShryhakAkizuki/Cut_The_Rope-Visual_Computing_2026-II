@@ -86,7 +86,7 @@ flowchart LR
 
 1. **Niveles definidos por datos** (`LEVELS` en [`levels.js`](../src/levels.js)): 3 niveles, cada uno con posiciones de dulcé, anclas y OmNom, y opcionalmente `stars` (lista de posiciones; la cantidad es `stars.length`) y `time` (segundos de referencia para el bonus, 30 si falta). El nivel 1 es el básico: una cuerda y 3 estrellas en línea debajo del dulce.
 2. **Dulcé (candy)**: cuerpo circular (`restitution: 0.3`, `frictionAir: 0.01`, `friction: 0.05`) que cuelga de las cuerdas.
-3. **Cuerdas**: cada ancla fija (`anchors` en los datos del nivel) crea su propio constraint recto (`stiffness: 1`) hacia el dulcé; el dulcé solo cae cuando se cortan todas.
+3. **Cuerdas**: cada ancla fija (`anchors` en los datos del nivel) crea su propio constraint hacia el dulcé; el dulcé solo cae cuando se cortan todas. Cada ancla acepta un `length` opcional en píxeles: si es mayor que la distancia ancla-dulcé la cuerda nace con holgura, se dibuja colgando en curva y solo tira cuando se estira; si falta (o es menor), nace tensa.
 4. **Anclas**: bodies estáticos y sensor (`Anchor`), renderizadas como dos círculos concéntricos.
 5. **Corte**: arrastrar el ratón a través de la cuerda la elimina; la cuerda se convierte en **dos trozos físicos** que cuelgan y se desvanecen (ver [sección 5](#5-corte-de-cuerda-y-trozos)).
 6. **OmNom (objetivo)**: círculo estático sensor; si el dulcé lo toca → **GANASTE** (evento `collisionStart` con labels `candy`/`omnom`).
@@ -238,9 +238,12 @@ classDiagram
         +Candy candy
         +Game game
         +Constraint constraint
+        +number length
         +bool isCut
         +object[] pieces
         +create(game)
+        +updateTension()
+        +points() object[]
         +tryCut(p1, p2) bool
         +update(deltaTime)
         +draw()
@@ -292,10 +295,10 @@ classDiagram
 | `Level` ([`level.js`](../src/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas, estrellas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
 | `Anchor` ([`anchor.js`](../src/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
 | `Candy` ([`candy.js`](../src/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) | No decide cuándo se gana |
-| `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé, `tryCut()` (intersección de segmentos), creación y ciclo de vida de los trozos post-corte, render de línea/trozos | No lee el ratón directamente |
+| `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé con largo opcional (`length`); tensión de un solo lado con `updateTension()` (`stiffness` 1 si está estirada, 0 si tiene holgura); forma con `points()` (recta o curva colgante); `tryCut()` sobre los tramos de esa forma; creación y ciclo de vida de los trozos post-corte; render de cuerda/trozos | No lee el ratón directamente |
 | `OmNom` ([`omnom.js`](../src/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`, render | No detecta colisiones (eso lo hace Matter) |
 | `Star` ([`star.js`](../src/star.js)) | Su `Body` circular estático + sensor (radio 20) con label `star`, bandera `collected`, render de estrella de 5 puntas dentro de `draw()` (no se dibuja si está recogida) | No suma puntos ni se quita del mundo (eso lo hace `Game`) |
-| datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 3 niveles con `name`, `candy`, `anchors`, `omnom` y opcionalmente `time` y `stars` (solo datos) | Sin lógica |
+| datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 3 niveles con `name`, `candy`, `anchors` (cada una con `length` opcional), `omnom` y opcionalmente `time` y `stars` (solo datos) | Sin lógica |
 | [`main.js`](../src/main.js) | Adaptador p5: `setup()` crea el `Game` y abre el menú (`showMenu()`), `draw()`, conecta `mouseDragged` → `onCutAttempt`, `mousePressed` → `onInput(mouseX, mouseY)` y la tecla `R` → `restart()` (salvo en `MENU`) | Cero lógica de juego |
 
 **Regla de oro de la MVP:** cada archivo es pequeño y con un solo trabajo. `main.js` cabe en ~30 líneas.
@@ -306,7 +309,7 @@ classDiagram
 
 El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`rope.js`](../src/rope.js):
 
-1. **Detección** — `tryCut(p1, p2)` recibe el segmento del arrastre del ratón y lo interseca con el segmento ancla→dulcé usando `segmentIntersection()` (producto cruzado; devuelve el punto solo si la intersección cae dentro de ambos segmentos). Si ya está cortada o no hay intersección, no hace nada.
+1. **Detección** — `tryCut(p1, p2)` recibe el segmento del arrastre del ratón y lo interseca con cada tramo de `points()` usando `segmentIntersection()` (producto cruzado; devuelve el punto solo si la intersección cae dentro de ambos segmentos). Si la cuerda está tensa, `points()` es solo el segmento ancla→dulcé; si tiene holgura, son 16 tramos de una Bézier cuadrática cuya caída central es `s = sqrt(3·d·(L − d) / 8)`. Si ya está cortada o no hay intersección, no hace nada.
 2. **Remoción** — al cortar, el `Constraint` original se elimina del mundo y `isCut = true`.
 3. **Trozos** — `createPiece(point)` construye dos "pedazos" de cuerda alrededor del punto de corte:
    - `upperBody`: body circular sensor (radio 5) ligado a la **ancla** con un constraint (`stiffness: 1`, longitud = distancia ancla→punto).
@@ -316,11 +319,11 @@ El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`r
    - `ROPE_PIECE_FADE_START = 2000` ms: empieza a desvanecerse (alpha lineal en `pieceAlpha()`).
    - `ROPE_PIECE_LIFETIME = 3000` ms: los 4 objetos (2 bodies + 2 constraints) se eliminan del mundo.
    - Como los trozos son bodies reales, **cuelgan físicamente** tras el corte (el trozo superior pende de la ancla, el inferior sigue al dulcé).
-5. **Render** — `Rope.draw()` dibuja la línea entera si la cuerda vive; si está cortada, dibuja las dos mitades (ancla→`upperBody` y `lowerBody`→dulcé) con el alpha calculado según la edad.
+5. **Render** — `Rope.draw()` dibuja la cuerda entera con `points()` (recta o curva) si vive; si está cortada, dibuja las dos mitades (ancla→`upperBody` y `lowerBody`→dulcé) con el alpha calculado según la edad.
 
 ```mermaid
 flowchart TD
-    A["mouseDragged → onCutAttempt(p1, p2)"] --> B{"para cada Rope:<br/>¿segmento ratón ×<br/>segmento ancla-dulcé?"}
+    A["mouseDragged → onCutAttempt(p1, p2)"] --> B{"para cada Rope:<br/>¿segmento ratón ×<br/>tramos de points()?"}
     B -->|sin intersección| C["no pasa nada"]
     B -->|intersección| D["eliminar Constraint<br/>isCut = true"]
     D --> E["createPiece(punto):<br/>2 bodies sensor + 2 constraints<br/>ancla↔upper / lower↔dulcé"]
