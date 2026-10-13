@@ -1,6 +1,6 @@
 let game = null;
 
-const LEVEL_INDEX = 2;
+const LEVEL_INDEX = 0;
 
 function setup () {
     createCanvas(390, 844);

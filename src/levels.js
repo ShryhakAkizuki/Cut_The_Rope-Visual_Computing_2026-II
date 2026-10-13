@@ -1,9 +1,15 @@
 const LEVELS = [
   {
     name:    'Nivel 1',
+    time:    30,
     candy:   { x: 195, y: 200, radius: 18 },
     anchors: [
       { x: 195, y: 80 },
+    ],
+    stars:   [
+      { x: 195, y: 320 },
+      { x: 195, y: 420 },
+      { x: 195, y: 520 },
     ],
     omnom:   { x: 195, y: 640, radius: 40 },
   },
