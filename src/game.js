@@ -18,12 +18,15 @@ const CANDY_FRICTION_AIR = 0.01;
 
 const PROGRESS_KEY = 'ctr_progress_v1';
 
+const MAX_FRAME_DELTA_MS = 100;
+
 class Game {
 
   constructor (levels) {
     this.levels = levels;
     this.levelIndex = 0;
     this.state = STATE.MENU;
+    this.autoPaused = false;
 
     this.menu = new LevelMenu();
     this.progress = this.loadProgress();
@@ -155,14 +158,15 @@ class Game {
     if (this.state === STATE.LOSE) return;
     if (this.state === STATE.PAUSED) return;
 
-    this.time += deltaTime / 1000;
+    const dt = Math.min(deltaTime, MAX_FRAME_DELTA_MS);
+    this.time += dt / 1000;
     if (this.candyBubble()) {
       const b = this.candy.body;
       const g = this.engine.gravity;
       Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * BUBBLE_LIFT });
     }
     Matter.Engine.update(this.engine, 1000 / 60);
-    for (const rope of this.ropes) rope.update(deltaTime);
+    for (const rope of this.ropes) rope.update(dt);
 
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
       this.state = STATE.LOSE;
@@ -253,10 +257,25 @@ class Game {
   }
 
   togglePause () {
+    this.autoPaused = false;
     if (this.state === STATE.PLAYING) {
       this.state = STATE.PAUSED;
     } else if (this.state === STATE.PAUSED) {
       this.state = STATE.PLAYING;
+    }
+  }
+
+  autoPause () {
+    if (this.state === STATE.PLAYING) {
+      this.state = STATE.PAUSED;
+      this.autoPaused = true;
+    }
+  }
+
+  autoResume () {
+    if (this.state === STATE.PAUSED && this.autoPaused) {
+      this.state = STATE.PLAYING;
+      this.autoPaused = false;
     }
   }
 

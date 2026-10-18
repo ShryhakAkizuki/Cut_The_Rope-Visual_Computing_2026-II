@@ -8,6 +8,11 @@ function setup () {
     createCanvas(390, 844);
     game = new Game(LEVELS);
     game.showMenu();
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) game.autoPause();
+        else game.autoResume();
+    });
 }
 
 function draw () {
