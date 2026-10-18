@@ -15,6 +15,8 @@ const BUBBLE_LIFT = 1.5;
 const BUBBLE_FRICTION_AIR = 0.05;
 const CANDY_FRICTION_AIR = 0.01;
 
+const PROGRESS_KEY = 'ctr_progress_v1';
+
 class Game {
 
   constructor (levels) {
@@ -23,10 +25,7 @@ class Game {
     this.state = STATE.MENU;
 
     this.menu = new LevelMenu();
-    this.progress = {
-      bestStars: levels.map(() => 0),
-      completed: levels.map(() => false),
-    };
+    this.progress = this.loadProgress();
 
     this.restartButton = new Button(12, 844 - 46, 98, 34, 'Reiniciar');
     const rowWidth = 3 * WIN_BUTTON.w + 2 * WIN_BUTTON.gap;
@@ -118,6 +117,37 @@ class Game {
     return idx === 0 || this.progress.completed[idx - 1];
   }
 
+  loadProgress () {
+    let data = null;
+    try {
+      data = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+    } catch (err) {
+      data = null;
+    }
+    if (!data || !Array.isArray(data.bestStars) || !Array.isArray(data.completed)) {
+      return {
+        bestStars: this.levels.map(() => 0),
+        completed: this.levels.map(() => false),
+      };
+    }
+    return {
+      bestStars: this.levels.map((level, i) => {
+        const total = level.stars ? level.stars.length : 0;
+        const stars = Math.floor(Number(data.bestStars[i]));
+        return Number.isFinite(stars) ? Math.max(0, Math.min(total, stars)) : 0;
+      }),
+      completed: this.levels.map((_, i) => Boolean(data.completed[i])),
+    };
+  }
+
+  saveProgress () {
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(this.progress));
+    } catch (err) {
+      // El juego sigue sin persistencia.
+    }
+  }
+
   update () {
     if (this.state === STATE.MENU) return;
     if (this.state === STATE.WIN) return;
@@ -173,6 +203,7 @@ class Game {
       const idx = this.levelIndex;
       this.progress.completed[idx] = true;
       this.progress.bestStars[idx] = Math.max(this.progress.bestStars[idx], this.starsCollected);
+      this.saveProgress();
     }
   }
 
