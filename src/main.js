@@ -49,4 +49,7 @@ function keyPressed () {
     if ((key === 'r' || key === 'R') && game.state !== STATE.MENU) {
         game.restart();
     }
+    if ((key === 'p' || key === 'P') && game.state !== STATE.MENU) {
+        game.togglePause();
+    }
 }

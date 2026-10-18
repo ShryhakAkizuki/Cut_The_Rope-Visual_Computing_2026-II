@@ -1,6 +1,7 @@
 const STATE = {
   MENU:    'MENU',
   PLAYING: 'PLAYING',
+  PAUSED:  'PAUSED',
   WIN:     'WIN',
   LOSE:    'LOSE',
 };
@@ -152,6 +153,7 @@ class Game {
     if (this.state === STATE.MENU) return;
     if (this.state === STATE.WIN) return;
     if (this.state === STATE.LOSE) return;
+    if (this.state === STATE.PAUSED) return;
 
     this.time += deltaTime / 1000;
     if (this.candyBubble()) {
@@ -250,6 +252,14 @@ class Game {
     this.startLevel(this.levelIndex);
   }
 
+  togglePause () {
+    if (this.state === STATE.PLAYING) {
+      this.state = STATE.PAUSED;
+    } else if (this.state === STATE.PAUSED) {
+      this.state = STATE.PLAYING;
+    }
+  }
+
   isCandyOffscreen () {
     return this.candy ? this.candy.isOffscreen(width, height) : false;
   }
@@ -268,7 +278,7 @@ class Game {
     noStroke();
     fill(150);
     textSize(12);
-    text('arrastra el raton para cortar · R reinicia', rb.x + rb.w + 12, rb.y + rb.h / 2 + 4);
+    text('arrastra para cortar · R reinicia · P pausa', rb.x + rb.w + 12, rb.y + rb.h / 2 + 4);
 
     this.drawHud();
 
@@ -276,6 +286,8 @@ class Game {
       this.drawWinPanel();
     } else if (this.state === STATE.LOSE) {
       this.drawBanner('Perdiste', 'clic o tecla R para reiniciar');
+    } else if (this.state === STATE.PAUSED) {
+      this.drawBanner('Pausa', 'tecla P para continuar');
     }
 
     this.restartButton.draw();
