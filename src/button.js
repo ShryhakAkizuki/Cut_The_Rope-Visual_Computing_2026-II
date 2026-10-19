@@ -14,8 +14,8 @@ class Button {
     return px >= this.x && px <= this.x + this.w && py >= this.y && py <= this.y + this.h;
   }
 
-  draw () {
-    const hover = this.contains(mouseX, mouseY);
+  draw (mx, my) {
+    const hover = this.contains(mx, my);
 
     strokeWeight(2);
     stroke(this.enabled ? 220 : 90);

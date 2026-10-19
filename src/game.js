@@ -7,6 +7,7 @@ class Game {
     this.levelIndex = 0;
     this.state = STATE.MENU;
     this.autoPaused = false;
+    this.view = { w: VIEW.w, h: VIEW.h };
 
     this.menu = new LevelMenu();
     this.progress = this.loadProgress();
@@ -54,6 +55,18 @@ class Game {
       }
       if (eaten) this.onCandyEaten();
     });
+  }
+
+  setViewport (w, h) {
+    this.view.w = w;
+    this.view.h = h;
+  }
+
+  onKeyDown (key) {
+    if (this.state === STATE.MENU) return;
+    const k = String(key).toLowerCase();
+    if (k === 'r') this.restart();
+    if (k === 'p') this.togglePause();
   }
 
   startLevel (idx) {
@@ -132,13 +145,12 @@ class Game {
     }
   }
 
-  update () {
+  update (dt) {
     if (this.state === STATE.MENU) return;
     if (this.state === STATE.WIN) return;
     if (this.state === STATE.LOSE) return;
     if (this.state === STATE.PAUSED) return;
 
-    const dt = Math.min(deltaTime, TUNING.maxFrameDeltaMs);
     this.time += dt / 1000;
     if (this.candyBubble()) {
       const b = this.candy.body;
@@ -209,7 +221,7 @@ class Game {
 
   onInput (px, py) {
     if (this.state === STATE.MENU) {
-      const idx = this.menu.levelAt(px, py, this.levels.length);
+      const idx = this.menu.levelAt(px, py, this.levels.length, this.view);
       if (idx !== -1 && this.isUnlocked(idx)) this.startLevel(idx);
       return;
     }
@@ -260,14 +272,14 @@ class Game {
   }
 
   isCandyOffscreen () {
-    return this.candy ? this.candy.isOffscreen(width, height) : false;
+    return this.candy ? this.candy.isOffscreen(this.view.w, this.view.h) : false;
   }
 
-  draw () {
+  draw (px, py) {
     background(0);
 
     if (this.state === STATE.MENU) {
-      this.menu.draw(this.levels, this.progress, (i) => this.isUnlocked(i));
+      this.menu.draw(this.levels, this.progress, (i) => this.isUnlocked(i), this.view, { x: px, y: py });
       return;
     }
 
@@ -282,14 +294,14 @@ class Game {
     this.drawHud();
 
     if (this.state === STATE.WIN) {
-      this.drawWinPanel();
+      this.drawWinPanel(px, py);
     } else if (this.state === STATE.LOSE) {
       this.drawBanner('Perdiste', 'clic o tecla R para reiniciar');
     } else if (this.state === STATE.PAUSED) {
       this.drawBanner('Pausa', 'tecla P para continuar');
     }
 
-    this.restartButton.draw();
+    this.restartButton.draw(px, py);
   }
 
   drawHud () {
@@ -302,13 +314,13 @@ class Game {
     textAlign(LEFT, BASELINE);
   }
 
-  drawWinPanel () {
+  drawWinPanel (px, py) {
     noStroke();
     fill(0, 0, 0, 170);
-    rect(0, 0, width, height);
+    rect(0, 0, this.view.w, this.view.h);
 
-    const cx = width / 2;
-    let y = height / 2 - 130;
+    const cx = this.view.w / 2;
+    let y = this.view.h / 2 - 130;
 
     textAlign(CENTER, CENTER);
     fill(255);
@@ -349,23 +361,23 @@ class Game {
 
     for (const button of Object.values(this.winButtons)) {
       button.y = y;
-      button.draw();
+      button.draw(px, py);
     }
   }
 
   drawBanner (title, subtitle) {
     noStroke();
     fill(0, 0, 0, 160);
-    rect(0, 0, width, height);
+    rect(0, 0, this.view.w, this.view.h);
 
     textAlign(CENTER, CENTER);
     noStroke();
     fill(255);
     textSize(48);
-    text(title, width / 2, height / 2 - 24);
+    text(title, this.view.w / 2, this.view.h / 2 - 24);
     fill(200);
     textSize(16);
-    text(subtitle, width / 2, height / 2 + 32);
+    text(subtitle, this.view.w / 2, this.view.h / 2 + 32);
     textAlign(LEFT, TOP);
   }
 }

@@ -8,10 +8,10 @@ const LEVEL_MENU = {
 
 class LevelMenu {
 
-  cellRect (i) {
+  cellRect (i, view) {
     const m = LEVEL_MENU;
     const rowWidth = m.columns * m.size + (m.columns - 1) * m.gap;
-    const x0 = (width - rowWidth) / 2;
+    const x0 = (view.w - rowWidth) / 2;
     const col = i % m.columns;
     const row = Math.floor(i / m.columns);
     return {
@@ -22,25 +22,25 @@ class LevelMenu {
     };
   }
 
-  levelAt (px, py, count) {
+  levelAt (px, py, count, view) {
     for (let i = 0; i < count; i++) {
-      const r = this.cellRect(i);
+      const r = this.cellRect(i, view);
       if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
     }
     return -1;
   }
 
-  draw (levels, progress, isUnlocked) {
+  draw (levels, progress, isUnlocked, view, pointer) {
     textAlign(CENTER, CENTER);
     noStroke();
     fill(255);
     textSize(40);
-    text('Niveles', width / 2, 110);
+    text('Niveles', view.w / 2, 110);
 
     for (let i = 0; i < levels.length; i++) {
-      const r = this.cellRect(i);
+      const r = this.cellRect(i, view);
       const unlocked = isUnlocked(i);
-      const hover = unlocked && mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h;
+      const hover = unlocked && pointer.x >= r.x && pointer.x <= r.x + r.w && pointer.y >= r.y && pointer.y <= r.y + r.h;
 
       strokeWeight(3);
       stroke(unlocked ? 220 : 80);
