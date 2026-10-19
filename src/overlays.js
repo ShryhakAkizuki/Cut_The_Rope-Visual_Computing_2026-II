@@ -31,6 +31,18 @@ class WinPanel {
     };
   }
 
+  layout (view, starsTotal) {
+    let y = view.h / 2 - 130;
+    y += 70;
+    if (starsTotal > 0) y += 56;
+    y += 30;
+    y += 36;
+    y += 36;
+    for (const button of Object.values(this.buttons)) {
+      button.y = y;
+    }
+  }
+
   draw (state, pointer) {
     const { view } = state;
     noStroke();
@@ -74,11 +86,9 @@ class WinPanel {
     fill(COLORS.star);
     textSize(26);
     text(`Puntaje: ${state.score}`, cx, y);
-    y += 36;
     textAlign(LEFT, BASELINE);
 
     for (const button of Object.values(this.buttons)) {
-      button.y = y;
       button.draw(pointer.x, pointer.y);
     }
   }

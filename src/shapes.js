@@ -16,3 +16,7 @@ function drawStarShape (x, y, outer, filled) {
   }
   endShape(CLOSE);
 }
+
+function pointInRect (px, py, x, y, w, h) {
+  return px >= x && px <= x + w && py >= y && py <= y + h;
+}

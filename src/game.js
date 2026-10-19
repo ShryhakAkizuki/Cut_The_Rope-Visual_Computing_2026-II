@@ -154,7 +154,12 @@ class Game {
       this.timeBonus = result.timeBonus;
       this.score = result.total;
       this.progress.markCompleted(this.levelIndex, this.starsCollected);
+      this.layoutWinButtons();
     }
+  }
+
+  layoutWinButtons () {
+    this.winPanel.layout(this.view, this.stars.length);
   }
 
   onCutAttempt (p1, p2) {

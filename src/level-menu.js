@@ -25,7 +25,7 @@ class LevelMenu {
   levelAt (px, py, count, view) {
     for (let i = 0; i < count; i++) {
       const r = this.cellRect(i, view);
-      if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
+      if (pointInRect(px, py, r.x, r.y, r.w, r.h)) return i;
     }
     return -1;
   }
@@ -40,7 +40,7 @@ class LevelMenu {
     for (let i = 0; i < levels.length; i++) {
       const r = this.cellRect(i, view);
       const unlocked = isUnlocked(i);
-      const hover = unlocked && pointer.x >= r.x && pointer.x <= r.x + r.w && pointer.y >= r.y && pointer.y <= r.y + r.h;
+      const hover = unlocked && pointInRect(pointer.x, pointer.y, r.x, r.y, r.w, r.h);
 
       strokeWeight(3);
       stroke(unlocked ? 220 : 80);

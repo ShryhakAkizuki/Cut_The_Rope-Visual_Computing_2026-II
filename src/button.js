@@ -11,7 +11,7 @@ class Button {
 
   contains (px, py) {
     if (!this.enabled) return false;
-    return px >= this.x && px <= this.x + this.w && py >= this.y && py <= this.y + this.h;
+    return pointInRect(px, py, this.x, this.y, this.w, this.h);
   }
 
   draw (mx, my) {
