@@ -11,11 +11,11 @@ class Button {
 
   contains (px, py) {
     if (!this.enabled) return false;
-    return px >= this.x && px <= this.x + this.w && py >= this.y && py <= this.y + this.h;
+    return pointInRect(px, py, this.x, this.y, this.w, this.h);
   }
 
-  draw () {
-    const hover = this.contains(mouseX, mouseY);
+  draw (mx, my) {
+    const hover = this.contains(mx, my);
 
     strokeWeight(2);
     stroke(this.enabled ? 220 : 90);

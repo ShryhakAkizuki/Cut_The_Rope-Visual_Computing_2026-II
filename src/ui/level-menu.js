@@ -8,10 +8,10 @@ const LEVEL_MENU = {
 
 class LevelMenu {
 
-  cellRect (i) {
+  cellRect (i, view) {
     const m = LEVEL_MENU;
     const rowWidth = m.columns * m.size + (m.columns - 1) * m.gap;
-    const x0 = (width - rowWidth) / 2;
+    const x0 = (view.w - rowWidth) / 2;
     const col = i % m.columns;
     const row = Math.floor(i / m.columns);
     return {
@@ -22,25 +22,25 @@ class LevelMenu {
     };
   }
 
-  levelAt (px, py, count) {
+  levelAt (px, py, count, view) {
     for (let i = 0; i < count; i++) {
-      const r = this.cellRect(i);
-      if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
+      const r = this.cellRect(i, view);
+      if (pointInRect(px, py, r.x, r.y, r.w, r.h)) return i;
     }
     return -1;
   }
 
-  draw (levels, progress, isUnlocked) {
+  draw (levels, progress, isUnlocked, view, pointer) {
     textAlign(CENTER, CENTER);
     noStroke();
     fill(255);
     textSize(40);
-    text('Niveles', width / 2, 110);
+    text('Niveles', view.w / 2, 110);
 
     for (let i = 0; i < levels.length; i++) {
-      const r = this.cellRect(i);
+      const r = this.cellRect(i, view);
       const unlocked = isUnlocked(i);
-      const hover = unlocked && mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h;
+      const hover = unlocked && pointInRect(pointer.x, pointer.y, r.x, r.y, r.w, r.h);
 
       strokeWeight(3);
       stroke(unlocked ? 220 : 80);
@@ -55,29 +55,11 @@ class LevelMenu {
       const best = progress.bestStars[i];
       const starY = r.y + r.h + 22;
       for (let s = 0; s < 3; s++) {
-        this.drawStar(r.x + r.w / 2 + (s - 1) * 28, starY, 11, s < best);
+        drawStarShape(r.x + r.w / 2 + (s - 1) * 28, starY, 11, s < best);
       }
     }
 
     textAlign(LEFT, BASELINE);
   }
 
-  drawStar (x, y, outer, filled) {
-    const inner = outer * 0.45;
-    if (filled) {
-      noStroke();
-      fill(255, 220, 60);
-    } else {
-      noFill();
-      stroke(255, 220, 60);
-      strokeWeight(2);
-    }
-    beginShape();
-    for (let i = 0; i < 10; i++) {
-      const r = i % 2 === 0 ? outer : inner;
-      const angle = -HALF_PI + i * PI / 5;
-      vertex(x + r * cos(angle), y + r * sin(angle));
-    }
-    endShape(CLOSE);
-  }
 }
