@@ -88,7 +88,7 @@ flowchart LR
 
 ### ✅ Dentro (lo mínimo jugable)
 
-1. **Niveles definidos por datos** (`LEVELS` en [`levels.js`](../src/levels.js)): 4 niveles, cada uno con posiciones de dulcé, anclas y OmNom, y opcionalmente `stars` (lista de posiciones; la cantidad es `stars.length`), `bubbles` (lista de posiciones) y `time` (segundos de referencia para el bonus, 30 si falta). El nivel 1 es el básico: una cuerda y 3 estrellas en línea debajo del dulce. El nivel 4 presenta la burbuja: cuerda, burbuja debajo del dulce, 3 estrellas arriba y OmNom abajo.
+1. **Niveles definidos por datos** (`LEVELS` en [`levels.js`](../src/data/levels.js)): 4 niveles, cada uno con posiciones de dulcé, anclas y OmNom, y opcionalmente `stars` (lista de posiciones; la cantidad es `stars.length`), `bubbles` (lista de posiciones) y `time` (segundos de referencia para el bonus, 30 si falta). El nivel 1 es el básico: una cuerda y 3 estrellas en línea debajo del dulce. El nivel 4 presenta la burbuja: cuerda, burbuja debajo del dulce, 3 estrellas arriba y OmNom abajo.
 2. **Dulcé (candy)**: cuerpo circular (`restitution: 0.3`, `frictionAir: 0.01`, `friction: 0.05`) que cuelga de las cuerdas.
 3. **Cuerdas**: cada ancla fija (`anchors` en los datos del nivel) crea su propio constraint hacia el dulcé; el dulcé solo cae cuando se cortan todas. Cada ancla acepta un `length` opcional en píxeles: si es mayor que la distancia ancla-dulcé la cuerda nace con holgura, se dibuja colgando en curva y solo tira cuando se estira; si falta (o es menor), nace tensa.
 4. **Anclas**: bodies estáticos y sensor (`Anchor`), renderizadas como dos círculos concéntricos.
@@ -98,11 +98,11 @@ flowchart LR
 8. **Reinicio**: botón **Reiniciar** (esquina inferior izquierda del canvas, con el texto de ayuda a su derecha) o tecla `R` en cualquier momento dentro de un nivel; tras perder, también un clic en cualquier parte.
 9. **Estrellas**: bodies estáticos sensor (`Star`, label `star`); el dulcé las recoge al tocarlas (evento `collisionStart` con labels `candy`/`star`) y desaparecen del mundo.
 10. **Tiempo y puntaje**: el reloj cuenta los segundos en `PLAYING`. Al ganar, `calculateScore()` aplica la regla del juego original: 1000 puntos por estrella + bonus de tiempo = `max(0, time del nivel − segundos) × 100`, redondeado a decenas. No hay límite: si te pasas, el bonus es 0.
-11. **Menú de niveles** (`LevelMenu` en [`level-menu.js`](../src/level-menu.js)): el juego arranca aquí. Cada nivel es un cuadrado con su número y 3 estrellas debajo, llenas según el mejor resultado. Solo el nivel 1 está abierto al inicio; ganar un nivel desbloquea el siguiente. El progreso (`completed` y `bestStars` por nivel) se persiste en `localStorage` (key `ctr_progress_v1`): el constructor de `Game` lo carga con `loadProgress()` y `onCandyEaten()` lo guarda con `saveProgress()` al ganar, así sobrevive a recargas.
+11. **Menú de niveles** (`LevelMenu` en [`level-menu.js`](../src/ui/level-menu.js)): el juego arranca aquí. Cada nivel es un cuadrado con su número y 3 estrellas debajo, llenas según el mejor resultado. Solo el nivel 1 está abierto al inicio; ganar un nivel desbloquea el siguiente. El progreso (`completed` y `bestStars` por nivel) se persiste en `localStorage` (key `ctr_progress_v1`): el constructor de `Game` lo carga con `loadProgress()` y `onCandyEaten()` lo guarda con `saveProgress()` al ganar, así sobrevive a recargas.
 12. **Botones de victoria**: Replay (repite el nivel), Menu (vuelve a la lista) y Next (siguiente nivel; apagado en el último). En la victoria un clic fuera de los botones no hace nada.
-13. **Burbujas** (`Bubble` en [`bubble.js`](../src/bubble.js), label `bubble`): sensor estático dibujado como círculo azul semitransparente. Cuando el dulcé la toca, la burbuja queda pegada al dulcé (su sensor sale del mundo) y el dulcé sube despacio: `Game` aplica una fuerza hacia arriba de `BUBBLE_LIFT` (1.5) veces su peso y sube su `frictionAir` a `BUBBLE_FRICTION_AIR` (0.05). Un clic sobre el dulcé la revienta y el dulcé vuelve a su gravedad y fricción normales. Si nadie la revienta, el dulcé sale por arriba y se pierde.
-14. Render básico con formas (círculos + líneas), HUD (estrellas y tiempo), pantalla de victoria (un cuadrado por estrella, tiempo, puntaje y botones), banner de derrota, botón de reinicio y texto de ayuda. Los botones son instancias de `Button` ([`button.js`](../src/button.js)).
-15. **Soporte táctil (móvil)**: [`main.js`](../src/main.js) define `touchStarted`/`touchMoved`/`touchEnded`, mapeados al mismo `onInput`/`onCutAttempt` que el ratón. `touchMoved` arma el segmento de corte con un `touchPrev` propio (p5 no actualiza `pmouseX` entre eventos de `touchmove`), y un guard temporal (`TOUCH_MOUSE_GUARD_MS = 500`) ignora los eventos de ratón sintéticos que el navegador dispara tras un toque, evitando input duplicado. El CSS del canvas usa `touch-action: none` para bloquear scroll/zoom durante el juego.
+13. **Burbujas** (`Bubble` en [`bubble.js`](../src/entities/bubble.js), label `bubble`): sensor estático dibujado como círculo azul semitransparente. Cuando el dulcé la toca, la burbuja queda pegada al dulcé (su sensor sale del mundo) y el dulcé sube despacio: `Game` aplica una fuerza hacia arriba de `BUBBLE_LIFT` (1.5) veces su peso y sube su `frictionAir` a `BUBBLE_FRICTION_AIR` (0.05). Un clic sobre el dulcé la revienta y el dulcé vuelve a su gravedad y fricción normales. Si nadie la revienta, el dulcé sale por arriba y se pierde.
+14. Render básico con formas (círculos + líneas), HUD (estrellas y tiempo), pantalla de victoria (un cuadrado por estrella, tiempo, puntaje y botones), banner de derrota, botón de reinicio y texto de ayuda. Los botones son instancias de `Button` ([`button.js`](../src/ui/button.js)).
+15. **Soporte táctil (móvil)**: [`main.js`](../src/core/main.js) define `touchStarted`/`touchMoved`/`touchEnded`, mapeados al mismo `onInput`/`onCutAttempt` que el ratón. `touchMoved` arma el segmento de corte con un `touchPrev` propio (p5 no actualiza `pmouseX` entre eventos de `touchmove`), y un guard temporal (`TOUCH_MOUSE_GUARD_MS = 500`) ignora los eventos de ratón sintéticos que el navegador dispara tras un toque, evitando input duplicado. El CSS del canvas usa `touch-action: none` para bloquear scroll/zoom durante el juego.
 
 ### ❌ Quedó fuera de la MVP (ver [sección 8](#8-hoja-de-ruta-post-mvp))
 
@@ -112,7 +112,7 @@ Sonido, mecánicas nuevas (viento, OmNom móvil), etc. — ahora priorizado en l
 
 ## 3. Estados del juego
 
-Máquina de estados de 5 estados (constante `STATE` en [`game.js`](../src/game.js)):
+Máquina de estados de 5 estados (constante `STATE` en [`game.js`](../src/core/game.js)):
 
 ```mermaid
 stateDiagram-v2
@@ -329,18 +329,18 @@ classDiagram
 
 | Clase / archivo | Responsabilidad | **No hace** |
 |---|---|---|
-| `Game` ([`game.js`](../src/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart` (dulcé con OmNom, estrellas y burbujas), cuenta estrellas, captura y revienta burbujas (fuerza de subida y `frictionAir`: `BUBBLE_LIFT`, `BUBBLE_FRICTION_AIR`, `CANDY_FRICTION_AIR`), reloj y puntaje (`STAR_POINTS`, `TIME_BONUS_PER_SECOND`, `DEFAULT_LEVEL_TIME`), pausa (`togglePause`; estado `PAUSED` congela simulación y reloj) y pausa automática al perder el foco (`autoPause`/`autoResume` con bandera `autoPaused`; `update()` acota el `deltaTime` a `MAX_FRAME_DELTA_MS`), reinicio, navegación entre niveles (`showMenu`, `nextLevel`, `isUnlocked`), progreso persistente en `localStorage` (`loadProgress`/`saveProgress`; `completed`, `bestStars`), HUD, panel de victoria, banners; reparte los clics según el estado | No dibuja las entidades ni la lista de niveles, no define niveles |
-| `LevelMenu` ([`level-menu.js`](../src/level-menu.js)) | Disposición de la lista (cuadrícula de 3 columnas, `LEVEL_MENU`), `levelAt()` para saber qué cuadrado se clicó, dibujo de cuadrados con número y estrellas (`drawStar()` propio, llena o solo borde) | No decide qué nivel está desbloqueado ni guarda progreso (lo recibe de `Game`) |
-| `Button` ([`button.js`](../src/button.js)) | Rectángulo con texto, `contains()` para el clic, `draw()` con hover y estado apagado (`enabled = false`) | No sabe qué hace al pulsarse (lo decide `Game`) |
-| `Level` ([`level.js`](../src/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas, estrellas, burbujas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
-| `Anchor` ([`anchor.js`](../src/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
-| `Candy` ([`candy.js`](../src/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) | No decide cuándo se gana |
-| `Rope` ([`rope.js`](../src/rope.js)) | Su `Constraint` ancla→dulcé con largo opcional (`length`); tensión de un solo lado con `updateTension()` (`stiffness` 1 si está estirada, 0 si tiene holgura); forma con `points()` (recta o curva colgante); `tryCut()` sobre los tramos de esa forma; creación y ciclo de vida de los trozos post-corte; render de cuerda/trozos | No lee el ratón directamente |
-| `OmNom` ([`omnom.js`](../src/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`, render | No detecta colisiones (eso lo hace Matter) |
-| `Star` ([`star.js`](../src/star.js)) | Su `Body` circular estático + sensor (radio 20) con label `star`, bandera `collected`, render de estrella de 5 puntas dentro de `draw()` (no se dibuja si está recogida) | No suma puntos ni se quita del mundo (eso lo hace `Game`) |
-| `Bubble` ([`bubble.js`](../src/bubble.js)) | Su `Body` circular estático + sensor (`BUBBLE_RADIUS` 30) con label `bubble`; estado `captured` (tiene dulcé y no está reventada) y `popped`; `contains()` para el clic sobre el dulcé; render de círculo azul semitransparente, en su sitio o alrededor del dulcé | No aplica fuerzas ni se quita del mundo (eso lo hace `Game`) |
-| datos ([`levels.js`](../src/levels.js)) | Constante `LEVELS`: array de 4 niveles con `name`, `candy`, `anchors` (cada una con `length` opcional), `omnom` y opcionalmente `time`, `stars` y `bubbles` (solo datos) | Sin lógica |
-| [`main.js`](../src/main.js) | Adaptador p5: `setup()` crea el `Game` y abre el menú (`showMenu()`), `draw()`, conecta `mouseDragged`/`touchMoved` → `onCutAttempt`, `mousePressed`/`touchStarted` → `onInput(mouseX, mouseY)`, la tecla `R` → `restart()` y la tecla `P` → `togglePause()` (ambas salvo en `MENU`), filtra los eventos de ratón sintéticos posteriores a un toque (`TOUCH_MOUSE_GUARD_MS`) y registra `document.visibilitychange` → `game.autoPause()` / `game.autoResume()` | Cero lógica de juego |
+| `Game` ([`game.js`](../src/core/game.js)) | Máquina de estados, crea el `Engine` (gravedad `y = 1`), orquesta `update()`/`draw()`, escucha `collisionStart` (dulcé con OmNom, estrellas y burbujas), cuenta estrellas, captura y revienta burbujas (fuerza de subida y `frictionAir`: `BUBBLE_LIFT`, `BUBBLE_FRICTION_AIR`, `CANDY_FRICTION_AIR`), reloj y puntaje (`STAR_POINTS`, `TIME_BONUS_PER_SECOND`, `DEFAULT_LEVEL_TIME`), pausa (`togglePause`; estado `PAUSED` congela simulación y reloj) y pausa automática al perder el foco (`autoPause`/`autoResume` con bandera `autoPaused`; `update()` acota el `deltaTime` a `MAX_FRAME_DELTA_MS`), reinicio, navegación entre niveles (`showMenu`, `nextLevel`, `isUnlocked`), progreso persistente en `localStorage` (`loadProgress`/`saveProgress`; `completed`, `bestStars`), HUD, panel de victoria, banners; reparte los clics según el estado | No dibuja las entidades ni la lista de niveles, no define niveles |
+| `LevelMenu` ([`level-menu.js`](../src/ui/level-menu.js)) | Disposición de la lista (cuadrícula de 3 columnas, `LEVEL_MENU`), `levelAt()` para saber qué cuadrado se clicó, dibujo de cuadrados con número y estrellas (`drawStar()` propio, llena o solo borde) | No decide qué nivel está desbloqueado ni guarda progreso (lo recibe de `Game`) |
+| `Button` ([`button.js`](../src/ui/button.js)) | Rectángulo con texto, `contains()` para el clic, `draw()` con hover y estado apagado (`enabled = false`) | No sabe qué hace al pulsarse (lo decide `Game`) |
+| `Level` ([`level.js`](../src/core/level.js)) | Traduce los datos del nivel en entidades (dulcé, OmNom, anclas + cuerdas, estrellas, burbujas); limpia el mundo (`Composite.clear`) al cambiar de nivel; delega el `draw()` | No tiene lógica de gameplay |
+| `Anchor` ([`anchor.js`](../src/entities/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
+| `Candy` ([`candy.js`](../src/entities/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) | No decide cuándo se gana |
+| `Rope` ([`rope.js`](../src/entities/rope.js)) | Su `Constraint` ancla→dulcé con largo opcional (`length`); tensión de un solo lado con `updateTension()` (`stiffness` 1 si está estirada, 0 si tiene holgura); forma con `points()` (recta o curva colgante); `tryCut()` sobre los tramos de esa forma; creación y ciclo de vida de los trozos post-corte; render de cuerda/trozos | No lee el ratón directamente |
+| `OmNom` ([`omnom.js`](../src/entities/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`, render | No detecta colisiones (eso lo hace Matter) |
+| `Star` ([`star.js`](../src/entities/star.js)) | Su `Body` circular estático + sensor (radio 20) con label `star`, bandera `collected`, render de estrella de 5 puntas dentro de `draw()` (no se dibuja si está recogida) | No suma puntos ni se quita del mundo (eso lo hace `Game`) |
+| `Bubble` ([`bubble.js`](../src/entities/bubble.js)) | Su `Body` circular estático + sensor (`BUBBLE_RADIUS` 30) con label `bubble`; estado `captured` (tiene dulcé y no está reventada) y `popped`; `contains()` para el clic sobre el dulcé; render de círculo azul semitransparente, en su sitio o alrededor del dulcé | No aplica fuerzas ni se quita del mundo (eso lo hace `Game`) |
+| datos ([`levels.js`](../src/data/levels.js)) | Constante `LEVELS`: array de 4 niveles con `name`, `candy`, `anchors` (cada una con `length` opcional), `omnom` y opcionalmente `time`, `stars` y `bubbles` (solo datos) | Sin lógica |
+| [`main.js`](../src/core/main.js) | Adaptador p5: `setup()` crea el `Game` y abre el menú (`showMenu()`), `draw()`, conecta `mouseDragged`/`touchMoved` → `onCutAttempt`, `mousePressed`/`touchStarted` → `onInput(mouseX, mouseY)`, la tecla `R` → `restart()` y la tecla `P` → `togglePause()` (ambas salvo en `MENU`), filtra los eventos de ratón sintéticos posteriores a un toque (`TOUCH_MOUSE_GUARD_MS`) y registra `document.visibilitychange` → `game.autoPause()` / `game.autoResume()` | Cero lógica de juego |
 
 **Regla de oro de la MVP:** cada archivo es pequeño y con un solo trabajo. `main.js` cabe en ~30 líneas.
 
@@ -348,7 +348,7 @@ classDiagram
 
 ## 5. Corte de cuerda y trozos
 
-El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`rope.js`](../src/rope.js):
+El corte es el comportamiento más "físico" de la MVP y vive enteramente en [`rope.js`](../src/entities/rope.js):
 
 1. **Detección** — `tryCut(p1, p2)` recibe el segmento del arrastre del ratón y lo interseca con cada tramo de `points()` usando `segmentIntersection()` (producto cruzado; devuelve el punto solo si la intersección cae dentro de ambos segmentos). Si la cuerda está tensa, `points()` es solo el segmento ancla→dulcé; si tiene holgura, son 16 tramos de una Bézier cuadrática cuya caída central es `s = sqrt(3·d·(L − d) / 8)`. Si ya está cortada o no hay intersección, no hace nada.
 2. **Remoción** — al cortar, el `Constraint` original se elimina del mundo y `isCut = true`.
@@ -443,31 +443,30 @@ Las estrellas de un mismo paso se procesan antes que OmNom, así una estrella to
 
 ## 8. Hoja de ruta post-MVP
 
-Con la MVP completada, esta sección reemplaza la anterior lista "fuera de alcance" por un plan priorizado para llegar a un **producto básico pero casi terminal**. Cada feature encaja en el patrón existente del proyecto — datos en [`levels.js`](../src/levels.js), entidades como bodies con `label`, decisiones en [`Game`](../src/game.js), input en [`main.js`](../src/main.js) — así que no hay refactor previo que hacer.
+Con la MVP completada, esta sección reemplaza la anterior lista "fuera de alcance" por un plan priorizado para llegar a un **producto básico pero casi terminal**. Cada feature encaja en el patrón existente del proyecto — datos en [`levels.js`](../src/data/levels.js), entidades como bodies con `label`, decisiones en [`Game`](../src/core/game.js), input en [`main.js`](../src/core/main.js) — así que no hay refactor previo que hacer.
 
 ### 8.1 Prioridad 0 — Producto sólido (bajo esfuerzo, alto impacto)
 
 | # | Feature | Brecha actual | Dónde encaja |
 |---|---|---|---|
-| 1✅ |  **Persistir progreso en `localStorage`** | Resuelto: el constructor de [`Game`](../src/game.js) carga el progreso con `loadProgress()` (key `ctr_progress_v1`, tolerando datos corruptos o faltantes) y `onCandyEaten()` lo guarda con `saveProgress()` al ganar | — |
-| 2✅ | **Soporte táctil (móvil)** | Resuelto: [`main.js`](../src/main.js) define `touchStarted`/`touchMoved`/`touchEnded` mapeados al mismo `onInput`/`onCutAttempt` (segmento de corte armado con `touchPrev`, guard `TOUCH_MOUSE_GUARD_MS` contra ratón sintético y `touch-action: none` en el canvas) | — |
-| 3 | **Sonido** | Cero audio en el proyecto; es lo que más "terminado" hace sentir un juego | Cortes, estrellas, pop de burbuja y victoria/derrota con **Web Audio API** (sin librería nueva; el bloque de scripts de `index.html` no se toca) |
-| 4✅ | **Pausa** | Resuelto: nuevo estado `PAUSED` en `STATE` + tecla `P` (`togglePause()` alterna `PLAYING` ↔ `PAUSED`); el patrón de early-return de `update()` congela simulación y reloj, y `draw()` muestra un banner "Pausa" | — |
+| 1✅ |  **Persistir progreso en `localStorage`** | Resuelto: el constructor de [`Game`](../src/core/game.js) carga el progreso con `loadProgress()` (key `ctr_progress_v1`, tolerando datos corruptos o faltantes) y `onCandyEaten()` lo guarda con `saveProgress()` al ganar | — |
+| 2 | **Sonido** | Cero audio en el proyecto; es lo que más "terminado" hace sentir un juego | Cortes, estrellas, pop de burbuja y victoria/derrota con **Web Audio API** (sin librería nueva; el bloque de scripts de `index.html` no se toca) |
+| 3✅ | **Pausa** | Resuelto: nuevo estado `PAUSED` en `STATE` + tecla `P` (`togglePause()` alterna `PLAYING` ↔ `PAUSED`); el patrón de early-return de `update()` congela simulación y reloj, y `draw()` muestra un banner "Pausa" | — |
 
 ### 8.2 Prioridad 1 — Profundidad de juego
 
 | # | Feature | Brecha actual | Cómo encaja |
 |---|---|---|---|
-| 5 | **Más niveles (8–12)** | Solo 4 en `LEVELS`; la cuadrícula de 3 columnas de `LevelMenu` ya soporta más | Solo datos: agregar objetos a `LEVELS`; el desbloqueo (`isUnlocked`) y el botón `Next` deshabilitado en el último ya los soportan |
-| 6 | **Zona de viento** | Mecánica clásica del original ausente | Body rectangular sensor con label `wind` + `applyForce` a los bodies dentro de su rectángulo (mismo patrón que la fuerza de la burbuja en `Game.update()`) |
-| 7 | **HUD mejorado** (nivel, objetivo y bonus en vivo) | `drawHud()` solo muestra estrellas y tiempo transcurrido; el jugador no ve el `time` del nivel contra el que se mide el bonus | Mostrar `Nivel N · Objetivo: Xs · Bonus actual: Y` usando la misma fórmula de `calculateScore()` |
+| 4 | **Más niveles (8–12)** | Solo 4 en `LEVELS`; la cuadrícula de 3 columnas de `LevelMenu` ya soporta más | Solo datos: agregar objetos a `LEVELS`; el desbloqueo (`isUnlocked`) y el botón `Next` deshabilitado en el último ya los soportan |
+| 5 | **Zona de viento** | Mecánica clásica del original ausente | Body rectangular sensor con label `wind` + `applyForce` a los bodies dentro de su rectángulo (mismo patrón que la fuerza de la burbuja en `Game.update()`) |
+| 6 | **HUD mejorado** (nivel, objetivo y bonus en vivo) | `drawHud()` solo muestra estrellas y tiempo transcurrido; el jugador no ve el `time` del nivel contra el que se mide el bonus | Mostrar `Nivel N · Objetivo: Xs · Bonus actual: Y` usando la misma fórmula de `calculateScore()` |
 
 ### 8.3 Prioridad 2 — Pulido cosmético
 
 | # | Feature | Brecha actual | Notas |
 |---|---|---|---|
-| 8 | **Partículas** (corte, estrella, pop, victoria) | El feedback visual hoy son solo los trozos físicos de `Rope` | Array cosmético de partículas con vida corta, dentro de `draw()` |
-| 9 | **Animación de OmNom y carita del dulcé** | `OmNom.draw()` es un círculo sin cara; `Candy.draw()` es un círculo plano | OmNom que abre la boca cuando el dulcé se acerca y parpadea; todo en `draw()`, cero lógica |
-| 10 | **Total de estrellas en el menú** | El encabezado de `LevelMenu.draw()` no muestra progreso global | Sumar `bestStars` en el título: `★ 7/12` |
-| 11 | **Canvas responsivo / escalado** | `createCanvas(390, 844)` fijo; en pantallas cortas se corta | `windowResized()` o escalado CSS manteniendo el ratio (los inputs ya están en coordenadas de canvas) |
-| 12✅ | **Pausa automática al perder foco** | Resuelto: `setup()` de [`main.js`](../src/main.js) registra `document.visibilitychange` y llama a `Game.autoPause()` (al ocultarse) / `Game.autoResume()` (al volver); la pausa automática se reanuda sola al recuperar el foco (la manual con `P` no) y `Game.update()` acota el `deltaTime` a `MAX_FRAME_DELTA_MS` (100 ms) para que el reloj no salte | — |
+| 7 | **Partículas** (corte, estrella, pop, victoria) | El feedback visual hoy son solo los trozos físicos de `Rope` | Array cosmético de partículas con vida corta, dentro de `draw()` |
+| 8 | **Animación de OmNom y carita del dulcé** | `OmNom.draw()` es un círculo sin cara; `Candy.draw()` es un círculo plano | OmNom que abre la boca cuando el dulcé se acerca y parpadea; todo en `draw()`, cero lógica |
+| 9 | **Total de estrellas en el menú** | El encabezado de `LevelMenu.draw()` no muestra progreso global | Sumar `bestStars` en el título: `★ 7/12` |
+| 10 | **Canvas responsivo / escalado** | `createCanvas(390, 844)` fijo; en pantallas cortas se corta | `windowResized()` o escalado CSS manteniendo el ratio (los inputs ya están en coordenadas de canvas) |
+| 11✅ | **Pausa automática al perder foco** | Resuelto: `setup()` de [`main.js`](../src/core/main.js) registra `document.visibilitychange` y llama a `Game.autoPause()` (al ocultarse) / `Game.autoResume()` (al volver); la pausa automática se reanuda sola al recuperar el foco (la manual con `P` no) y `Game.update()` acota el `deltaTime` a `MAX_FRAME_DELTA_MS` (100 ms) para que el reloj no salte | — |
