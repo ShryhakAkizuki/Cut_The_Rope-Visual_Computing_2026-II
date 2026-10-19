@@ -3,4 +3,4 @@ Cut The Rope inspired gameplay in the browser — JavaScript + p5.js. Course pro
 
 ## Documentación
 
-- [Arquitectura MVP](docs/arquitectura-mvp.md) — componentes, diagramas (estados, game loop, clases, corte de cuerda) y alcance de la MVP.
+- [Arquitectura MVP](docs/arquitectura-mvp.md) — componentes, diagramas (estados, game loop, clases, corte de cuerda), alcance de la MVP y hoja de ruta post-MVP.

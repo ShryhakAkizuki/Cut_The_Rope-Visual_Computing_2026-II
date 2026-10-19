@@ -20,7 +20,7 @@ class Candy {
     if (!this.body) return;
     const pos = this.body.position;
     noStroke();
-    fill(255, 120, 120);
+    fill(COLORS.candy);
     circle(pos.x, pos.y, this.radius * 2);
   }
 
