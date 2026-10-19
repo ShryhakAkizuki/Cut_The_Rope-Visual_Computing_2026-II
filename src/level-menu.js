@@ -55,29 +55,11 @@ class LevelMenu {
       const best = progress.bestStars[i];
       const starY = r.y + r.h + 22;
       for (let s = 0; s < 3; s++) {
-        this.drawStar(r.x + r.w / 2 + (s - 1) * 28, starY, 11, s < best);
+        drawStarShape(r.x + r.w / 2 + (s - 1) * 28, starY, 11, s < best);
       }
     }
 
     textAlign(LEFT, BASELINE);
   }
 
-  drawStar (x, y, outer, filled) {
-    const inner = outer * 0.45;
-    if (filled) {
-      noStroke();
-      fill(255, 220, 60);
-    } else {
-      noFill();
-      stroke(255, 220, 60);
-      strokeWeight(2);
-    }
-    beginShape();
-    for (let i = 0; i < 10; i++) {
-      const r = i % 2 === 0 ? outer : inner;
-      const angle = -HALF_PI + i * PI / 5;
-      vertex(x + r * cos(angle), y + r * sin(angle));
-    }
-    endShape(CLOSE);
-  }
 }

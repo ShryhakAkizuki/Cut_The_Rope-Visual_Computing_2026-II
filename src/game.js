@@ -1,24 +1,4 @@
-const STATE = {
-  MENU:    'MENU',
-  PLAYING: 'PLAYING',
-  PAUSED:  'PAUSED',
-  WIN:     'WIN',
-  LOSE:    'LOSE',
-};
-
 const WIN_BUTTON = { w: 100, h: 40, gap: 12 };
-
-const STAR_POINTS = 1000;
-const TIME_BONUS_PER_SECOND = 100;
-const DEFAULT_LEVEL_TIME = 30;
-
-const BUBBLE_LIFT = 1.5;
-const BUBBLE_FRICTION_AIR = 0.05;
-const CANDY_FRICTION_AIR = 0.01;
-
-const PROGRESS_KEY = 'ctr_progress_v1';
-
-const MAX_FRAME_DELTA_MS = 100;
 
 class Game {
 
@@ -31,9 +11,9 @@ class Game {
     this.menu = new LevelMenu();
     this.progress = this.loadProgress();
 
-    this.restartButton = new Button(12, 844 - 46, 98, 34, 'Reiniciar');
+    this.restartButton = new Button(12, VIEW.h - 46, 98, 34, 'Reiniciar');
     const rowWidth = 3 * WIN_BUTTON.w + 2 * WIN_BUTTON.gap;
-    const x0 = (390 - rowWidth) / 2;
+    const x0 = (VIEW.w - rowWidth) / 2;
     const step = WIN_BUTTON.w + WIN_BUTTON.gap;
     this.winButtons = {
       replay: new Button(x0, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Replay'),
@@ -54,7 +34,7 @@ class Game {
 
     this.starsCollected = 0;
     this.time = 0;
-    this.timeLimit = DEFAULT_LEVEL_TIME;
+    this.timeLimit = TUNING.defaultLevelTime;
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
@@ -89,7 +69,7 @@ class Game {
 
     this.starsCollected = 0;
     this.time = 0;
-    this.timeLimit = this.level.data.time || DEFAULT_LEVEL_TIME;
+    this.timeLimit = this.level.data.time || TUNING.defaultLevelTime;
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
@@ -158,12 +138,12 @@ class Game {
     if (this.state === STATE.LOSE) return;
     if (this.state === STATE.PAUSED) return;
 
-    const dt = Math.min(deltaTime, MAX_FRAME_DELTA_MS);
+    const dt = Math.min(deltaTime, TUNING.maxFrameDeltaMs);
     this.time += dt / 1000;
     if (this.candyBubble()) {
       const b = this.candy.body;
       const g = this.engine.gravity;
-      Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * BUBBLE_LIFT });
+      Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * TUNING.bubbleLift });
     }
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
@@ -188,7 +168,7 @@ class Game {
     if (!bubble || bubble.captured || bubble.popped) return;
     bubble.capture(this.candy);
     Matter.Composite.remove(this.world, bubble.body);
-    this.candy.body.frictionAir = BUBBLE_FRICTION_AIR;
+    this.candy.body.frictionAir = TUNING.bubbleFrictionAir;
   }
 
   candyBubble () {
@@ -199,7 +179,7 @@ class Game {
     const bubble = this.candyBubble();
     if (!bubble) return;
     bubble.pop();
-    this.candy.body.frictionAir = CANDY_FRICTION_AIR;
+    this.candy.body.frictionAir = TUNING.candyFrictionAir;
   }
 
   onCandyEaten () {
@@ -217,8 +197,8 @@ class Game {
   // que sobra del tiempo del nivel, redondeado a decenas.
   calculateScore () {
     const remaining = Math.max(0, this.timeLimit - this.time);
-    this.timeBonus = Math.floor(remaining * TIME_BONUS_PER_SECOND / 10) * 10;
-    this.starBonus = STAR_POINTS * this.starsCollected;
+    this.timeBonus = Math.floor(remaining * TUNING.timeBonusPerSecond / 10) * 10;
+    this.starBonus = TUNING.starPoints * this.starsCollected;
     this.score = this.starBonus + this.timeBonus;
   }
 
@@ -343,9 +323,9 @@ class Game {
       const rowWidth = total * size + (total - 1) * gap;
       const x0 = cx - rowWidth / 2;
       strokeWeight(3);
-      stroke(255, 220, 60);
+      stroke(COLORS.star);
       for (let i = 0; i < total; i++) {
-        if (i < this.starsCollected) fill(255, 220, 60);
+        if (i < this.starsCollected) fill(COLORS.star);
         else noFill();
         rect(x0 + i * (size + gap), y - size / 2, size, size, 6);
       }
@@ -361,7 +341,7 @@ class Game {
     textSize(15);
     text(`Estrellas: ${this.starBonus} · Bonus tiempo: ${this.timeBonus}`, cx, y);
     y += 36;
-    fill(255, 220, 60);
+    fill(COLORS.star);
     textSize(26);
     text(`Puntaje: ${this.score}`, cx, y);
     y += 36;

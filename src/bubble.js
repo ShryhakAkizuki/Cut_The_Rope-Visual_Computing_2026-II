@@ -1,5 +1,3 @@
-const BUBBLE_RADIUS = 30;
-
 class Bubble {
 
     constructor (x, y) {

@@ -5,7 +5,7 @@ let lastTouchAt = -1e9;
 const TOUCH_MOUSE_GUARD_MS = 500;
 
 function setup () {
-    createCanvas(390, 844);
+    createCanvas(VIEW.w, VIEW.h);
     game = new Game(LEVELS);
     game.showMenu();
 

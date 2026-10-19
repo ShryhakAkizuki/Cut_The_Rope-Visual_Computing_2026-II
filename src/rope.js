@@ -1,8 +1,3 @@
-const ROPE_PIECE_LIFETIME = 3000;
-const ROPE_PIECE_FADE_START = 2000;
-const ROPE_TAUT_EPSILON = 0.5;
-const ROPE_CURVE_SEGMENTS = 16;
-
 class Rope {
 
     constructor (anchor, candy, length) {
@@ -40,7 +35,7 @@ class Rope {
     }
 
     isTaut () {
-        return this.distance() >= this.length - ROPE_TAUT_EPSILON;
+        return this.distance() >= this.length - ROPE_T.tautEpsilon;
     }
 
     // A Matter constraint also pushes like a rod; with stiffness 0 it applies no force while slack.
@@ -60,8 +55,8 @@ class Rope {
         const cy = (a.y + b.y) / 2 + 2 * sag;
 
         const pts = [];
-        for (let i = 0; i <= ROPE_CURVE_SEGMENTS; i++) {
-            const t = i / ROPE_CURVE_SEGMENTS;
+        for (let i = 0; i <= ROPE_T.curveSegments; i++) {
+            const t = i / ROPE_T.curveSegments;
             const u = 1 - t;
             pts.push({
                 x: u * u * a.x + 2 * u * t * cx + t * t * b.x,
@@ -129,7 +124,7 @@ class Rope {
         for (let i = this.pieces.length - 1; i >= 0; i--) {
             const piece = this.pieces[i];
             piece.age += delta_Time;
-            if (piece.age >= ROPE_PIECE_LIFETIME) {
+            if (piece.age >= ROPE_T.pieceLifetime) {
                 Matter.Composite.remove(this.game.world,
                     [piece.upperBody, piece.lowerBody, piece.upper, piece.lower]);
                 this.pieces.splice(i, 1);
@@ -139,14 +134,14 @@ class Rope {
     }
 
     pieceAlpha (age) {
-        if (age < ROPE_PIECE_FADE_START) return 255;
-        const t = (age - ROPE_PIECE_FADE_START) / (ROPE_PIECE_LIFETIME - ROPE_PIECE_FADE_START);
+        if (age < ROPE_T.pieceFadeStart) return 255;
+        const t = (age - ROPE_T.pieceFadeStart) / (ROPE_T.pieceLifetime - ROPE_T.pieceFadeStart);
         return Math.max(0, Math.round(255 * (1 - t)));
     }
 
     draw () {
         if (!this.isCut && this.constraint) {
-            stroke(220, 220, 220);
+            stroke(COLORS.rope);
             strokeWeight(3);
             noFill();
             beginShape();
@@ -162,7 +157,7 @@ class Rope {
             const c = this.candy.body.position;
             const a = this.anchor.body.position;
 
-            stroke(220, 220, 220, alpha);
+            stroke(COLORS.rope[0], COLORS.rope[1], COLORS.rope[2], alpha);
             strokeWeight(3);
             line(a.x, a.y, u.x, u.y);
             line(l.x, l.y, c.x, c.y);
