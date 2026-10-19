@@ -1,5 +1,3 @@
-const WIN_BUTTON = { w: 100, h: 40, gap: 12 };
-
 class Game {
 
   constructor (levels) {
@@ -10,28 +8,17 @@ class Game {
     this.view = { w: VIEW.w, h: VIEW.h };
 
     this.menu = new LevelMenu();
-    this.progress = this.loadProgress();
+    this.progress = new ProgressStore(levels);
 
     this.restartButton = new Button(12, VIEW.h - 46, 98, 34, 'Reiniciar');
-    const rowWidth = 3 * WIN_BUTTON.w + 2 * WIN_BUTTON.gap;
-    const x0 = (VIEW.w - rowWidth) / 2;
-    const step = WIN_BUTTON.w + WIN_BUTTON.gap;
-    this.winButtons = {
-      replay: new Button(x0, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Replay'),
-      menu:   new Button(x0 + step, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Menu'),
-      next:   new Button(x0 + 2 * step, 0, WIN_BUTTON.w, WIN_BUTTON.h, 'Next'),
-    };
+    this.hud = new Hud();
+    this.winPanel = new WinPanel(VIEW.w);
 
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
     this.engine.gravity.y = 1;
 
     this.level = null;
-    this.candy = null;
-    this.ropes = [];
-    this.omnom = null;
-    this.stars = [];
-    this.bubbles = [];
 
     this.starsCollected = 0;
     this.time = 0;
@@ -62,6 +49,12 @@ class Game {
     this.view.h = h;
   }
 
+  get candy () { return this.level ? this.level.candy : null; }
+  get omnom () { return this.level ? this.level.omnom : null; }
+  get ropes () { return this.level ? this.level.ropes : []; }
+  get stars () { return this.level ? this.level.stars : []; }
+  get bubbles () { return this.level ? this.level.bubbles : []; }
+
   onKeyDown (key) {
     if (this.state === STATE.MENU) return;
     const k = String(key).toLowerCase();
@@ -74,11 +67,6 @@ class Game {
     if (this.level) this.level.clear(this);
     this.level = new Level(this.levels[idx]);
     this.level.build(this);
-    this.candy = this.level.candy;
-    this.ropes = this.level.ropes;
-    this.omnom = this.level.omnom;
-    this.stars = this.level.stars;
-    this.bubbles = this.level.bubbles;
 
     this.starsCollected = 0;
     this.time = 0;
@@ -87,7 +75,7 @@ class Game {
     this.timeBonus = 0;
     this.score = 0;
 
-    this.winButtons.next.enabled = idx < this.levels.length - 1;
+    this.winPanel.buttons.next.enabled = idx < this.levels.length - 1;
     this.state = STATE.PLAYING;
   }
 
@@ -96,52 +84,12 @@ class Game {
       this.level.clear(this);
       this.level = null;
     }
-    this.candy = null;
-    this.ropes = [];
-    this.omnom = null;
-    this.stars = [];
-    this.bubbles = [];
     this.state = STATE.MENU;
   }
 
   nextLevel () {
     if (this.levelIndex < this.levels.length - 1) {
       this.startLevel(this.levelIndex + 1);
-    }
-  }
-
-  isUnlocked (idx) {
-    return idx === 0 || this.progress.completed[idx - 1];
-  }
-
-  loadProgress () {
-    let data = null;
-    try {
-      data = JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    } catch (err) {
-      data = null;
-    }
-    if (!data || !Array.isArray(data.bestStars) || !Array.isArray(data.completed)) {
-      return {
-        bestStars: this.levels.map(() => 0),
-        completed: this.levels.map(() => false),
-      };
-    }
-    return {
-      bestStars: this.levels.map((level, i) => {
-        const total = level.stars ? level.stars.length : 0;
-        const stars = Math.floor(Number(data.bestStars[i]));
-        return Number.isFinite(stars) ? Math.max(0, Math.min(total, stars)) : 0;
-      }),
-      completed: this.levels.map((_, i) => Boolean(data.completed[i])),
-    };
-  }
-
-  saveProgress () {
-    try {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(this.progress));
-    } catch (err) {
-      // El juego sigue sin persistencia.
     }
   }
 
@@ -197,21 +145,16 @@ class Game {
   onCandyEaten () {
     if (this.state === STATE.PLAYING) {
       this.state = STATE.WIN;
-      this.calculateScore();
-      const idx = this.levelIndex;
-      this.progress.completed[idx] = true;
-      this.progress.bestStars[idx] = Math.max(this.progress.bestStars[idx], this.starsCollected);
-      this.saveProgress();
+      const result = calculateScore({
+        starsCollected: this.starsCollected,
+        time: this.time,
+        timeLimit: this.timeLimit,
+      });
+      this.starBonus = result.starBonus;
+      this.timeBonus = result.timeBonus;
+      this.score = result.total;
+      this.progress.markCompleted(this.levelIndex, this.starsCollected);
     }
-  }
-
-  // Igual que el juego original: 1000 por estrella y 100 por cada segundo
-  // que sobra del tiempo del nivel, redondeado a decenas.
-  calculateScore () {
-    const remaining = Math.max(0, this.timeLimit - this.time);
-    this.timeBonus = Math.floor(remaining * TUNING.timeBonusPerSecond / 10) * 10;
-    this.starBonus = TUNING.starPoints * this.starsCollected;
-    this.score = this.starBonus + this.timeBonus;
   }
 
   onCutAttempt (p1, p2) {
@@ -222,7 +165,7 @@ class Game {
   onInput (px, py) {
     if (this.state === STATE.MENU) {
       const idx = this.menu.levelAt(px, py, this.levels.length, this.view);
-      if (idx !== -1 && this.isUnlocked(idx)) this.startLevel(idx);
+      if (idx !== -1 && this.progress.isUnlocked(idx)) this.startLevel(idx);
       return;
     }
 
@@ -235,7 +178,7 @@ class Game {
       const bubble = this.candyBubble();
       if (bubble && bubble.contains(px, py)) this.popBubble();
     } else if (this.state === STATE.WIN) {
-      const b = this.winButtons;
+      const b = this.winPanel.buttons;
       if (b.replay.contains(px, py)) this.restart();
       else if (b.menu.contains(px, py)) this.showMenu();
       else if (b.next.contains(px, py)) this.nextLevel();
@@ -279,105 +222,38 @@ class Game {
     background(0);
 
     if (this.state === STATE.MENU) {
-      this.menu.draw(this.levels, this.progress, (i) => this.isUnlocked(i), this.view, { x: px, y: py });
+      this.menu.draw(this.levels, this.progress, (i) => this.progress.isUnlocked(i), this.view, { x: px, y: py });
       return;
     }
 
     if (this.level) this.level.draw();
 
     const rb = this.restartButton;
-    noStroke();
-    fill(150);
-    textSize(12);
-    text('arrastra para cortar · R reinicia · P pausa', rb.x + rb.w + 12, rb.y + rb.h / 2 + 4);
+    this.hud.draw({
+      starsCollected: this.starsCollected,
+      starsTotal: this.stars.length,
+      time: this.time,
+      hintText: 'arrastra para cortar · R reinicia · P pausa',
+      hintTextPos: { x: rb.x + rb.w + 12, y: rb.y + rb.h / 2 + 4 },
+    });
 
-    this.drawHud();
-
+    const pointer = { x: px, y: py };
     if (this.state === STATE.WIN) {
-      this.drawWinPanel(px, py);
+      this.winPanel.draw({
+        view: this.view,
+        starsTotal: this.stars.length,
+        starsCollected: this.starsCollected,
+        time: this.time,
+        starBonus: this.starBonus,
+        timeBonus: this.timeBonus,
+        score: this.score,
+      }, pointer);
     } else if (this.state === STATE.LOSE) {
-      this.drawBanner('Perdiste', 'clic o tecla R para reiniciar');
+      Banner.draw('Perdiste', 'clic o tecla R para reiniciar', this.view);
     } else if (this.state === STATE.PAUSED) {
-      this.drawBanner('Pausa', 'tecla P para continuar');
+      Banner.draw('Pausa', 'tecla P para continuar', this.view);
     }
 
     this.restartButton.draw(px, py);
-  }
-
-  drawHud () {
-    noStroke();
-    fill(220);
-    textSize(14);
-    textAlign(LEFT, TOP);
-    const stars = this.stars.length ? `Estrellas ${this.starsCollected}/${this.stars.length} · ` : '';
-    text(`${stars}${this.time.toFixed(1)} s`, 12, 12);
-    textAlign(LEFT, BASELINE);
-  }
-
-  drawWinPanel (px, py) {
-    noStroke();
-    fill(0, 0, 0, 170);
-    rect(0, 0, this.view.w, this.view.h);
-
-    const cx = this.view.w / 2;
-    let y = this.view.h / 2 - 130;
-
-    textAlign(CENTER, CENTER);
-    fill(255);
-    textSize(48);
-    text('¡Ganaste!', cx, y);
-    y += 70;
-
-    const total = this.stars.length;
-    if (total > 0) {
-      const size = 40;
-      const gap = 14;
-      const rowWidth = total * size + (total - 1) * gap;
-      const x0 = cx - rowWidth / 2;
-      strokeWeight(3);
-      stroke(COLORS.star);
-      for (let i = 0; i < total; i++) {
-        if (i < this.starsCollected) fill(COLORS.star);
-        else noFill();
-        rect(x0 + i * (size + gap), y - size / 2, size, size, 6);
-      }
-      noStroke();
-      y += 56;
-    }
-
-    fill(230);
-    textSize(18);
-    text(`Tiempo: ${this.time.toFixed(1)} s`, cx, y);
-    y += 30;
-    fill(200);
-    textSize(15);
-    text(`Estrellas: ${this.starBonus} · Bonus tiempo: ${this.timeBonus}`, cx, y);
-    y += 36;
-    fill(COLORS.star);
-    textSize(26);
-    text(`Puntaje: ${this.score}`, cx, y);
-    y += 36;
-    textAlign(LEFT, BASELINE);
-
-    for (const button of Object.values(this.winButtons)) {
-      button.y = y;
-      button.draw(px, py);
-    }
-  }
-
-  drawBanner (title, subtitle) {
-    noStroke();
-    fill(0, 0, 0, 160);
-    rect(0, 0, this.view.w, this.view.h);
-
-    textAlign(CENTER, CENTER);
-    noStroke();
-    fill(255);
-    textSize(48);
-    text(title, this.view.w / 2, this.view.h / 2 - 24);
-    fill(200);
-    textSize(16);
-    text(subtitle, this.view.w / 2, this.view.h / 2 + 32);
-    textAlign(LEFT, TOP);
   }
 }
