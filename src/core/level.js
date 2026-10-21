@@ -36,7 +36,7 @@ class Level {
 
     // [autocuerdas] pista B
     for (const a of d.autoAnchors || []) {
-      const autoAnchor = new AutoAnchor(a.x, a.y, a.radius, a.length);
+      const autoAnchor = new AutoAnchor(a.x, a.y, a.radius, a.length, a.chain);
       autoAnchor.createBody();
       this.autoAnchors.push(autoAnchor);
     }

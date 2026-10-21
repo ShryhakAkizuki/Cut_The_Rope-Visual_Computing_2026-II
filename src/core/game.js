@@ -39,7 +39,7 @@ class Game {
         } else if (labels.includes('bubble')) {
           this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
         } else if (labels.includes('autoAnchor')) {
-          // [autocuerdas] pista B
+          // [autocuerdas] pista B: sin uso; AutoAnchor detecta por distancia en update() y no tiene body
         } else if (labels.includes('spikes')) {
           // [púas] pista C: como BreakCandyBody de DX, revienta la burbuja, suelta las cuerdas,
           // quita el dulce del mundo y pasa a LOSE; el dulce roto se anima en Candy.draw.
@@ -129,7 +129,8 @@ class Game {
     for (const s of this.stars) s.update(dt);
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
-    // [autocuerdas] pista B
+    // [autocuerdas] pista B: desvanecimiento del círculo y unión por distancia (la cuerda va a this.ropes)
+    for (const a of this.autoAnchors) a.update(dt, this);
     // [tutoriales] pista F
     for (const t of this.tutorials) t.update(dt);
     this.camera.update(dt / 1000, this.candy.body.position);

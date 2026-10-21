@@ -16,7 +16,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 - **Fase actual:** 1 — pistas en paralelo (lanzadas el 2026-10-21 desde `camilo` en `789d0df`).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C.
+- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B.
 - **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
@@ -204,13 +204,13 @@ Los 25 niveles se generan con `tools/convert-maps.py` (pista A).
 
 **Pista B.** Referencia: `AutoRadiusSource.cs`, `Grab.cs`. Niveles: 10, 11, 12, 14, 15, 19, 20, 25.
 
-- [ ] Leer `autoAnchors` del [formato de `LEVELS`](#formato-de-levels) (radio de detección y `length` de la cuerda que creará)
-- [ ] Entidad `AutoAnchor` (`entities/auto-anchor.js`): círculo de radio visible alrededor del ancla
-- [ ] Detección de entrada del dulce al radio (sensor circular con `label` propio o chequeo de distancia en `Game.update()`)
-- [ ] Al entrar: crear la cuerda ancla→dulce con la misma lógica de `Rope` (tensión, corte, trozos)
-- [ ] Un solo uso: tras unirse, el círculo se desvanece (alpha decreciente por segundo) y el ancla ya no puede volver a unirse
-- [ ] Que una cuerda automática se pueda cortar igual que una fija
-- [ ] Verificar que `restart()` deja el ancla automática otra vez disponible
+- [x] ~~Leer `autoAnchors` del [formato de `LEVELS`](#formato-de-levels) (radio de detección y `length` de la cuerda que creará)~~
+- [x] ~~Entidad `AutoAnchor` (`entities/auto-anchor.js`): círculo de radio visible alrededor del ancla~~
+- [x] ~~Detección de entrada del dulce al radio (sensor circular con `label` propio o chequeo de distancia en `Game.update()`)~~
+- [x] ~~Al entrar: crear la cuerda ancla→dulce con la misma lógica de `Rope` (tensión, corte, trozos)~~
+- [x] ~~Un solo uso: tras unirse, el círculo se desvanece (alpha decreciente por segundo) y el ancla ya no puede volver a unirse~~
+- [x] ~~Que una cuerda automática se pueda cortar igual que una fija~~
+- [x] ~~Verificar que `restart()` deja el ancla automática otra vez disponible~~
 
 ## 3. Púas (`spike1`–`spike4`)
 
@@ -231,8 +231,8 @@ Los 25 niveles se generan con `tools/convert-maps.py` (pista A).
 
 **Pista B.** Referencia: `Bungee.cs` (`BungeeStretchRedThreshold = 7`). Lo presenta el tutorial del nivel 12.
 
-- [ ] Medir el estiramiento de cada cuerda (distancia actual − `length`)
-- [ ] Interpolar el color de la cuerda hacia rojo cuando supera el umbral
+- [x] ~~Medir el estiramiento de cada cuerda (distancia actual − `length`)~~
+- [x] ~~Interpolar el color de la cuerda hacia rojo cuando supera el umbral~~
 
 ## 5. Ajuste de física al original
 
@@ -331,7 +331,7 @@ Fase 0:
 
 Pistas B, C y E (cada una dibuja lo suyo):
 
-- [ ] Anclas fijas y automáticas (`obj_hook`, `obj_hook_chain`, `obj_hook_auto_chain`) — pista B
+- [x] ~~Anclas fijas y automáticas (`obj_hook`, `obj_hook_chain`, `obj_hook_auto_chain`) — pista B~~
 - [ ] Púas (`obj_spikes`) — pista C
 - [ ] HUD y pausa (`hud_ui`, `menu_pause`, `obj_pause`) — pista E
 - [ ] Menú de niveles y botones (`menu_level_ui`, `menu_buttons`, `menu_bgr`, `menu_popup`) — pista E
@@ -377,7 +377,7 @@ Sonido ([referencia-dx.md §8](referencia-dx.md#8-sonido)) — **pista D**, salv
 
 Efectos y dibujo:
 
-- [ ] Cuerda dibujada con los colores alternados de `RopeColorHelper.cs` — pista B
+- [x] ~~Cuerda dibujada con los colores alternados de `RopeColorHelper.cs` — pista B~~
 - [ ] Estela blanca del corte que sigue al ratón (`ClassicFingerTrace.cs`) — fase 2
 - [ ] Pantalla de resultados con conteo animado de bonus (`BoxOpenClose.cs`) — fase 2
 

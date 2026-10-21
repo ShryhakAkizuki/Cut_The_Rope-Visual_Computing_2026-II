@@ -37,6 +37,15 @@ const ROPE_T = {
   curveSegments:  16,
   lineWidth:      10,     // DX: Bungee.lineWidth
   pieceRadius:    10,
+  // Dibujo como Bungee.DrawBungee y RopeColorHelper (piel por defecto, índice 0)
+  restSegmentLength:   105,  // BungeeRestLength: largo de reposo de cada tramo
+  stretchRedThreshold: 7,    // BungeeStretchRedThreshold: px de más por tramo para ponerse roja
+  samplesPerSegment:   4,    // BungeeDrawSamplePoints
+  stripeSamples:       3,    // muestras por franja de color
+  color1: [121, 78, 47],     // RGBA(0.475, 0.305, 0.185)
+  color2: [172, 112, 70],    // RGBA(0.676, 0.44, 0.276)
+  shadeFactor1: 0.4,         // extremo oscuro del degradado (lado del ancla)
+  shadeFactor2: 0.45,
 };
 
 // Cámara vertical para mapas más altos que VIEW (Camera2D y UpdateCameraTracking de DX)
@@ -53,8 +62,13 @@ const CAMERA_T = {
 };
 
 // Constantes de cada pista de la fase 1; cada una solo edita su bloque.
-// [autocuerdas] pista B
-const AUTO_ROPE_T = {};
+// [autocuerdas] pista B (AutoRadiusSource.cs y Grab.DrawBack de DX)
+const AUTO_ROPE_T = {
+  grabPadding:       42,               // CandyGrabPadding (modelo de PC): margen del radio y largo extra de la cuerda
+  fadeRatePerSecond: 1.5,              // alpha que pierde el círculo por segundo tras unirse
+  circleColor:       [51, 128, 230],   // RGBA(0.2, 0.5, 0.9)
+  circleLineWidth:   6,                // DrawGrabCircle: semiancho 3
+};
 
 // [púas] pista C (incluye el Mover)
 const SPIKES_T = {
