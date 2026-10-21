@@ -14,10 +14,10 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 > Esta sección es lo primero que se lee al iniciar una sesión. Mantenerla al día cada vez que cambie la fase o se cierre una decisión.
 
-- **Fase actual:** 1 — pistas en paralelo (lanzadas el 2026-10-21 desde `camilo` en `789d0df`).
+- **Fase actual:** 2 — integración. La fase 1 terminó el 2026-10-21: las 6 pistas están fusionadas en `camilo` (A → C → B → F → E → D).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B, F, E.
-- **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
+- **Siguiente:** las tareas de la [Fase 2](#fase-2--integración-secuencial-o-23-agentes-con-archivos-separados). Antes, el usuario prueba a mano el juego integrado. Se pueden repartir en 2–3 agentes con archivos separados: sprites de entidades (§8), sonido (§11) y tutoriales por nivel (§7); el ajuste de física (§5) va después de los sprites.
+- **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); hojas en `src/assets/images/`, sonidos en `src/assets/sounds/` y fuente en `src/assets/fonts/`.
 
 ---
 
@@ -241,6 +241,8 @@ Los 25 niveles se generan con `tools/convert-maps.py` (pista A).
 - [ ] Burbuja: pasar de fuerza constante + `frictionAir` a impulso hacia arriba con amortiguación (`BubbleImpulseY = -40`, `BubbleImpulseDamping = 14`)
 - [ ] Revisar que la burbuja capture al dulce al tocarla (`BubbleCaptureRadius`) y no solo por colisión exacta
 - [ ] Calibrar `stiffness`/`damping` de las cuerdas para que el balanceo se parezca al original
+- [ ] Con dos cuerdas tirando en contra, que el estiramiento se reparta entre las dos (con `stiffness` 1 una sola carga todo; con 0,5 se reparte) — informe de la pista B
+- [ ] Radio del dulce contra las púas: DX usa 15 y aquí choca con `CANDY_RADIUS` 54, así que el pasillo del nivel 16 queda en ~180 px en vez de ~260 — informe de la pista C
 
 ## 6. Los 25 niveles
 
@@ -305,6 +307,7 @@ Infraestructura (pista F):
 
 Contenido por nivel (fase 2):
 
+- [ ] Fuente del texto: asignar `Tutorial.font` (en DX los tutoriales usan SmallFont; la pista E dejó las fuentes bitmap en `ui/fonts.js`). Con la fuente por defecto, en el nivel 1 la última línea se monta sobre las flechas
 - [ ] Nivel 1 — "Desliza el dedo para cortar la cuerda." / "Haz llegar el caramelo hasta Om Nom." + dedo deslizando + flechas
 - [ ] Nivel 2 — "Consigue tantas estrellas como puedas."
 - [ ] Nivel 5 — "Haz estallar la burbuja con el dedo" / "Las burbujas hacen que el caramelo se eleve."
@@ -370,10 +373,10 @@ Por la política de usar todo lo que se pueda del DX. Detalle y referencias en [
 
 Sonido ([referencia-dx.md §8](referencia-dx.md#8-sonido)) — **pista D**, salvo la conexión de eventos (fase 2):
 
-- [ ] Copiar a `src/assets/sounds/` los efectos de la Caja 1 y la música desde `sounds/` del archivo de descarga (convertir a OGG/MP3 solo si pesan demasiado)
-- [ ] Módulo de audio con Web Audio (`core/audio.js`) y API `Sound.play(nombre)`
-- [ ] Música de menú y de juego, con botón para silenciar
-- [ ] Desbloquear el audio con el primer clic (los navegadores bloquean el sonido automático)
+- [x] ~~Copiar a `src/assets/sounds/` los efectos de la Caja 1 y la música desde `sounds/` del archivo de descarga (convertir a OGG/MP3 solo si pesan demasiado)~~ (21 WAV + 2 músicas en MP3; 2,8 MB)
+- [x] ~~Módulo de audio con Web Audio (`core/audio.js`) y API `Sound.play(nombre)`~~ (tabla nombre → archivo → evento al principio de `audio.js`)
+- [ ] Música de menú y de juego, con botón para silenciar (pista D dejó `Sound.playMusic` y `Sound.toggleMute`; falta el botón en la UI y arrancar cada música según el estado — fase 2)
+- [x] ~~Desbloquear el audio con el primer clic (los navegadores bloquean el sonido automático)~~
 - [ ] Conectar los eventos: corte, autocuerda, estrellas, burbuja, dulce roto, Om Nom, victoria, botones y pausa — fase 2
 
 Efectos y dibujo:

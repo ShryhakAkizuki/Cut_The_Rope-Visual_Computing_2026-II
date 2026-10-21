@@ -92,7 +92,42 @@ const SPIKES_T = {
 };
 
 // [sonido] pista D
-const AUDIO_T = {};
+// Archivos de assets/sounds/ (efectos WAV del DX tal cual; música FLAC del DX pasada a MP3 de 128 kbps).
+// Los nombres cortos son los que recibe Sound.play()/Sound.playMusic(); la tabla de eventos está en core/audio.js.
+const AUDIO_T = {
+  basePath: 'assets/sounds/',
+  sfx: {
+    cut1:         'rope_bleak_1.wav',
+    cut2:         'rope_bleak_2.wav',
+    cut3:         'rope_bleak_3.wav',
+    cut4:         'rope_bleak_4.wav',
+    ropeGet:      'rope_get.wav',
+    star1:        'star_1.wav',
+    star2:        'star_2.wav',
+    star3:        'star_3.wav',
+    bubble:       'bubble.wav',
+    bubbleBreak:  'bubble_break.wav',
+    candyBreak:   'candy_break.wav',
+    omnomOpen:    'monster_open.wav',
+    omnomClose:   'monster_close.wav',
+    omnomChew:    'monster_chewing.wav',
+    omnomSad:     'monster_sad.wav',
+    omnomGreet:   'monster_greeting.wav',
+    omnomExcited: 'monster_excited.wav',
+    win:          'win.wav',
+    tap:          'tap.wav',
+    pauseDown:    'pause_down.wav',
+    pauseUp:      'pause_up.wav',
+  },
+  music: {
+    menu: 'menu_music.mp3',
+    game: 'game_music.mp3',
+  },
+  sfxVolume:   1.0,
+  musicVolume: 0.7,
+  musicFadeMs: 250,           // fundido al parar o cambiar de pista (evita el chasquido)
+  storageKey:  'ctr_muted_v1',
+};
 
 // [tutoriales] pista F
 // Valores por defecto de DX (TutorialPromptLoader.Parse) cuando el nodo no los trae; tiempos en segundos.
