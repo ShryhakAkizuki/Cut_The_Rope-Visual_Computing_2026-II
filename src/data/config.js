@@ -95,7 +95,21 @@ const SPIKES_T = {
 const AUDIO_T = {};
 
 // [tutoriales] pista F
-const TUTORIAL_T = {};
+// Valores por defecto de DX (TutorialPromptLoader.Parse) cuando el nodo no los trae; tiempos en segundos.
+// Texto con la configuración de SmallFont (Resources.cs): alto 72, interlineado 5, margen superior 25, negro.
+const TUTORIAL_T = {
+  fadeIn:       1,
+  textDuration: 5,      // `duration` por defecto de tutorialText
+  signDuration: 5.2,    // `duration` por defecto de tutorialNN
+  fadeOut:      0.5,
+  moveSpeed:    100,    // px/s de VIEW, sin escalar (TutorialMotion)
+  forever:      -1,     // `duration` o `repeat` = -1: no se desvanece / se repite sin fin
+  fontHeight:   72,     // ascendente + descendente en px de VIEW
+  lineSpacing:  5,
+  topSpacing:   25,
+  textColor:    [0, 0, 0],
+  signSheet:    'tutorial_signs',
+};
 
 // Radios de colisión en el espacio de VIEW (cajas de GameScene.BoundingBoxes.cs y STAR_RADIUS de DX)
 const CANDY_RADIUS  = 54;

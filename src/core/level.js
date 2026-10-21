@@ -62,7 +62,7 @@ class Level {
 
     // [tutoriales] pista F
     for (const t of d.tutorials || []) {
-      this.tutorials.push(new Tutorial(t));
+      this.tutorials.push(new Tutorial(t, game));
     }
 
     Matter.Composite.add(game.world, [

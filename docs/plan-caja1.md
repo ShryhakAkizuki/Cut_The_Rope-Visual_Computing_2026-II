@@ -16,7 +16,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 - **Fase actual:** 1 — pistas en paralelo (lanzadas el 2026-10-21 desde `camilo` en `789d0df`).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B.
+- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B, F.
 - **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
@@ -296,12 +296,12 @@ Objetos con `path`: las dos púas del nivel 22 y una estrella del nivel 24 (pist
 
 Infraestructura (pista F):
 
-- [ ] Leer `tutorials` del [formato de `LEVELS`](#formato-de-levels)
-- [ ] Overlay `Tutorial` (`ui/tutorial.js`) que dibuja texto con ajuste de línea (`width`) y signos
-- [ ] Aparición/desaparición con fade y `duration`
-- [ ] Disparador `showOn: 'bubbled'` + `inArea` (nivel 5: el tutorial sale cuando el dulce queda en una burbuja dentro del área); sin `showOn`, al empezar el nivel
-- [ ] Animación del dedo que desliza (`tutorial10`: `path`, `moveSpeed`, `moveDelay`, `repeat`, `fadeIn`/`fadeOut`)
-- [ ] Ocultar tutoriales al ganar/perder y reiniciarlos con `restart()`
+- [x] ~~Leer `tutorials` del [formato de `LEVELS`](#formato-de-levels)~~
+- [x] ~~Overlay `Tutorial` (`ui/tutorial.js`) que dibuja texto con ajuste de línea (`width`) y signos~~
+- [x] ~~Aparición/desaparición con fade y `duration`~~
+- [x] ~~Disparador `showOn: 'bubbled'` + `inArea` (nivel 5: el tutorial sale cuando el dulce queda en una burbuja dentro del área); sin `showOn`, al empezar el nivel~~
+- [x] ~~Animación del dedo que desliza (`tutorial10`: `path`, `moveSpeed`, `moveDelay`, `repeat`, `fadeIn`/`fadeOut`)~~
+- [x] ~~Ocultar tutoriales al ganar/perder y reiniciarlos con `restart()`~~
 
 Contenido por nivel (fase 2):
 
@@ -345,6 +345,7 @@ Fase 2:
 - [ ] Om Nom estático (`char_animations`, un cuadro) y su soporte (`char_supports`)
 - [ ] Estrellas (`obj_star_idle`, primer cuadro)
 - [ ] Burbujas (`obj_bubble`)
+- [ ] Orden de dibujo como DX en `Level.draw`: tutoriales encima de Om Nom y debajo de burbujas, estrellas, cuerdas y dulce (hoy van al fondo; obliga a dibujar a Om Nom antes que las cuerdas)
 
 ## 9. Pantalla de carga
 
