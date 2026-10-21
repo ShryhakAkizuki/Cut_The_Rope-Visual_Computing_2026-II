@@ -10,15 +10,17 @@ class Game {
     this.menu = new LevelMenu();
     this.progress = new ProgressStore(levels);
 
-    this.restartButton = new Button(12, VIEW.h - 46, 98, 34, 'Reiniciar');
+    this.restartButton = new Button(30, VIEW.h - 114, 240, 84, 'Reiniciar');
     this.hud = new Hud();
     this.winPanel = new WinPanel(VIEW.w);
 
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
-    this.engine.gravity.y = 1;
+    // Con gravity.scale = 0.001, Matter aplica gravity.y × 1000 px/s².
+    this.engine.gravity.y = TUNING.gravityY / 1000;
 
     this.level = null;
+    this.camera = new Camera();
 
     this.starsCollected = 0;
     this.time = 0;
@@ -44,11 +46,6 @@ class Game {
     });
   }
 
-  setViewport (w, h) {
-    this.view.w = w;
-    this.view.h = h;
-  }
-
   get candy () { return this.level ? this.level.candy : null; }
   get omnom () { return this.level ? this.level.omnom : null; }
   get ropes () { return this.level ? this.level.ropes : []; }
@@ -67,6 +64,7 @@ class Game {
     if (this.level) this.level.clear(this);
     this.level = new Level(this.levels[idx]);
     this.level.build(this);
+    this.camera.start(this.level.map, this.candy.body.position);
 
     this.starsCollected = 0;
     this.time = 0;
@@ -99,7 +97,8 @@ class Game {
     if (this.state === STATE.LOSE) return;
     if (this.state === STATE.PAUSED) return;
 
-    this.time += dt / 1000;
+    // Como en DX, el reloj no corre durante el paneo inicial de la cámara.
+    if (!this.camera.panning) this.time += dt / 1000;
     if (this.candyBubble()) {
       const b = this.candy.body;
       const g = this.engine.gravity;
@@ -107,6 +106,7 @@ class Game {
     }
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
+    this.camera.update(dt / 1000, this.candy.body.position);
 
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
       this.state = STATE.LOSE;
@@ -163,8 +163,10 @@ class Game {
   }
 
   onCutAttempt (p1, p2) {
-    if (this.state !== STATE.PLAYING) return;
-    for (const rope of this.ropes) rope.tryCut(p1, p2);
+    if (this.state !== STATE.PLAYING || this.camera.blocksInput) return;
+    const w1 = this.camera.toWorld(p1);
+    const w2 = this.camera.toWorld(p2);
+    for (const rope of this.ropes) rope.tryCut(w1, w2);
   }
 
   onInput (px, py) {
@@ -180,8 +182,13 @@ class Game {
     }
 
     if (this.state === STATE.PLAYING) {
+      if (this.camera.blocksInput) {
+        this.camera.hurry();
+        return;
+      }
+      const w = this.camera.toWorld({ x: px, y: py });
       const bubble = this.candyBubble();
-      if (bubble && bubble.contains(px, py)) this.popBubble();
+      if (bubble && bubble.contains(w.x, w.y)) this.popBubble();
     } else if (this.state === STATE.WIN) {
       const b = this.winPanel.buttons;
       if (b.replay.contains(px, py)) this.restart();
@@ -220,7 +227,7 @@ class Game {
   }
 
   isCandyOffscreen () {
-    return this.candy ? this.candy.isOffscreen(this.view.w, this.view.h) : false;
+    return this.candy ? this.candy.isOutOfMap(this.level.bounds()) : false;
   }
 
   draw (px, py) {
@@ -231,7 +238,12 @@ class Game {
       return;
     }
 
-    if (this.level) this.level.draw();
+    if (this.level) {
+      push();
+      translate(0, -this.camera.y);
+      this.level.draw();
+      pop();
+    }
 
     const rb = this.restartButton;
     this.hud.draw({
@@ -239,7 +251,7 @@ class Game {
       starsTotal: this.stars.length,
       time: this.time,
       hintText: 'arrastra para cortar · R reinicia · P pausa',
-      hintTextPos: { x: rb.x + rb.w + 12, y: rb.y + rb.h / 2 + 4 },
+      hintTextPos: { x: rb.x + rb.w + 30, y: rb.y + rb.h / 2 + 10 },
     });
 
     const pointer = { x: px, y: py };

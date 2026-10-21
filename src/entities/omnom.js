@@ -18,7 +18,7 @@ class OmNom {
     draw () {
         noFill();
         stroke(255, 200, 80);
-        strokeWeight(4);
+        strokeWeight(10);
         circle(this.x, this.y, this.radius * 2);
     }
 }

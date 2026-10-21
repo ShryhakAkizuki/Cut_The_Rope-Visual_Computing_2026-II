@@ -21,6 +21,7 @@
   <script language="javascript" type="text/javascript" src="ui/shapes.js"></script>
   <script language="javascript" type="text/javascript" src="ui/overlays.js"></script>
   <script language="javascript" type="text/javascript" src="core/level.js"></script>
+  <script language="javascript" type="text/javascript" src="core/camera.js"></script>
   <script language="javascript" type="text/javascript" src="core/progress.js"></script>
   <script language="javascript" type="text/javascript" src="core/rules.js"></script>
   <script language="javascript" type="text/javascript" src="core/game.js"></script>
@@ -35,9 +36,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* background: #000; */
+      overflow: hidden;
+      background: #000;
     }
     canvas {
+      display: block;
       margin: 0;
       image-rendering: pixelated;
     }

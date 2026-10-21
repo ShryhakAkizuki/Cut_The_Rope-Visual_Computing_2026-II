@@ -3,7 +3,7 @@ class Star {
     constructor (x, y) {
         this.x = x;
         this.y = y;
-        this.radius = 20;
+        this.radius = STAR_RADIUS;
         this.body = null;
         this.collected = false;
     }

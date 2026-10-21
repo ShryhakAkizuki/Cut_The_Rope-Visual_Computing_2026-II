@@ -19,7 +19,7 @@ Deploy: cada push a `main` dispara [.github/workflows/deploy.yml](.github/workfl
 
 ### Carga por `<script>` globales, sin módulos
 
-No hay `import`/`export`: cada archivo declara clases/constantes globales y [src/index.html](src/index.html) los carga en orden de dependencia (`data/` → `entities/` → `ui/` → `core/level.js` → `progress.js` → `rules.js` → `game.js` → `main.js`). **Un archivo nuevo debe agregarse a ese bloque de `<script>` en la posición correcta**, o sus globales no existirán cuando se usen.
+No hay `import`/`export`: cada archivo declara clases/constantes globales y [src/index.html](src/index.html) los carga en orden de dependencia (`data/` → `entities/` → `ui/` → `core/level.js` → `camera.js` → `progress.js` → `rules.js` → `game.js` → `main.js`). **Un archivo nuevo debe agregarse a ese bloque de `<script>` en la posición correcta**, o sus globales no existirán cuando se usen.
 
 ### Capas
 
@@ -27,7 +27,7 @@ No hay `import`/`export`: cada archivo declara clases/constantes globales y [src
 - [src/core/game.js](src/core/game.js) — `Game`: máquina de estados (`STATE`: `MENU`, `PLAYING`, `PAUSED`, `WIN`, `LOSE`), dueño del `Matter.Engine`, listener único de `collisionStart`, reloj, puntaje, burbujas y reparto de clics según estado. Delega UI a `Hud`/`WinPanel`/`Banner` ([src/ui/overlays.js](src/ui/overlays.js)), progreso a `ProgressStore` ([src/core/progress.js](src/core/progress.js), `localStorage` key `ctr_progress_v1`) y puntaje a `calculateScore()` ([src/core/rules.js](src/core/rules.js)).
 - [src/core/level.js](src/core/level.js) — `Level` traduce un objeto de `LEVELS` en entidades, las añade al mundo y las dibuja. `clear()` vacía el mundo entero (`Composite.clear`); todo reinicio pasa por `restart()` → `startLevel(idx)`, que reconstruye el nivel desde cero.
 - [src/entities/](src/entities/) — cada entidad envuelve un `Body` de Matter y sabe dibujarse; no toma decisiones de juego (las decide `Game`).
-- [src/data/](src/data/) — `config.js` centraliza constantes (`VIEW` 390×844, `COLORS`, `STATE`, `TUNING`, `ROPE_T`, `BUBBLE_RADIUS`, `PROGRESS_KEY`); `levels.js` contiene `LEVELS`, solo datos.
+- [src/data/](src/data/) — `config.js` centraliza constantes (`VIEW` 1920×1440, `MAP_SCALE`, `COLORS`, `STATE`, `TUNING`, `ROPE_T`, `CAMERA_T`, radios de colisión `*_RADIUS`, `PROGRESS_KEY`); `levels.js` contiene `LEVELS`, solo datos.
 
 ### Convenciones clave
 
@@ -63,7 +63,7 @@ Replicar las funcionalidades básicas del primer mundo del juego original, sin c
 
 Referencia de comportamiento: el decomp en `/home/camilo/Work/cuttherope-dx` (C#). Mapas de la caja en `content/maps/1_1.xml` … `1_25.xml` (tamaño declarado en `<map width height>` de la capa `settings`: casi todos miden 320×480, pero los niveles 2, 3, 10, 13, 17, 22 y 24 miden 640×480 y el 15 mide 320×960); constantes en `src/CutTheRopeDX.Core/Framework/PhysicsConstants.cs`; lógica en `src/CutTheRopeDX.Core/GameMain/` (`Bungee.cs`, `Bubble.cs`, `Grab.cs`, `AutoRadiusSource.cs`, `Spikes.cs`).
 
-**Coordenadas (decidido en D1, sin implementar):** se adopta el espacio de la versión DX, con el mapa ×3 (`mapScale = 3`). `VIEW` será fijo de 1920×1440 (4:3), escalado a la ventana manteniendo la proporción. Conversión: `x * 3 + offsetX`, `y * 3`, `length * 3`, `radius * 3`, con `offsetX = (1920 − anchoMapa × 3) / 2` (480 para mapas de 320, 0 para los de 640). Solo el nivel 15 (960×2880) usa cámara vertical. Mientras no se implemente, el código sigue en 390×844. La cuerda se queda como `Constraint` de Matter (D2).
+**Coordenadas (D1, implementado):** se adopta el espacio de la versión DX, con el mapa ×3 (`MAP_SCALE = 3`). `VIEW` es fijo de 1920×1440 (4:3); `main.js` escala el canvas a la ventana con `viewScale` y convierte el ratón con `toView()`, así que `Game` siempre trabaja en coordenadas de `VIEW`. Conversión: `x * 3 + offsetX`, `y * 3`, `length * 3`, `radius * 3`, con `offsetX = (1920 − anchoMapa × 3) / 2` (480 para mapas de 320, 0 para los de 640). Solo el nivel 15 (960×2880) usa la cámara vertical de [src/core/camera.js](src/core/camera.js); `Game` pasa la entrada por `camera.toWorld()` y dibuja el nivel con `translate(0, -camera.y)`. La cuerda se queda como `Constraint` de Matter (D2).
 
 Mecánicas de la Caja 1 según los mapas:
 - `grab` con `radius="-1"`: cuerda fija con `length` (ya implementada).

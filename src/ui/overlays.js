@@ -3,20 +3,20 @@ class Hud {
   draw (state) {
     noStroke();
     fill(220);
-    textSize(14);
+    textSize(36);
     textAlign(LEFT, TOP);
     const stars = state.starsTotal ? `Estrellas ${state.starsCollected}/${state.starsTotal} · ` : '';
-    text(`${stars}${state.time.toFixed(1)} s`, 12, 12);
+    text(`${stars}${state.time.toFixed(1)} s`, 30, 30);
     textAlign(LEFT, BASELINE);
 
     noStroke();
     fill(150);
-    textSize(12);
+    textSize(30);
     text(state.hintText, state.hintTextPos.x, state.hintTextPos.y);
   }
 }
 
-const WIN_BUTTON = { w: 100, h: 40, gap: 12 };
+const WIN_BUTTON = { w: 260, h: 100, gap: 30 };
 
 class WinPanel {
 
@@ -32,12 +32,12 @@ class WinPanel {
   }
 
   layout (view, starsTotal) {
-    let y = view.h / 2 - 130;
-    y += 70;
-    if (starsTotal > 0) y += 56;
-    y += 30;
-    y += 36;
-    y += 36;
+    let y = view.h / 2 - 325;
+    y += 175;
+    if (starsTotal > 0) y += 140;
+    y += 75;
+    y += 90;
+    y += 90;
     for (const button of Object.values(this.buttons)) {
       button.y = y;
     }
@@ -50,41 +50,41 @@ class WinPanel {
     rect(0, 0, view.w, view.h);
 
     const cx = view.w / 2;
-    let y = view.h / 2 - 130;
+    let y = view.h / 2 - 325;
 
     textAlign(CENTER, CENTER);
     fill(255);
-    textSize(48);
+    textSize(120);
     text('¡Ganaste!', cx, y);
-    y += 70;
+    y += 175;
 
     const total = state.starsTotal;
     if (total > 0) {
-      const size = 40;
-      const gap = 14;
+      const size = 100;
+      const gap = 35;
       const rowWidth = total * size + (total - 1) * gap;
       const x0 = cx - rowWidth / 2;
-      strokeWeight(3);
+      strokeWeight(7);
       stroke(COLORS.star);
       for (let i = 0; i < total; i++) {
         if (i < state.starsCollected) fill(COLORS.star);
         else noFill();
-        rect(x0 + i * (size + gap), y - size / 2, size, size, 6);
+        rect(x0 + i * (size + gap), y - size / 2, size, size, 15);
       }
       noStroke();
-      y += 56;
+      y += 140;
     }
 
     fill(230);
-    textSize(18);
+    textSize(45);
     text(`Tiempo: ${state.time.toFixed(1)} s`, cx, y);
-    y += 30;
+    y += 75;
     fill(200);
-    textSize(15);
+    textSize(38);
     text(`Estrellas: ${state.starBonus} · Bonus tiempo: ${state.timeBonus}`, cx, y);
-    y += 36;
+    y += 90;
     fill(COLORS.star);
-    textSize(26);
+    textSize(65);
     text(`Puntaje: ${state.score}`, cx, y);
     textAlign(LEFT, BASELINE);
 
@@ -104,11 +104,11 @@ class Banner {
     textAlign(CENTER, CENTER);
     noStroke();
     fill(255);
-    textSize(48);
-    text(title, view.w / 2, view.h / 2 - 24);
+    textSize(120);
+    text(title, view.w / 2, view.h / 2 - 60);
     fill(200);
-    textSize(16);
-    text(subtitle, view.w / 2, view.h / 2 + 32);
+    textSize(40);
+    text(subtitle, view.w / 2, view.h / 2 + 80);
     textAlign(LEFT, TOP);
   }
 }

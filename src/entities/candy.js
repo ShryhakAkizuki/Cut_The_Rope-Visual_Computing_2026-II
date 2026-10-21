@@ -24,10 +24,13 @@ class Candy {
     circle(pos.x, pos.y, this.radius * 2);
   }
 
-  isOffscreen (w, h) {
+  // Como PointOutOfScreen de DX: margen vertical fijo y uno horizontal del ancho de VIEW.
+  isOutOfMap (bounds) {
     if (!this.body) return false;
     const pos = this.body.position;
-    const m = this.radius;
-    return pos.x < -m || pos.x > w + m || pos.y < -m || pos.y > h + m;
+    return pos.y < bounds.y - TUNING.loseMarginTop
+      || pos.y > bounds.y + bounds.h + TUNING.loseMarginBottom
+      || pos.x < bounds.x - VIEW.w
+      || pos.x > bounds.x + bounds.w + VIEW.w;
   }
 }

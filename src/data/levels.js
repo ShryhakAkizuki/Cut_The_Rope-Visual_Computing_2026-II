@@ -1,59 +1,76 @@
+// Provisional: cuatro mapas del DX convertidos a mano (×3 y offsetX) mientras la pista A
+// genera los 25 con tools/convert-maps.py. Las autoAnchors del 15 aún no se construyen (pista B).
 const LEVELS = [
   {
     name:    'Nivel 1',
-    time:    30,
-    candy:   { x: 195, y: 200, radius: 18 },
+    map:     { w: 960, h: 1440 },
+    candy:   { x: 954, y: 441 },
+    omnom:   { x: 963, y: 1281 },
     anchors: [
-      { x: 195, y: 80 },
+      { x: 957, y: 135, length: 270 },
     ],
     stars:   [
-      { x: 195, y: 320 },
-      { x: 195, y: 420 },
-      { x: 195, y: 520 },
+      { x: 966, y: 690 },
+      { x: 963, y: 885 },
+      { x: 963, y: 1083 },
     ],
-    omnom:   { x: 195, y: 640, radius: 40 },
   },
   {
     name:    'Nivel 2',
-    time:    30,
-    candy:   { x: 90, y: 180, radius: 18 },
+    map:     { w: 1920, h: 1440 },
+    candy:   { x: 864, y: 609 },
+    omnom:   { x: 1449, y: 1257 },
     anchors: [
-      { x: 77,  y: 80 },
-      { x: 184, y: 80, length: 290 },
-      { x: 297, y: 80, length: 460 },
+      { x: 813, y: 210, length: 270 },
+      { x: 1143, y: 207, length: 510 },
+      { x: 1482, y: 207, length: 960 },
     ],
     stars:   [
-      { x: 77, y: 357 },
-      { x: 290, y: 357 },
-      { x: 100, y: 500 },
+      { x: 819, y: 750 },
+      { x: 816, y: 1107 },
+      { x: 1497, y: 750 },
     ],
-    omnom:   { x: 286, y: 640, radius: 40 },
   },
   {
-    name:    'Nivel 3',
-    candy:   { x: 195, y: 260, radius: 18 },
+    name:    'Nivel 5',
+    map:     { w: 960, h: 1440 },
+    candy:   { x: 783, y: 714 },
+    omnom:   { x: 1137, y: 1293 },
     anchors: [
-      { x: 70,  y: 120 },
-      { x: 195, y: 70  },
-      { x: 320, y: 120 },
+      { x: 768, y: 417, length: 270 },
+      { x: 1137, y: 756, length: 420 },
     ],
-    omnom:   { x: 195, y: 680, radius: 40 },
-  },
-  {
-    name:    'Nivel 4',
-    time:    30,
-    candy:   { x: 195, y: 460, radius: 18 },
-    anchors: [
-      { x: 195, y: 380 },
+    stars:   [
+      { x: 786, y: 978 },
+      { x: 1131, y: 627 },
+      { x: 1131, y: 222 },
     ],
     bubbles: [
-      { x: 195, y: 560 },
+      { x: 777, y: 1173 },
+    ],
+  },
+  {
+    name:    'Nivel 15',
+    map:     { w: 960, h: 2880 },
+    candy:   { x: 963, y: 2526 },
+    omnom:   { x: 966, y: 198 },
+    anchors: [
+      { x: 966, y: 2253, length: 150 },
+    ],
+    autoAnchors: [
+      { x: 732, y: 2112, radius: 225, length: 300 },
+      { x: 1191, y: 1725, radius: 225, length: 300 },
+      { x: 1191, y: 963, radius: 225, length: 300 },
+      { x: 759, y: 1344, radius: 225, length: 300 },
+      { x: 774, y: 585, radius: 225, length: 210 },
     ],
     stars:   [
-      { x: 195, y: 300 },
-      { x: 195, y: 220 },
-      { x: 195, y: 140 },
+      { x: 963, y: 393 },
+      { x: 960, y: 909 },
+      { x: 960, y: 1686 },
     ],
-    omnom:   { x: 195, y: 740, radius: 40 },
+    bubbles: [
+      { x: 963, y: 2718 },
+    ],
   },
 ];

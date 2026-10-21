@@ -6,7 +6,7 @@ function drawStarShape (x, y, outer, filled) {
   } else {
     noFill();
     stroke(COLORS.star);
-    strokeWeight(2);
+    strokeWeight(4);
   }
   beginShape();
   for (let i = 0; i < 10; i++) {

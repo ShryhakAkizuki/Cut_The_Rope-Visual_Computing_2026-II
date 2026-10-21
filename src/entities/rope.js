@@ -88,12 +88,12 @@ class Rope {
     createPiece (point) {
         const world = this.game.world;
 
-        const upperBody = Matter.Bodies.circle(point.x, point.y, 5, {
+        const upperBody = Matter.Bodies.circle(point.x, point.y, ROPE_T.pieceRadius, {
             label: 'rope-piece',
             isSensor: true,
             frictionAir: 0.02
         });
-        const lowerBody = Matter.Bodies.circle(point.x, point.y, 5, {
+        const lowerBody = Matter.Bodies.circle(point.x, point.y, ROPE_T.pieceRadius, {
             label: 'rope-piece',
             isSensor: true,
             frictionAir: 0.02
@@ -142,7 +142,7 @@ class Rope {
     draw () {
         if (!this.isCut && this.constraint) {
             stroke(COLORS.rope);
-            strokeWeight(3);
+            strokeWeight(ROPE_T.lineWidth);
             noFill();
             beginShape();
             for (const p of this.points()) vertex(p.x, p.y);
@@ -158,7 +158,7 @@ class Rope {
             const a = this.anchor.body.position;
 
             stroke(COLORS.rope[0], COLORS.rope[1], COLORS.rope[2], alpha);
-            strokeWeight(3);
+            strokeWeight(ROPE_T.lineWidth);
             line(a.x, a.y, u.x, u.y);
             line(l.x, l.y, c.x, c.y);
         }

@@ -43,7 +43,7 @@ class Bubble {
         if (this.popped) return;
         const c = this.center();
         stroke(150, 200, 255, 180);
-        strokeWeight(2);
+        strokeWeight(5);
         fill(80, 160, 255, 90);
         circle(c.x, c.y, this.radius * 2);
     }

@@ -64,7 +64,7 @@ Una sola sesión, sin agentes en paralelo: todo lo que sigue cambia archivos que
 
 - [x] ~~Cerrar D1, D2 y D3~~ (cerradas el 2026-10-21)
 - [x] ~~Descargar `ctrdx-assets-vk.zip` fuera del repo~~ (hecho 2026-10-21: extraído sobre `/home/camilo/Work/cuttherope-dx/content/`, zip en `/home/camilo/Work/`) — [referencia-dx.md §1](referencia-dx.md#1-cómo-conseguir-el-contenido-del-dx)
-- [ ] Sección 1 completa (coordenadas y escala, según D1)
+- [x] ~~Sección 1 completa (coordenadas y escala, según D1)~~ (comprobada por el usuario el 2026-10-21)
 - [ ] Confirmar el [formato de `LEVELS`](#formato-de-levels) (con los ajustes que dicte D1) y quitar la palabra "borrador"
 - [ ] Copiar a `src/assets/` las hojas de la Caja 1 y sus atlas, y crear la utilidad de sprites con la carga en `preload()` (primeras tareas de la §8)
 - [ ] Esqueleto de integración, para que las pistas no choquen:
@@ -184,14 +184,16 @@ Tareas:
 
 - [x] ~~Elegir la transformación mapa → `VIEW`~~ (decisión: ×3 con `VIEW` 960×1440)
 - [x] ~~Revisar la decisión anterior según D1 (mapas de 640×480 y 320×960)~~ (D1 cerrada el 2026-10-21)
-- [ ] `config.js`: cambiar `VIEW` a 1920×1440 y añadir `MAP_SCALE = 3`
-- [ ] Cámara vertical para el nivel 15 (seguimiento del dulce, límites del mapa y paneo inicial); conversión del ratón a coordenadas del mundo solo en ese nivel
-- [ ] `main.js`: escalar el canvas para que quepa en la ventana (CSS o `resizeCanvas` + factor) y comprobar que `mouseX`/`mouseY` siguen llegando en coordenadas de `VIEW`
-- [ ] Reescalar los tamaños fijos para 390×844: `BUBBLE_RADIUS`, radios del dulce y de OmNom, radios de estrella y ancla en `entities/`, grosor de la cuerda
-- [ ] Reubicar la UI: botón Reiniciar (`game.js:13`), `Hud`/`WinPanel`/`Banner` (`ui/overlays.js`), cuadrícula del menú (`ui/level-menu.js`) y tamaños de texto
-- [ ] Gravedad: averiguar en qué espacio está `GravityEarthY = 784` (comentario "9.8 * 80") y calibrar `engine.gravity` para que la caída se sienta como el original
-- [ ] Borde de derrota: usar el tamaño del mapa (`LEVELS[i].map`), no el de `VIEW`, en `isOffscreen` (DX: `GameScene.cs:63-64`)
-- [ ] Actualizar `CLAUDE.md` y `docs/arquitectura-mvp.md` cuando `VIEW` cambie en el código
+- [x] ~~`config.js`: cambiar `VIEW` a 1920×1440 y añadir `MAP_SCALE = 3`~~
+- [x] ~~Cámara vertical para el nivel 15 (seguimiento del dulce, límites del mapa y paneo inicial); conversión del ratón a coordenadas del mundo solo en ese nivel~~ (`core/camera.js`: paneo con aceleración/frenado de `UpdateCameraTracking`, un clic lo acelera, el reloj no corre durante el paneo; con mapas de alto ≤ 1440 la cámara queda fija en 0)
+- [x] ~~`main.js`: escalar el canvas para que quepa en la ventana (CSS o `resizeCanvas` + factor) y comprobar que `mouseX`/`mouseY` siguen llegando en coordenadas de `VIEW`~~ (`resizeCanvas` + `viewScale`; `toView()` convierte el ratón)
+- [x] ~~Reescalar los tamaños fijos para 390×844: `BUBBLE_RADIUS`, radios del dulce y de OmNom, radios de estrella y ancla en `entities/`, grosor de la cuerda~~ (constantes en `config.js` tomadas de `GameScene.BoundingBoxes.cs`, `STAR_RADIUS` y `Bungee.lineWidth`)
+- [x] ~~Reubicar la UI: botón Reiniciar (`game.js:13`), `Hud`/`WinPanel`/`Banner` (`ui/overlays.js`), cuadrícula del menú (`ui/level-menu.js`) y tamaños de texto~~ (escala ×2,5 y menú de 5 columnas; el diseño final es de la pista E)
+- [x] ~~Gravedad: averiguar en qué espacio está `GravityEarthY = 784` (comentario "9.8 * 80") y calibrar `engine.gravity` para que la caída se sienta como el original~~ (en los mapas de la Caja 1 DX usa el modelo de PC, así que 784 px/s² ya están en el espacio ×3; en Matter equivale a `gravity.y = 0.784`)
+- [x] ~~Borde de derrota: usar el tamaño del mapa (`LEVELS[i].map`), no el de `VIEW`, en `isOffscreen` (DX: `GameScene.cs:63-64`)~~ (`Candy.isOutOfMap`, márgenes de 400 arriba y abajo)
+- [x] ~~Actualizar `CLAUDE.md` y `docs/arquitectura-mvp.md` cuando `VIEW` cambie en el código~~ (`CLAUDE.md` hecho; `arquitectura-mvp.md` no se actualiza, por decisión del usuario el 2026-10-21)
+
+Mientras la pista A no genere los 25 niveles, `levels.js` trae los mapas 1, 2, 5 y 15 convertidos a mano.
 
 ## 2. Cuerdas automáticas (`grab` con `radius` de 45 a 80)
 
