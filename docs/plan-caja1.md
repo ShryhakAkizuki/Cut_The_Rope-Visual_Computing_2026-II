@@ -14,9 +14,9 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 > Esta sección es lo primero que se lee al iniciar una sesión. Mantenerla al día cada vez que cambie la fase o se cierre una decisión.
 
-- **Fase actual:** 0 — preparación (sin agentes en paralelo todavía).
+- **Fase actual:** 1 — pistas en paralelo (lanzadas el 2026-10-21 desde `camilo` en `789d0df`).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** las tareas pendientes de la [Fase 0](#fase-0--preparación-secuencial) (esqueleto de integración ya hecho; toca el commit en `camilo`). Al terminar la fase 0 se pueden lanzar las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) en paralelo.
+- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C.
 - **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
@@ -72,8 +72,8 @@ Una sola sesión, sin agentes en paralelo: todo lo que sigue cambia archivos que
   - [x] ~~En `config.js`, un bloque de constantes vacío y con nombre por pista (`AUTO_ROPE_T`, `SPIKES_T`, `AUDIO_T`, `TUTORIAL_T`)~~
   - [x] ~~En `Level.build`, un bucle por cada arreglo nuevo de `LEVELS` (`autoAnchors`, `spikes`, `tutorials`) que llame a un constructor de la pista correspondiente~~ (también se dibujan en `Level.draw`; `Star` ya recibe `path` y `moveSpeed`; los bodies `null` se filtran al añadirlos al mundo)
   - [x] ~~En `Game` (`collisionStart` y `update`), un bloque comentado por pista (`// [púas]`, `// [autocuerdas]`, …) donde cada pista escribe su reacción~~ (labels reservados: `autoAnchor` y `spikes`; getters `autoAnchors`, `spikes` y `tutorials`; `update` ya llama a `Tutorial.update(dt)`)
-- [ ] Commit en la rama base de integración (hoy `camilo`); de ahí salen las ramas de las pistas
-- [ ] Actualizar "Estado actual": fase 1
+- [x] ~~Commit en la rama base de integración (hoy `camilo`); de ahí salen las ramas de las pistas~~ (`789d0df`, 2026-10-21)
+- [x] ~~Actualizar "Estado actual": fase 1~~
 
 ### Fase 1 — pistas en paralelo
 
@@ -198,7 +198,7 @@ Tareas:
 - [x] ~~Borde de derrota: usar el tamaño del mapa (`LEVELS[i].map`), no el de `VIEW`, en `isOffscreen` (DX: `GameScene.cs:63-64`)~~ (`Candy.isOutOfMap`, márgenes de 400 arriba y abajo)
 - [x] ~~Actualizar `CLAUDE.md` y `docs/arquitectura-mvp.md` cuando `VIEW` cambie en el código~~ (`CLAUDE.md` hecho; `arquitectura-mvp.md` no se actualiza, por decisión del usuario el 2026-10-21)
 
-Mientras la pista A no genere los 25 niveles, `levels.js` trae los mapas 1, 2, 5 y 15 convertidos a mano.
+Los 25 niveles se generan con `tools/convert-maps.py` (pista A).
 
 ## 2. Cuerdas automáticas (`grab` con `radius` de 45 a 80)
 
@@ -216,16 +216,16 @@ Mientras la pista A no genere los 25 niveles, `levels.js` trae los mapas 1, 2, 5
 
 **Pista C.** Referencia: `Spikes.cs` (sin botón de rotación ni electrodos), `Framework/Helpers/Mover.cs`. Niveles: 16, 17, 18, 19, 20, 22, 23, 25.
 
-- [ ] Leer `spikes` del [formato de `LEVELS`](#formato-de-levels): `{ x, y, size: 1..4, angle, path?, moveSpeed? }` con `angle` en grados (los mapas usan 0, 90, 80 y 100)
-- [ ] Largo de la barra según `size` (`SpikesQuadWidths` = 212 / 333 / 453 / 566; semialto 5)
-- [ ] Entidad `Spikes` en `entities/spikes.js`: body sensor estático rectangular rotado, `label: 'spikes'`
-- [ ] Dibujo de la barra de púas en p5 (sprite `obj_spikes`)
-- [ ] En `collisionStart`: dulce + púas → destruir el dulce y pasar a `LOSE`
-- [ ] Efecto mínimo de dulce roto (`CandyBreak.cs`: trozos que giran y caen con `CandyBreakGravityY`) antes del banner de derrota
-- [ ] Las cuerdas y los trozos de cuerda no deben colisionar con las púas
-- [ ] `Mover` (`entities/mover.js`): recorrido cíclico por el punto inicial y los offsets de `path` a `moveSpeed × 3,3` px/s, como `Mover.Update`; mueve el body con `Body.setPosition` en `Game.update()`
-- [ ] Púas móviles del nivel 22 (`path="±66,100,"`, `moveSpeed="30"`)
-- [ ] Estrella móvil del nivel 24 (`path="0,100"`, `moveSpeed="40"`) en `entities/star.js`
+- [x] ~~Leer `spikes` del [formato de `LEVELS`](#formato-de-levels): `{ x, y, size: 1..4, angle, path?, moveSpeed? }` con `angle` en grados (los mapas usan 0, 90, 80 y 100)~~
+- [x] ~~Largo de la barra según `size` (`SpikesQuadWidths` = 212 / 333 / 453 / 566; semialto 5)~~
+- [x] ~~Entidad `Spikes` en `entities/spikes.js`: body sensor estático rectangular rotado, `label: 'spikes'`~~
+- [x] ~~Dibujo de la barra de púas en p5 (sprite `obj_spikes`)~~
+- [x] ~~En `collisionStart`: dulce + púas → destruir el dulce y pasar a `LOSE`~~
+- [x] ~~Efecto mínimo de dulce roto (`CandyBreak.cs`: trozos que giran y caen con `CandyBreakGravityY`) antes del banner de derrota~~
+- [x] ~~Las cuerdas y los trozos de cuerda no deben colisionar con las púas~~
+- [x] ~~`Mover` (`entities/mover.js`): recorrido cíclico por el punto inicial y los offsets de `path` a `moveSpeed × 3,3` px/s, como `Mover.Update`; mueve el body con `Body.setPosition` en `Game.update()`~~
+- [x] ~~Púas móviles del nivel 22 (`path="±66,100,"`, `moveSpeed="30"`)~~
+- [x] ~~Estrella móvil del nivel 24 (`path="0,100"`, `moveSpeed="40"`) en `entities/star.js`~~
 
 ## 4. Cuerda roja bajo tensión
 
@@ -248,12 +248,12 @@ Mientras la pista A no genere los 25 niveles, `levels.js` trae los mapas 1, 2, 5
 
 Tarea previa:
 
-- [ ] Script de conversión fuera de `src/` (`tools/convert-maps.py`) que lea `content/maps/1_N.xml`:
+- [x] ~~Script de conversión fuera de `src/` (`tools/convert-maps.py`) que lea `content/maps/1_N.xml`:~~ (pista A, 2026-10-21)
   - Objetos de la capa `Objects`; tutoriales solo con `locale="es"` (están en la capa `Es`)
   - Tamaño del mapa de `<map width height>` en la capa `settings`
   - Aplica la transformación de la §1 (según D1) y genera `src/data/levels.js` con el [formato de `LEVELS`](#formato-de-levels)
   - Genera `src/data/texts.js` con las claves de `es.json` que usan los niveles
-- [ ] Reemplazar los 4 niveles de prueba actuales por los niveles portados
+- [x] ~~Reemplazar los 4 niveles de prueba actuales por los niveles portados~~ (pista A)
 
 Cada nivel se marca cuando está portado **y** se comprobó que se puede ganar con 3 estrellas.
 
@@ -315,7 +315,7 @@ Contenido por nivel (fase 2):
 - [ ] Nivel 14 — "Puedes saltar el nivel desde el menú de pausa" (solo existe en `en.json`; depende del botón Saltar de la sección 10)
 - [ ] Nivel 16 — "¡Mantén el caramelo alejado de los pinchos!"
 - [ ] Nivel 20 — "Puedes cortar varias cuerdas a la vez." + fila de 5 flechas (`tutorial01`; en la capa `Es` no hay dedo animado, solo en el nivel 1)
-- [ ] Adaptar los textos de "dedo"/"tocando" al ratón (D3: "arrastra el ratón", "haz clic"); la pista A los deja ya adaptados en `texts.js`
+- [x] ~~Adaptar los textos de "dedo"/"tocando" al ratón (D3: "arrastra el ratón", "haz clic"); la pista A los deja ya adaptados en `texts.js`~~
 
 ## 8. Gráficos con las hojas del DX
 

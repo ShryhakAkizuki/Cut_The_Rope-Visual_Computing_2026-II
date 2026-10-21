@@ -41,7 +41,20 @@ class Game {
         } else if (labels.includes('autoAnchor')) {
           // [autocuerdas] pista B
         } else if (labels.includes('spikes')) {
-          // [púas] pista C
+          // [púas] pista C: como BreakCandyBody de DX, revienta la burbuja, suelta las cuerdas,
+          // quita el dulce del mundo y pasa a LOSE; el dulce roto se anima en Candy.draw.
+          if (this.state === STATE.PLAYING && !this.candy.broken) {
+            this.popBubble();
+            for (const rope of this.ropes) {
+              if (!rope.constraint) continue;
+              Matter.Composite.remove(this.world, rope.constraint);
+              rope.constraint = null;
+              rope.isCut = true;
+            }
+            this.candy.shatter();
+            Matter.Composite.remove(this.world, this.candy.body);
+            this.state = STATE.LOSE;
+          }
         } else if (labels.includes('omnom')) {
           eaten = true;
         }
@@ -112,6 +125,8 @@ class Game {
       Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * TUNING.bubbleLift });
     }
     // [púas] pista C: avance por path de púas y estrellas, antes del paso de física
+    for (const s of this.spikes) s.update(dt);
+    for (const s of this.stars) s.update(dt);
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
     // [autocuerdas] pista B
@@ -276,7 +291,7 @@ class Game {
         timeBonus: this.timeBonus,
         score: this.score,
       }, pointer);
-    } else if (this.state === STATE.LOSE) {
+    } else if (this.state === STATE.LOSE && !this.candy.isBreaking()) {   // [púas] banner tras el dulce roto
       Banner.draw('Perdiste', 'clic o tecla R para reiniciar', this.view);
     } else if (this.state === STATE.PAUSED) {
       Banner.draw('Pausa', 'tecla P para continuar', this.view);
