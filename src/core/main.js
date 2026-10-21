@@ -1,15 +1,22 @@
 let game = null;
+let loading = null;
 let viewScale = 1;
 
+// preload() no dibuja nada: aquí solo se trae lo que necesita la pantalla de carga.
 function preload () {
-    Sprites.preload();
+    Sprites.preloadBoot();
+    Fonts.preload();
 }
 
 function setup () {
     createCanvas(VIEW.w, VIEW.h);
     fitCanvas();
-    game = new Game(LEVELS);
-    game.showMenu();
+
+    // El resto de hojas llega en segundo plano; draw() muestra la carga y crea el juego al final.
+    // Mientras tanto `game` es un sustituto que ignora la entrada.
+    Sprites.loadAll();
+    loading = new LoadingScreen();
+    game = { onCutAttempt () {}, onInput () {}, onKeyDown () {}, autoPause () {}, autoResume () {} };
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) game.autoPause();
@@ -33,6 +40,18 @@ function toView (x, y) {
 }
 
 function draw () {
+    if (loading) {
+        loading.update(Sprites.progress);
+        scale(viewScale);
+        loading.draw();
+        if (loading.done && Sprites.ready) {
+            loading = null;
+            game = new Game(LEVELS);
+            game.showMenu();
+        }
+        return;
+    }
+
     game.update(Math.min(deltaTime, TUNING.maxFrameDeltaMs));
     scale(viewScale);
     const p = toView(mouseX, mouseY);

@@ -65,6 +65,29 @@ const AUDIO_T = {};
 // [tutoriales] pista F
 const TUTORIAL_T = {};
 
+// [ui] pista E: HUD, menús, resultados y pantalla de carga. Las posiciones de DX están en su
+// pantalla de diseño de 2560 de ancho; `designOffsetX` las lleva al VIEW de 1920 (centrado).
+const UI_T = {
+  designOffsetX:     (VIEW.w - 2560) / 2,
+  hudStarSlot:       100,     // GameScene.Init: hudStarSlotWidth (cuadro de 100×100)
+  hudStarFrameMs:    50,      // AddAnimationDelayLoopFirstLast(0.05f, …)
+  hudMargin:         8,       // GameController.CreateGameView: x = -8, y = 8
+  hudGap:            16,
+  levelColumns:      5,       // MenuController.CreateLevelSelect con más de 12 niveles
+  levelTile:         218,     // cuadro original de menu_level_ui
+  levelRowHeight:    203,
+  levelGapX:         10,
+  levelGapY:         55,
+  levelHoverScale:   1.06,
+  coverDim:          0.85,    // el menú de niveles oscurece la tapa de la caja a 0.85
+  pauseButtonGap:    5,       // VBox del menú de pausa
+  pauseDim:          150,     // alfa del velo sobre el nivel en pausa
+  resultsFadeMs:     500,     // la caja de resultados aparece en 0,5 s
+  buttonTextPadding: 70,
+  loaderLerp:        0.15,    // suavizado de la barra por cuadro (LoadingView usa 0.5)
+  loaderScale:       2,
+};
+
 // Radios de colisión en el espacio de VIEW (cajas de GameScene.BoundingBoxes.cs y STAR_RADIUS de DX)
 const CANDY_RADIUS  = 54;
 const OMNOM_RADIUS  = 54;
