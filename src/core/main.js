@@ -1,6 +1,10 @@
 let game = null;
 let viewScale = 1;
 
+function preload () {
+    Sprites.preload();
+}
+
 function setup () {
     createCanvas(VIEW.w, VIEW.h);
     fitCanvas();

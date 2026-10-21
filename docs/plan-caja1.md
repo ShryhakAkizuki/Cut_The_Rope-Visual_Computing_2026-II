@@ -16,8 +16,8 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 - **Fase actual:** 0 — preparación (sin agentes en paralelo todavía).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** las tareas de la [Fase 0](#fase-0--preparación-secuencial), en orden y en una sola sesión. Al terminar la fase 0 se pueden lanzar las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) en paralelo.
-- **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); `src/assets/` sigue vacío.
+- **Siguiente:** las tareas pendientes de la [Fase 0](#fase-0--preparación-secuencial), en orden y en una sola sesión (formato de `LEVELS`, hojas y `Sprites` ya hechos; toca el esqueleto de integración). Al terminar la fase 0 se pueden lanzar las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) en paralelo.
+- **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
 
@@ -50,7 +50,7 @@ Opciones:
 
 ### D3. Textos del tutorial: dedo o ratón
 
-**Cerrada (2026-10-21): se adaptan los textos al ratón** ("arrastra el ratón", "haz clic"). No se recupera el soporte táctil; se revisarán los textos si más adelante se añade la versión táctil. El dedo animado de los niveles 1 y 20 se conserva como gesto de arrastre.
+**Cerrada (2026-10-21): se adaptan los textos al ratón** ("arrastra el ratón", "haz clic"). No se recupera el soporte táctil; se revisarán los textos si más adelante se añade la versión táctil. El dedo animado (solo en el nivel 1 en la capa `Es`) se conserva como gesto de arrastre.
 
 Contexto: los textos del DX hablan de "deslizar el dedo" y "tocar", y hoy solo hay ratón y teclado. Afecta a la pista A (genera `texts.js`), a la pista F y a la §7.
 
@@ -65,8 +65,8 @@ Una sola sesión, sin agentes en paralelo: todo lo que sigue cambia archivos que
 - [x] ~~Cerrar D1, D2 y D3~~ (cerradas el 2026-10-21)
 - [x] ~~Descargar `ctrdx-assets-vk.zip` fuera del repo~~ (hecho 2026-10-21: extraído sobre `/home/camilo/Work/cuttherope-dx/content/`, zip en `/home/camilo/Work/`) — [referencia-dx.md §1](referencia-dx.md#1-cómo-conseguir-el-contenido-del-dx)
 - [x] ~~Sección 1 completa (coordenadas y escala, según D1)~~ (comprobada por el usuario el 2026-10-21)
-- [ ] Confirmar el [formato de `LEVELS`](#formato-de-levels) (con los ajustes que dicte D1) y quitar la palabra "borrador"
-- [ ] Copiar a `src/assets/` las hojas de la Caja 1 y sus atlas, y crear la utilidad de sprites con la carga en `preload()` (primeras tareas de la §8)
+- [x] ~~Confirmar el [formato de `LEVELS`](#formato-de-levels) (con los ajustes que dicte D1) y quitar la palabra "borrador"~~ (2026-10-21: se añaden `path`/`moveSpeed` de estrellas y púas, `showOn`/`inArea` de tutoriales y la lista de atributos ignorados)
+- [x] ~~Copiar a `src/assets/` las hojas de la Caja 1 y sus atlas, y crear la utilidad de sprites con la carga en `preload()` (primeras tareas de la §8)~~ (2026-10-21)
 - [ ] Esqueleto de integración, para que las pistas no choquen:
   - Crear vacíos los archivos nuevos de cada pista (tabla de abajo) y agregarlos ya al bloque de `<script>` de `index.html` en su posición
   - En `config.js`, un bloque de constantes vacío y con nombre por pista (`AUTO_ROPE_T`, `SPIKES_T`, `AUDIO_T`, `TUTORIAL_T`)
@@ -83,7 +83,7 @@ Cada pista es un agente en su propio worktree y rama (`caja1/<letra>-<nombre>`, 
 |---|---|---|---|
 | **A. Niveles** | Script de conversión y los 25 niveles en `LEVELS`; textos en español | §6 (tarea previa), textos de §7 | `tools/`, `src/data/levels.js`, `src/data/texts.js` (nuevo) |
 | **B. Cuerdas** | Autocuerdas, cuerda roja, colores alternados de la cuerda; cadena de puntos si D2 lo decide | §2, §4, "Colores de la cuerda" de §11 | `src/entities/rope.js`, `src/entities/anchor.js`, `src/entities/auto-anchor.js` (nuevo) |
-| **C. Púas** | Púas y dulce roto | §3 | `src/entities/spikes.js` (nuevo), dibujo de dulce roto en `src/entities/candy.js` |
+| **C. Púas** | Púas, dulce roto y objetos que se mueven por `path` (púas del nivel 22, estrella del 24) | §3 | `src/entities/spikes.js` (nuevo), `src/entities/mover.js` (nuevo), dibujo de dulce roto en `src/entities/candy.js`, movimiento en `src/entities/star.js` |
 | **D. Sonido** | Módulo de audio con API `Sound.play(nombre)`, música, silencio y desbloqueo con el primer clic. **Sin conectar eventos** (eso es fase 2) | Sonido de §11 | `src/core/audio.js` (nuevo), `src/assets/sounds/` |
 | **E. UI** | HUD, pausa, menú de niveles, resultados, pantalla de carga y puntaje como DX | §6 (puntaje y menú 5×5), sprites de UI de §8, §9, §10 | `src/ui/`, `src/core/rules.js`, `src/core/progress.js` |
 | **F. Tutoriales** | Infraestructura de tutoriales (texto, signos, dedo animado, fades) | §7 (infraestructura) | `src/ui/tutorial.js` (nuevo) |
@@ -115,7 +115,7 @@ Orden de integración en la rama base: **A → C → B → F → E → D**. A va
 
 ## Formato de `LEVELS`
 
-**Borrador** — se confirma en la fase 0. Coordenadas ya convertidas al espacio de `VIEW` (×3 y `offsetX = (1920 − anchoMapa × 3) / 2`, según D1: 480 para mapas de 320, 0 para los de 640; el nivel 15 mide 960×2880 y usa cámara vertical). El conversor de la pista A genera esto; las pistas B, C y F lo consumen.
+**Confirmado (2026-10-21)**, revisado contra las capas `Objects` y `Es` de los 25 mapas y los cargadores de DX (`LoadObjects/`, `Mover.cs`, `Tutorials/`). Coordenadas ya convertidas al espacio de `VIEW` (×3 y `offsetX = (1920 − anchoMapa × 3) / 2`, según D1: 480 para mapas de 320, 0 para los de 640; el nivel 15 mide 960×2880 y usa cámara vertical). El conversor de la pista A genera esto; las pistas B, C y F lo consumen.
 
 ```js
 {
@@ -125,22 +125,27 @@ Orden de integración en la rama base: **A → C → B → F → E → D**. A va
   omnom:   { x, y },                  // `target` en el XML
   anchors: [{ x, y, length }],        // `grab` con radius="-1"
   autoAnchors: [{ x, y, radius, length }], // `grab` con radius > 0 (pista B)
-  stars:   [{ x, y }],                // en la Caja 1 ninguna tiene tiempo (timeout -1 o 0)
+  stars:   [{ x, y, path, moveSpeed }],    // en la Caja 1 ninguna tiene tiempo (timeout -1 o 0); path solo en el nivel 24
   bubbles: [{ x, y }],
-  spikes:  [{ x, y, size, angle }],   // `spike1`–`spike4`; size 1–4, angle en grados (pista C)
+  spikes:  [{ x, y, size, angle, path, moveSpeed }], // `spike1`–`spike4`; size 1–4, angle en grados; path solo en el nivel 22 (pista C)
   tutorials: [                        // solo los nodos con locale="es" (pista F)
     { type: 'text', x, y, text: 'TUTORIAL_LVL_1_1_01', width, duration },
     { type: 'sign', sign: 1, x, y, angle, duration },             // tutorialNN → cuadro NN de tutorial_signs
     { type: 'sign', sign: 10, x, y, angle, path: [230, 0, 440, 0],
       moveSpeed, ease, moveDelay, repeat, fadeIn, fadeOut, duration }, // tutorial10 = dedo que desliza
+    { type: 'sign', sign: 5, x, y, showOn: 'bubbled', inArea: { x, y, w, h } }, // disparador (nivel 5)
   ],
 }
 ```
 
-- Se elimina `time` (el límite es siempre 30 s, como en DX).
+- Se elimina `time` (el límite es siempre 30 s, como en DX). Hasta que la pista E lo quite, `Game` usa `TUNING.defaultLevelTime` cuando falta.
 - Los campos opcionales que falten en el XML se omiten; el código usa los valores por defecto de DX.
 - `text` es la clave de `content/locales/es.json`; las cadenas van en `src/data/texts.js` (`TEXTS`).
-- `width` del texto se multiplica por 3 igual que las coordenadas.
+- `width` del texto se multiplica por 3 igual que las coordenadas. `inArea` (`"x,y,w,h"` en el XML) se convierte como coordenadas: `x`/`y` ×3 + offset, `w`/`h` ×3.
+- **`path` de objetos (estrellas y púas)**: offsets `[dx, dy, …]` respecto a `x, y`, ya ×3 (`MoverPathScale = 3`); se quita la coma final del XML. Como en `Mover.cs`, el objeto recorre en ciclo el punto inicial y los del `path` (con un solo offset va y vuelve). `moveSpeed` se guarda tal cual; la velocidad en px/s de `VIEW` es `moveSpeed × 3,3` (`DesktopMoverSpeedScale`, modelo de PC).
+- **`path` del dedo (`tutorial10`)**: offsets que **no** se escalan (DX los usa ya en espacio ×3, `TutorialMotion.cs`), igual que su `moveSpeed`.
+- `showOn` (por defecto `start`) e `inArea` solo aparecen en el nivel 5 (`showOn="bubbled"`: el tutorial sale cuando el dulce queda en una burbuja dentro del área).
+- Se ignoran porque en la Caja 1 siempre tienen el valor neutro: `wheel`, `gun`, `spider`, `moveLength` (−1 o 0), `moveVertical`, `moveOffset`, `part`, `hidePath` de `grab`; `toggled="false"` de las púas; `moveSpeed`/`rotateSpeed` de los signos sin `path`; y la capa `settings` salvo el tamaño (`ropePhysicsSpeed` = 1, `twoParts` = false).
 
 ---
 
@@ -209,15 +214,18 @@ Mientras la pista A no genere los 25 niveles, `levels.js` trae los mapas 1, 2, 5
 
 ## 3. Púas (`spike1`–`spike4`)
 
-**Pista C.** Referencia: `Spikes.cs` (solo la variante estática; sin botón de rotación ni electrodos). Niveles: 16, 17, 18, 19, 20, 22, 23, 25.
+**Pista C.** Referencia: `Spikes.cs` (sin botón de rotación ni electrodos), `Framework/Helpers/Mover.cs`. Niveles: 16, 17, 18, 19, 20, 22, 23, 25.
 
-- [ ] Leer `spikes` del [formato de `LEVELS`](#formato-de-levels): `{ x, y, size: 1..4, angle }` con `angle` en grados (los mapas usan 0, 90, 80 y 100)
+- [ ] Leer `spikes` del [formato de `LEVELS`](#formato-de-levels): `{ x, y, size: 1..4, angle, path?, moveSpeed? }` con `angle` en grados (los mapas usan 0, 90, 80 y 100)
 - [ ] Largo de la barra según `size` (`SpikesQuadWidths` = 212 / 333 / 453 / 566; semialto 5)
 - [ ] Entidad `Spikes` en `entities/spikes.js`: body sensor estático rectangular rotado, `label: 'spikes'`
 - [ ] Dibujo de la barra de púas en p5 (sprite `obj_spikes`)
 - [ ] En `collisionStart`: dulce + púas → destruir el dulce y pasar a `LOSE`
 - [ ] Efecto mínimo de dulce roto (`CandyBreak.cs`: trozos que giran y caen con `CandyBreakGravityY`) antes del banner de derrota
 - [ ] Las cuerdas y los trozos de cuerda no deben colisionar con las púas
+- [ ] `Mover` (`entities/mover.js`): recorrido cíclico por el punto inicial y los offsets de `path` a `moveSpeed × 3,3` px/s, como `Mover.Update`; mueve el body con `Body.setPosition` en `Game.update()`
+- [ ] Púas móviles del nivel 22 (`path="±66,100,"`, `moveSpeed="30"`)
+- [ ] Estrella móvil del nivel 24 (`path="0,100"`, `moveSpeed="40"`) en `entities/star.js`
 
 ## 4. Cuerda roja bajo tensión
 
@@ -272,9 +280,11 @@ Cada nivel se marca cuando está portado **y** se comprobó que se puede ganar c
 | [ ] | 19 | 320×480 | – | 2 | 1 | 2 | – |
 | [ ] | 20 | 320×480 | 2 | 2 | – | 2 (80°/100°) | sí |
 | [ ] | 21 | 320×480 | 4 | – | 2 | – | – |
-| [ ] | 22 | **640×480** | 3 | – | 2 | 2 | – |
+| [ ] | 22 | **640×480** | 3 | – | 2 | 2 (móviles) | – |
 | [ ] | 23 | 320×480 | 6 | – | 1 | 2 | – |
 | [ ] | 24 | **640×480** | 3 | – | – | – | – |
+
+Objetos con `path`: las dos púas del nivel 22 y una estrella del nivel 24 (pista C).
 | [ ] | 25 | 320×480 | 2 | 4 | 1 | 2 | – |
 
 - [ ] Puntaje como en DX (`LevelResult.cs`): límite fijo de 30 s para todos los niveles (quitar `time` por nivel) y redondear el total hacia arriba en lugar del bonus de tiempo a múltiplos de 10 — **pista E**
@@ -289,6 +299,7 @@ Infraestructura (pista F):
 - [ ] Leer `tutorials` del [formato de `LEVELS`](#formato-de-levels)
 - [ ] Overlay `Tutorial` (`ui/tutorial.js`) que dibuja texto con ajuste de línea (`width`) y signos
 - [ ] Aparición/desaparición con fade y `duration`
+- [ ] Disparador `showOn: 'bubbled'` + `inArea` (nivel 5: el tutorial sale cuando el dulce queda en una burbuja dentro del área); sin `showOn`, al empezar el nivel
 - [ ] Animación del dedo que desliza (`tutorial10`: `path`, `moveSpeed`, `moveDelay`, `repeat`, `fadeIn`/`fadeOut`)
 - [ ] Ocultar tutoriales al ganar/perder y reiniciarlos con `restart()`
 
@@ -303,7 +314,7 @@ Contenido por nivel (fase 2):
 - [ ] Nivel 12 — "Las cuerdas se ponen rojas cuando están muy tensas."
 - [ ] Nivel 14 — "Puedes saltar el nivel desde el menú de pausa" (solo existe en `en.json`; depende del botón Saltar de la sección 10)
 - [ ] Nivel 16 — "¡Mantén el caramelo alejado de los pinchos!"
-- [ ] Nivel 20 — "Puedes cortar varias cuerdas a la vez." + dedo deslizando
+- [ ] Nivel 20 — "Puedes cortar varias cuerdas a la vez." + fila de 5 flechas (`tutorial01`; en la capa `Es` no hay dedo animado, solo en el nivel 1)
 - [ ] Adaptar los textos de "dedo"/"tocando" al ratón (D3: "arrastra el ratón", "haz clic"); la pista A los deja ya adaptados en `texts.js`
 
 ## 8. Gráficos con las hojas del DX
@@ -315,8 +326,8 @@ Fase 0:
 - [x] ~~Decidir la fuente de los recortes~~ (decisión 2026-10-20: hojas del DX con sus atlas JSON)
 - [x] ~~Descargar `ctrdx-assets-vk.zip` ([referencia-dx.md §1](referencia-dx.md#1-cómo-conseguir-el-contenido-del-dx)) fuera del repo~~
 - [ ] ~~Quitar de `src/assets/` todos los PNG/JPEG `_hd` actuales~~ (descartada: `src/assets/` ya está vacío y esos archivos nunca se versionaron)
-- [ ] Copiar a `src/assets/` solo las hojas de la Caja 1 (PNG del archivo) y sus atlas (`content/images/<nombre>.json`)
-- [ ] Utilidad de dibujo de sprites desde atlas (`ui/sprites.js`) + carga en `preload()` de `main.js`; agregarla al bloque de `<script>` de `index.html`
+- [x] ~~Copiar a `src/assets/` solo las hojas de la Caja 1 (PNG del archivo) y sus atlas (`content/images/<nombre>.json`)~~ (2026-10-21: 27 hojas con atlas + los 2 fondos sin atlas en `src/assets/images/`, con las subcarpetas `backgrounds/` y `candies/` del DX; 22 MB. Sin `traces_ctr2`: `ClassicFingerTrace` no usa imágenes)
+- [x] ~~Utilidad de dibujo de sprites desde atlas (`ui/sprites.js`) + carga en `preload()` de `main.js`; agregarla al bloque de `<script>` de `index.html`~~ (2026-10-21: `Sprites.draw(hoja, cuadro, x, y, { ax, ay })` con el cuadro por índice o `filename`, anclado por defecto en el centro de su `sourceSize`; también `Sprites.size()`/`count()`)
 
 Pistas B, C y E (cada una dibuja lo suyo):
 

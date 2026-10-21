@@ -2,7 +2,7 @@
 
 Catálogo de lo que hay en `/home/camilo/Work/cuttherope-dx` y cómo llevarlo a nuestra versión con p5.js + Matter.js. Las tareas concretas están en [plan-caja1.md](plan-caja1.md).
 
-**Política (2026-10-20): usar todo lo que se pueda del DX**: coordenadas, constantes, reglas, textos, imágenes con sus atlas, sonido y comportamiento de cada mecánica. Las imágenes del juego salen de las hojas del DX (hoy `src/assets/` está vacío).
+**Política (2026-10-20): usar todo lo que se pueda del DX**: coordenadas, constantes, reglas, textos, imágenes con sus atlas, sonido y comportamiento de cada mecánica. Las imágenes del juego salen de las hojas del DX (copiadas en `src/assets/images/`, ver §7).
 
 Rutas relativas a la raíz del decomp. Código C# en `src/CutTheRopeDX.Core/`.
 
@@ -82,6 +82,7 @@ No es código para copiar línea por línea: es la referencia del comportamiento
 |---|---|---|---|
 | Cuerda automática | `GameMain/AutoRadiusSource.cs`, `GameMain/GrabAxisResolver.cs:52-56` | Detección por distancia, cuerda de un solo uso, fade del círculo | Caja 1 |
 | Púas | `GameMain/Spikes.cs:75-95` (`UpdateRotation`) | Banda rotada de largo `SpikesQuadWidths[size−1]` y semialto 5 → rectángulo sensor de Matter | Caja 1 |
+| Objetos móviles | `Framework/Helpers/Mover.cs` (`FromXml`, `Update`), `ActivePhysicsConstants.cs` (`MoverPathScale = 3`, `DesktopMoverSpeedScale = 3,3`) | Recorrido cíclico por los offsets de `path` (×3) a `moveSpeed × 3,3` px/s; en la Caja 1 solo las púas del nivel 22 y una estrella del 24 | Caja 1 |
 | Burbuja | `GameMain/Bubble.cs`, `GameMain/BubbleCapture.cs` | Impulso hacia arriba con amortiguación en lugar de fuerza constante | Caja 1 |
 | Cuerda roja | `GameMain/Bungee.cs:195-235` (`StretchLevelFor`), `GameMain/RopeColorHelper.cs` | Nivel de estiramiento por tramo → color | Caja 1 |
 | Colores de la cuerda | `GameMain/RopeColorHelper.cs` | Dos colores base alternados por tramo | Caja 1 |
@@ -117,7 +118,9 @@ Hojas de la Caja 1 (PNG en `images/` del archivo de descarga, JSON en `content/i
 | Resultados | `menu_results`, `confetti_particles` |
 | Fuentes bitmap | `small_font`, `big_font`, `font_numbers_big` |
 | Pantalla de carga | `loaderbar_full`, `menu_processing_hd` |
-| Estela del corte | `traces_ctr2` (revisar si `ClassicFingerTrace` la usa) |
+| Estela del corte | Ninguna: `ClassicFingerTrace` dibuja la cinta sin imágenes (`traces_ctr2` es de otras estelas) |
+
+Estado (2026-10-21): todas las hojas de esta tabla están copiadas en `src/assets/images/` (mismas subcarpetas que en el DX) y se cargan en `preload()` con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). La lista de hojas está en `SPRITE_SHEETS`/`SPRITE_IMAGES`; para dibujar un cuadro: `Sprites.draw('obj_hook', 0, x, y)`.
 
 Animaciones Flash en XML (`content/images/animations/*.xml`: `fx_bubbles`, `fx_cut_chain`, `obj_pause_ani`, `om_nom_*`): **Fuera**, salvo que alguna se use en un tutorial o en la pantalla de carga.
 

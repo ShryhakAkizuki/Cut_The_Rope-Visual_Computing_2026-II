@@ -55,7 +55,7 @@ Después sigue con lo que haya pedido el usuario. Cuando cambie la fase o se cie
 
 **Plan de acción: [docs/plan-caja1.md](docs/plan-caja1.md)** (estado, decisiones abiertas, fases, pistas para agentes en paralelo y formato de `LEVELS`). Qué se puede reutilizar del decomp (constantes, lógica, imágenes, sonido) y dónde está: [docs/referencia-dx.md](docs/referencia-dx.md).
 
-**Política: usar todo lo que se pueda del DX**: coordenadas, constantes, reglas, textos, imágenes con sus atlas JSON, sonido y comportamiento de las mecánicas. Las imágenes salen de las hojas del DX; los PNG y sonidos se descargan aparte, fuera del repo (sección 1 de `referencia-dx.md`), y a `src/assets/` (hoy vacío) solo se copia lo de la Caja 1.
+**Política: usar todo lo que se pueda del DX**: coordenadas, constantes, reglas, textos, imágenes con sus atlas JSON, sonido y comportamiento de las mecánicas. Las imágenes salen de las hojas del DX; los PNG y sonidos se descargan aparte, fuera del repo (sección 1 de `referencia-dx.md`), y a `src/assets/` solo se copia lo de la Caja 1. Las hojas ya están en `src/assets/images/` (PNG + atlas JSON) y se dibujan con `Sprites.draw(hoja, cuadro, x, y)` de [src/ui/sprites.js](src/ui/sprites.js), que las carga todas en `preload()`; una hoja nueva se añade a `SPRITE_SHEETS` (o `SPRITE_IMAGES` si no tiene atlas).
 
 **Casillas del plan:** al completar una tarea, márcala y táchala en el mismo cambio (`- [ ] tarea` → `- [x] ~~tarea~~`). Las tareas descartadas se tachan sin marcar, con el motivo. **Excepción con agentes en paralelo:** los agentes no editan el plan; listan en su informe las tareas hechas y quien integra la rama las marca. Las reglas completas están en la sección "Reglas para agentes en paralelo" del plan.
 
@@ -69,8 +69,8 @@ Mecánicas de la Caja 1 según los mapas:
 - `grab` con `radius="-1"`: cuerda fija con `length` (ya implementada).
 - `grab` con `radius` de 45 a 80: **cuerda automática**; crea la cuerda cuando el dulce entra al radio. Es de un solo uso y luego el círculo se desvanece (pendiente).
 - `bubble` (ya implementada; en el original es un impulso hacia arriba con amortiguación).
-- `spike1`–`spike4` con `size` y `angle` (casi siempre 0/90; el nivel 20 usa 80/100): **púas** a partir del nivel 16; tocarlas destruye el dulce (pendiente).
-- `star` sin `timeout` (ya implementada).
+- `spike1`–`spike4` con `size` y `angle` (casi siempre 0/90; el nivel 20 usa 80/100): **púas** a partir del nivel 16; tocarlas destruye el dulce (pendiente). Las dos del nivel 22 se mueven con `path`/`moveSpeed` (`Mover.cs`).
+- `star` sin `timeout` (ya implementada). Una estrella del nivel 24 se mueve con `path`/`moveSpeed` (pendiente).
 - Tutoriales en los niveles 1, 2, 5, 6, 8, 10, 12, 14, 16 y 20 (pendiente).
 - En la Caja 1 no hay cojines de aire, arañas, ruedas, anclas móviles ni pistolas.
 
