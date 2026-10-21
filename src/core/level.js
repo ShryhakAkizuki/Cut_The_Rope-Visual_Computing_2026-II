@@ -5,8 +5,11 @@ class Level {
     this.map = data.map;
     this.anchors = [];
     this.ropes = [];
+    this.autoAnchors = [];
     this.stars = [];
     this.bubbles = [];
+    this.spikes = [];
+    this.tutorials = [];
     this.candy = null;
     this.omnom = null;
   }
@@ -31,8 +34,15 @@ class Level {
       this.ropes.push(rope);
     }
 
+    // [autocuerdas] pista B
+    for (const a of d.autoAnchors || []) {
+      const autoAnchor = new AutoAnchor(a.x, a.y, a.radius, a.length);
+      autoAnchor.createBody();
+      this.autoAnchors.push(autoAnchor);
+    }
+
     for (const s of d.stars || []) {
-      const star = new Star(s.x, s.y);
+      const star = new Star(s.x, s.y, s.path, s.moveSpeed);
       star.createBody();
       this.stars.push(star);
     }
@@ -43,21 +53,38 @@ class Level {
       this.bubbles.push(bubble);
     }
 
+    // [púas] pista C
+    for (const s of d.spikes || []) {
+      const spikes = new Spikes(s.x, s.y, s.size, s.angle, s.path, s.moveSpeed);
+      spikes.createBody();
+      this.spikes.push(spikes);
+    }
+
+    // [tutoriales] pista F
+    for (const t of d.tutorials || []) {
+      this.tutorials.push(new Tutorial(t));
+    }
+
     Matter.Composite.add(game.world, [
       this.candy.body,
       this.omnom.body,
       ...this.anchors.map((a) => a.body),
+      ...this.autoAnchors.map((a) => a.body),
       ...this.stars.map((s) => s.body),
       ...this.bubbles.map((b) => b.body),
-    ]);
+      ...this.spikes.map((s) => s.body),
+    ].filter(Boolean));
   }
 
   clear (game) {
     Matter.Composite.clear(game.world, false, true);
     this.anchors = [];
     this.ropes = [];
+    this.autoAnchors = [];
     this.stars = [];
     this.bubbles = [];
+    this.spikes = [];
+    this.tutorials = [];
     this.candy = null;
     this.omnom = null;
   }
@@ -73,8 +100,11 @@ class Level {
     fill(COLORS.map);
     rect(b.x, b.y, b.w, b.h);
 
+    for (const t of this.tutorials) t.draw();
+    for (const a of this.autoAnchors) a.draw();
     for (const a of this.anchors) a.draw();
     for (const r of this.ropes) r.draw();
+    for (const s of this.spikes) s.draw();
     for (const s of this.stars) s.draw();
     if (this.omnom) this.omnom.draw();
     if (this.candy) this.candy.draw();

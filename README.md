@@ -1,6 +1,6 @@
 # Cut_The_Rope-Visual_Computing_2026-II
 
-Recreación de *Cut the Rope* en el navegador, con el objetivo de llevar los 25 niveles de la primera caja (Cardboard Box). Proyecto del curso Visual Computing 2026-II.
+Recreación de *Cut the Rope* en el navegador con P5.js. El objetivo de este proyecto es implementar los 25 niveles de la primera caja (Cardboard Box).
 
 **Jugar:** https://shryhakakizuki.github.io/Cut_The_Rope-Visual_Computing_2026-II/
 
@@ -31,7 +31,7 @@ y abrir http://localhost:8000.
 
 ## Tecnologías
 
-JavaScript sin bundler, [p5.js](https://p5js.org/) para el dibujo y la entrada, y [Matter.js](https://brm.io/matter-js/) para la física.
+JavaScript, [p5.js](https://p5js.org/) para el dibujo y la entrada, y [Matter.js](https://brm.io/matter-js/) para la física.
 
 ## Documentación
 
@@ -41,6 +41,4 @@ JavaScript sin bundler, [p5.js](https://p5js.org/) para el dibujo y la entrada, 
 
 ## Créditos
 
-Los niveles, las imágenes y el comportamiento de referencia vienen del proyecto de fans [Cut the Rope DX](https://github.com/yell0wsuit/cuttherope-dx) (decompilación no afiliada; assets en [ctrdx-assets](https://github.com/yell0wsuit/ctrdx-assets)). *Cut the Rope*, sus personajes y sus assets son propiedad de ZeptoLab. Este es un proyecto académico sin fines comerciales.
-
-El código propio se distribuye bajo la licencia [AGPL-3.0](LICENSE).
+Los niveles, las imágenes y el comportamiento de referencia vienen del proyecto de fans [Cut the Rope DX](https://github.com/yell0wsuit/cuttherope-dx). *Cut the Rope*, sus personajes y sus assets son propiedad de ZeptoLab. Este es un proyecto académico sin fines comerciales.

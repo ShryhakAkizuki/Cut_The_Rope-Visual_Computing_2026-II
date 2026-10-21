@@ -52,6 +52,19 @@ const CAMERA_T = {
   followRate:          14,
 };
 
+// Constantes de cada pista de la fase 1; cada una solo edita su bloque.
+// [autocuerdas] pista B
+const AUTO_ROPE_T = {};
+
+// [púas] pista C (incluye el Mover)
+const SPIKES_T = {};
+
+// [sonido] pista D
+const AUDIO_T = {};
+
+// [tutoriales] pista F
+const TUTORIAL_T = {};
+
 // Radios de colisión en el espacio de VIEW (cajas de GameScene.BoundingBoxes.cs y STAR_RADIUS de DX)
 const CANDY_RADIUS  = 54;
 const OMNOM_RADIUS  = 54;

@@ -16,7 +16,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 - **Fase actual:** 0 — preparación (sin agentes en paralelo todavía).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** las tareas pendientes de la [Fase 0](#fase-0--preparación-secuencial), en orden y en una sola sesión (formato de `LEVELS`, hojas y `Sprites` ya hechos; toca el esqueleto de integración). Al terminar la fase 0 se pueden lanzar las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) en paralelo.
+- **Siguiente:** las tareas pendientes de la [Fase 0](#fase-0--preparación-secuencial) (esqueleto de integración ya hecho; toca el commit en `camilo`). Al terminar la fase 0 se pueden lanzar las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) en paralelo.
 - **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
@@ -67,11 +67,11 @@ Una sola sesión, sin agentes en paralelo: todo lo que sigue cambia archivos que
 - [x] ~~Sección 1 completa (coordenadas y escala, según D1)~~ (comprobada por el usuario el 2026-10-21)
 - [x] ~~Confirmar el [formato de `LEVELS`](#formato-de-levels) (con los ajustes que dicte D1) y quitar la palabra "borrador"~~ (2026-10-21: se añaden `path`/`moveSpeed` de estrellas y púas, `showOn`/`inArea` de tutoriales y la lista de atributos ignorados)
 - [x] ~~Copiar a `src/assets/` las hojas de la Caja 1 y sus atlas, y crear la utilidad de sprites con la carga en `preload()` (primeras tareas de la §8)~~ (2026-10-21)
-- [ ] Esqueleto de integración, para que las pistas no choquen:
-  - Crear vacíos los archivos nuevos de cada pista (tabla de abajo) y agregarlos ya al bloque de `<script>` de `index.html` en su posición
-  - En `config.js`, un bloque de constantes vacío y con nombre por pista (`AUTO_ROPE_T`, `SPIKES_T`, `AUDIO_T`, `TUTORIAL_T`)
-  - En `Level.build`, un bucle por cada arreglo nuevo de `LEVELS` (`autoAnchors`, `spikes`, `tutorials`) que llame a un constructor de la pista correspondiente
-  - En `Game` (`collisionStart` y `update`), un bloque comentado por pista (`// [púas]`, `// [autocuerdas]`, …) donde cada pista escribe su reacción
+- [x] ~~Esqueleto de integración, para que las pistas no choquen:~~ (2026-10-21)
+  - [x] ~~Crear vacíos los archivos nuevos de cada pista (tabla de abajo) y agregarlos ya al bloque de `<script>` de `index.html` en su posición~~ (`AutoAnchor`, `Spikes` y `Tutorial` quedan como clases con métodos vacíos para que `Level` pueda construirlas; `mover.js` y `audio.js` solo llevan cabecera; `texts.js` declara `TEXTS = {}`)
+  - [x] ~~En `config.js`, un bloque de constantes vacío y con nombre por pista (`AUTO_ROPE_T`, `SPIKES_T`, `AUDIO_T`, `TUTORIAL_T`)~~
+  - [x] ~~En `Level.build`, un bucle por cada arreglo nuevo de `LEVELS` (`autoAnchors`, `spikes`, `tutorials`) que llame a un constructor de la pista correspondiente~~ (también se dibujan en `Level.draw`; `Star` ya recibe `path` y `moveSpeed`; los bodies `null` se filtran al añadirlos al mundo)
+  - [x] ~~En `Game` (`collisionStart` y `update`), un bloque comentado por pista (`// [púas]`, `// [autocuerdas]`, …) donde cada pista escribe su reacción~~ (labels reservados: `autoAnchor` y `spikes`; getters `autoAnchors`, `spikes` y `tutorials`; `update` ya llama a `Tutorial.update(dt)`)
 - [ ] Commit en la rama base de integración (hoy `camilo`); de ahí salen las ramas de las pistas
 - [ ] Actualizar "Estado actual": fase 1
 

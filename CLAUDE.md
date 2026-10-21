@@ -19,7 +19,7 @@ Deploy: cada push a `main` dispara [.github/workflows/deploy.yml](.github/workfl
 
 ### Carga por `<script>` globales, sin módulos
 
-No hay `import`/`export`: cada archivo declara clases/constantes globales y [src/index.html](src/index.html) los carga en orden de dependencia (`data/` → `entities/` → `ui/` → `core/level.js` → `camera.js` → `progress.js` → `rules.js` → `game.js` → `main.js`). **Un archivo nuevo debe agregarse a ese bloque de `<script>` en la posición correcta**, o sus globales no existirán cuando se usen.
+No hay `import`/`export`: cada archivo declara clases/constantes globales y [src/index.html](src/index.html) los carga en orden de dependencia (`data/` → `entities/` → `ui/` → `core/level.js` → `camera.js` → `progress.js` → `rules.js` → `audio.js` → `game.js` → `main.js`). **Un archivo nuevo debe agregarse a ese bloque de `<script>` en la posición correcta**, o sus globales no existirán cuando se usen.
 
 ### Capas
 
@@ -32,7 +32,7 @@ No hay `import`/`export`: cada archivo declara clases/constantes globales y [src
 ### Convenciones clave
 
 - **Matter solo simula; p5 dibuja todo.** No se usa `Matter.Render`. Paso de física fijo: `Engine.update(engine, 1000/60)`.
-- **Las colisiones se identifican por `label`** del body (`candy`, `star`, `bubble`, `omnom`). Estrellas, burbujas, anclas y OmNom son sensores estáticos. En `collisionStart` las estrellas se procesan antes que OmNom para que una estrella tocada en el mismo frame de la victoria cuente.
+- **Las colisiones se identifican por `label`** del body (`candy`, `star`, `bubble`, `omnom`; reservados para las pistas: `autoAnchor`, `spikes`). Estrellas, burbujas, anclas y OmNom son sensores estáticos. En `collisionStart` las estrellas se procesan antes que OmNom para que una estrella tocada en el mismo frame de la victoria cuente.
 - **Estados terminales/pausa congelan todo**: `update()` hace return temprano fuera de `PLAYING` (no avanza física ni reloj).
 - **Agregar un nivel = solo datos** en `LEVELS`: `candy`, `anchors` (cada una con `length` opcional para holgura), `omnom`, y opcionales `stars`, `bubbles`, `time` (por defecto `TUNING.defaultLevelTime`). Menú, desbloqueo y botón Next ya escalan.
 - **Nueva mecánica** sigue el patrón: entidad con body sensor + `label` en `entities/`, construida en `Level.build`, reacción en el `collisionStart` de `Game`, fuerzas en `Game.update()` (como la burbuja).

@@ -38,6 +38,10 @@ class Game {
           this.onStarCollected(pair.bodyA.label === 'star' ? pair.bodyA : pair.bodyB);
         } else if (labels.includes('bubble')) {
           this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
+        } else if (labels.includes('autoAnchor')) {
+          // [autocuerdas] pista B
+        } else if (labels.includes('spikes')) {
+          // [púas] pista C
         } else if (labels.includes('omnom')) {
           eaten = true;
         }
@@ -51,6 +55,9 @@ class Game {
   get ropes () { return this.level ? this.level.ropes : []; }
   get stars () { return this.level ? this.level.stars : []; }
   get bubbles () { return this.level ? this.level.bubbles : []; }
+  get autoAnchors () { return this.level ? this.level.autoAnchors : []; }
+  get spikes () { return this.level ? this.level.spikes : []; }
+  get tutorials () { return this.level ? this.level.tutorials : []; }
 
   onKeyDown (key) {
     if (this.state === STATE.MENU) return;
@@ -104,8 +111,12 @@ class Game {
       const g = this.engine.gravity;
       Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * TUNING.bubbleLift });
     }
+    // [púas] pista C: avance por path de púas y estrellas, antes del paso de física
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
+    // [autocuerdas] pista B
+    // [tutoriales] pista F
+    for (const t of this.tutorials) t.update(dt);
     this.camera.update(dt / 1000, this.candy.body.position);
 
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
