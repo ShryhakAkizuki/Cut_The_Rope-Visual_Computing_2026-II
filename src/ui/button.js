@@ -1,3 +1,4 @@
+// Botón rectangular genérico: área (x, y, w, h) en coordenadas de VIEW y dibujo con primitivas.
 class Button {
 
   constructor (x, y, w, h, label) {
@@ -7,14 +8,26 @@ class Button {
     this.h = h;
     this.label = label;
     this.enabled = true;
+    this.visible = true;
   }
 
   contains (px, py) {
-    if (!this.enabled) return false;
+    if (!this.enabled || !this.visible) return false;
     return pointInRect(px, py, this.x, this.y, this.w, this.h);
   }
 
+  get cx () { return this.x + this.w / 2; }
+  get cy () { return this.y + this.h / 2; }
+
+  // Coloca el botón con su centro en (cx, cy).
+  centerAt (cx, cy) {
+    this.x = cx - this.w / 2;
+    this.y = cy - this.h / 2;
+    return this;
+  }
+
   draw (mx, my) {
+    if (!this.visible) return;
     const hover = this.contains(mx, my);
 
     strokeWeight(5);
@@ -28,5 +41,42 @@ class Button {
     textAlign(CENTER, CENTER);
     text(this.label, this.x + this.w / 2, this.y + this.h / 2);
     textAlign(LEFT, BASELINE);
+  }
+}
+
+// Botón con imagen de una hoja del DX: `upFrame` normal y `downFrame` con el ratón encima
+// (en DX, el estado presionado). El área es el recorte del cuadro, sin su relleno transparente.
+// Con `label`, dibuja el texto centrado con la fuente bitmap `font` (BigFont en DX).
+class SpriteButton extends Button {
+
+  constructor (sheet, upFrame, downFrame, label = '', opts = {}) {
+    const size = Sprites.quadSize(sheet, upFrame);
+    super(0, 0, size.w, size.h, label);
+    this.sheet = sheet;
+    this.upFrame = upFrame;
+    this.downFrame = downFrame === undefined ? upFrame : downFrame;
+    this.font = opts.font || 'big';
+    this.textScale = opts.textScale || 1;
+    this.textOffsetY = opts.textOffsetY || 0;
+    this.hoverScale = opts.hoverScale || 1;
+  }
+
+  draw (mx, my) {
+    if (!this.visible) return;
+    const hover = this.contains(mx, my);
+    const s = hover ? this.hoverScale : 1;
+
+    push();
+    if (!this.enabled) tint(255, 110);
+    translate(this.cx, this.cy);
+    scale(s);
+    Sprites.drawQuad(this.sheet, hover ? this.downFrame : this.upFrame, -this.w / 2, -this.h / 2);
+    if (this.label) {
+      Fonts.draw(this.font, this.label, 0, this.textOffsetY, {
+        scale: this.textScale,
+        maxWidth: this.w - UI_T.buttonTextPadding,
+      });
+    }
+    pop();
   }
 }

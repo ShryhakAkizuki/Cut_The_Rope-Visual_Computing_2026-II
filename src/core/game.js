@@ -10,9 +10,11 @@ class Game {
     this.menu = new LevelMenu();
     this.progress = new ProgressStore(levels);
 
-    this.restartButton = new Button(30, VIEW.h - 114, 240, 84, 'Reiniciar');
     this.hud = new Hud();
-    this.winPanel = new WinPanel(VIEW.w);
+    this.restartButton = this.hud.restartButton;
+    this.pauseButton = this.hud.pauseButton;
+    this.pauseMenu = new PauseMenu();
+    this.winPanel = new WinPanel();
 
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
@@ -76,7 +78,7 @@ class Game {
     if (this.state === STATE.MENU) return;
     const k = String(key).toLowerCase();
     if (k === 'r') this.restart();
-    if (k === 'p') this.togglePause();
+    if (k === 'p' || k === 'escape') this.togglePause();
   }
 
   startLevel (idx) {
@@ -88,7 +90,7 @@ class Game {
 
     this.starsCollected = 0;
     this.time = 0;
-    this.timeLimit = this.level.data.time || TUNING.defaultLevelTime;
+    this.timeLimit = TUNING.defaultLevelTime;   // como en DX, 30 s en todos los niveles
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
@@ -175,12 +177,12 @@ class Game {
       const result = calculateScore({
         starsCollected: this.starsCollected,
         time: this.time,
-        timeLimit: this.timeLimit,
       });
       this.starBonus = result.starBonus;
       this.timeBonus = result.timeBonus;
       this.score = result.total;
-      this.progress.markCompleted(this.levelIndex, this.starsCollected);
+      const improved = this.progress.markCompleted(this.levelIndex, this.starsCollected, this.score);
+      this.winPanel.show(improved);
       this.layoutWinButtons();
     }
   }
@@ -198,17 +200,29 @@ class Game {
 
   onInput (px, py) {
     if (this.state === STATE.MENU) {
-      const idx = this.menu.levelAt(px, py, this.levels.length, this.view);
+      const idx = this.menu.levelAt(px, py, this.levels.length);
       if (idx !== -1 && this.progress.isUnlocked(idx)) this.startLevel(idx);
       return;
     }
 
-    if (this.restartButton.contains(px, py)) {
-      this.restart();
-      return;
+    if (this.state === STATE.PLAYING || this.state === STATE.LOSE) {
+      if (this.pauseButton.contains(px, py)) {
+        if (this.state === STATE.PLAYING) this.togglePause();
+        return;
+      }
+      if (this.restartButton.contains(px, py)) {
+        this.restart();
+        return;
+      }
     }
 
-    if (this.state === STATE.PLAYING) {
+    if (this.state === STATE.PAUSED) {
+      const b = this.pauseMenu.buttons;
+      if (b.resume.contains(px, py)) this.togglePause();
+      else if (b.restart.contains(px, py)) this.restart();
+      else if (b.skip.contains(px, py)) this.skipLevel();
+      else if (b.menu.contains(px, py)) this.showMenu();
+    } else if (this.state === STATE.PLAYING) {
       if (this.camera.blocksInput) {
         this.camera.hurry();
         return;
@@ -272,16 +286,12 @@ class Game {
       pop();
     }
 
-    const rb = this.restartButton;
-    this.hud.draw({
-      starsCollected: this.starsCollected,
-      starsTotal: this.stars.length,
-      time: this.time,
-      hintText: 'arrastra para cortar · R reinicia · P pausa',
-      hintTextPos: { x: rb.x + rb.w + 30, y: rb.y + rb.h / 2 + 10 },
-    });
-
     const pointer = { x: px, y: py };
+    const hudState = { starsCollected: this.starsCollected, starsTotal: this.stars.length };
+    this.hud.setInteractive(this.state === STATE.PLAYING || this.state === STATE.LOSE);
+    // En la derrota el HUD va encima del aviso para que Reiniciar se vea activo.
+    if (this.state !== STATE.LOSE) this.hud.draw(hudState, pointer);
+
     if (this.state === STATE.WIN) {
       this.winPanel.draw({
         view: this.view,
@@ -292,12 +302,26 @@ class Game {
         timeBonus: this.timeBonus,
         score: this.score,
       }, pointer);
-    } else if (this.state === STATE.LOSE && !this.candy.isBreaking()) {   // [púas] banner tras el dulce roto
-      Banner.draw('Perdiste', 'clic o tecla R para reiniciar', this.view);
+    } else if (this.state === STATE.LOSE) {
+      // [púas] el aviso espera a que termine el dulce roto
+      if (!this.candy.isBreaking()) Banner.draw('¡Oh, no!', 'Haz clic o pulsa R para reintentar', this.view);
+      this.hud.draw(hudState, pointer);
     } else if (this.state === STATE.PAUSED) {
-      Banner.draw('Pausa', 'tecla P para continuar', this.view);
+      this.pauseMenu.draw({
+        levelNumber: this.levelIndex + 1,
+        bestScore: this.progress.bestScores[this.levelIndex],
+      }, pointer);
     }
+  }
 
-    this.restartButton.draw(px, py);
+  // Botón Saltar nivel del menú de pausa: desbloquea el siguiente sin marcar este como
+  // completado y lo empieza. En el último nivel vuelve al menú (LevelQuit en DX).
+  skipLevel () {
+    if (this.levelIndex >= this.levels.length - 1) {
+      this.showMenu();
+      return;
+    }
+    this.progress.skip(this.levelIndex);
+    this.startLevel(this.levelIndex + 1);
   }
 }

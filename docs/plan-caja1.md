@@ -16,7 +16,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 - **Fase actual:** 1 — pistas en paralelo (lanzadas el 2026-10-21 desde `camilo` en `789d0df`).
 - **Decisiones abiertas:** ninguna (D1, D2 y D3 cerradas el 2026-10-21).
-- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B, F.
+- **Siguiente:** esperar los informes de las 6 pistas de la [Fase 1](#fase-1--pistas-en-paralelo) (ramas `caja1/a-niveles`, `caja1/b-cuerdas`, `caja1/c-puas`, `caja1/d-sonido`, `caja1/e-ui`, `caja1/f-tutoriales`) e integrarlas en `camilo` en el orden A → C → B → F → E → D, marcando sus casillas. Las 6 terminaron; integradas: A, C, B, F, E.
 - **Bloqueos conocidos:** ninguno. Los assets del DX ya están extraídos en `/home/camilo/Work/cuttherope-dx/content/` (zip original en `/home/camilo/Work/ctrdx-assets-vk.zip`); las hojas de la Caja 1 ya están en `src/assets/images/` y se cargan con `Sprites` ([src/ui/sprites.js](../src/ui/sprites.js)). Sonidos y fuentes aún no se copian (pistas D y E).
 
 ---
@@ -287,8 +287,8 @@ Cada nivel se marca cuando está portado **y** se comprobó que se puede ganar c
 Objetos con `path`: las dos púas del nivel 22 y una estrella del nivel 24 (pista C).
 | [ ] | 25 | 320×480 | 2 | 4 | 1 | 2 | – |
 
-- [ ] Puntaje como en DX (`LevelResult.cs`): límite fijo de 30 s para todos los niveles (quitar `time` por nivel) y redondear el total hacia arriba en lugar del bonus de tiempo a múltiplos de 10 — **pista E**
-- [ ] Verificar que el menú de niveles cabe y se ve bien con 25 niveles (cuadrícula 5×5) — **pista E**
+- [x] ~~Puntaje como en DX (`LevelResult.cs`): límite fijo de 30 s para todos los niveles (quitar `time` por nivel) y redondear el total hacia arriba en lugar del bonus de tiempo a múltiplos de 10 — **pista E**~~
+- [x] ~~Verificar que el menú de niveles cabe y se ve bien con 25 niveles (cuadrícula 5×5) — **pista E**~~
 
 ## 7. Tutoriales
 
@@ -333,10 +333,10 @@ Pistas B, C y E (cada una dibuja lo suyo):
 
 - [x] ~~Anclas fijas y automáticas (`obj_hook`, `obj_hook_chain`, `obj_hook_auto_chain`) — pista B~~
 - [ ] Púas (`obj_spikes`) — pista C
-- [ ] HUD y pausa (`hud_ui`, `menu_pause`, `obj_pause`) — pista E
-- [ ] Menú de niveles y botones (`menu_level_ui`, `menu_buttons`, `menu_bgr`, `menu_popup`) — pista E
-- [ ] Pantalla de resultados (`menu_results`) — pista E
-- [ ] Fuentes: bitmap (`small_font`, `big_font`, `font_numbers_big`) y/o `gooddog_new-webfont.ttf` con `loadFont()`; revisar en el decomp cuál usa cada texto — pista E
+- [x] ~~HUD y pausa (`hud_ui`, `menu_pause`, `obj_pause`) — pista E~~ (`obj_pause` no se usa: en DX es el botón de congelar el tiempo; la pausa es el "MENÚ" de `hud_ui`)
+- [x] ~~Menú de niveles y botones (`menu_level_ui`, `menu_buttons`, `menu_bgr`, `menu_popup`) — pista E~~ (como DX, el fondo es `bgr_01_cover` con las cintas de `menu_level_ui`; `menu_bgr` y `menu_popup` no se usan)
+- [x] ~~Pantalla de resultados (`menu_results`) — pista E~~
+- [x] ~~Fuentes: bitmap (`small_font`, `big_font`, `font_numbers_big`) y/o `gooddog_new-webfont.ttf` con `loadFont()`; revisar en el decomp cuál usa cada texto — pista E~~ (BigFont en títulos, botones y números del menú; SmallFont en rótulos; FontNumbersBig en el puntaje; la TTF solo en la carga)
 
 Fase 2:
 
@@ -351,17 +351,17 @@ Fase 2:
 
 **Pista E.**
 
-- [ ] Pantalla de carga mientras `preload()` trae los assets
-- [ ] Barra de progreso (`loaderbar_full`)
+- [x] ~~Pantalla de carga mientras `preload()` trae los assets~~
+- [x] ~~Barra de progreso (`loaderbar_full`)~~
 
 ## 10. UI y flujo
 
 **Pista E.**
 
-- [ ] Botón de pausa en pantalla (además de la tecla P) con Reanudar / Reiniciar / Menú
-- [ ] Botón Saltar nivel en el menú de pausa (desbloquea el siguiente sin marcar el actual como completado)
-- [ ] Mostrar las estrellas obtenidas por nivel en el menú (ya se guardan en `ProgressStore`)
-- [ ] Animación breve de estrella recogida
+- [x] ~~Botón de pausa en pantalla (además de la tecla P) con Reanudar / Reiniciar / Menú~~
+- [x] ~~Botón Saltar nivel en el menú de pausa (desbloquea el siguiente sin marcar el actual como completado)~~
+- [x] ~~Mostrar las estrellas obtenidas por nivel en el menú (ya se guardan en `ProgressStore`)~~
+- [x] ~~Animación breve de estrella recogida~~
 - [ ] Pantalla de título / selección de caja con una sola caja (opcional)
 
 ## 11. Más elementos del DX

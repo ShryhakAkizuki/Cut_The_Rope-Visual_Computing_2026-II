@@ -1,8 +1,14 @@
+// Progreso guardado en localStorage (PROGRESS_KEY): por nivel, mejores estrellas, mejor puntaje,
+// si se completó y si se desbloqueó (Saltar nivel desbloquea el siguiente sin completar el actual).
+// Los campos `bestScores` y `unlocked` son opcionales al leer, así que el formato anterior sigue valiendo.
 class ProgressStore {
 
   constructor (levels) {
+    this.levels = levels;
     this.bestStars = levels.map(() => 0);
+    this.bestScores = levels.map(() => 0);
     this.completed = levels.map(() => false);
+    this.unlocked = levels.map((_, i) => i === 0);
 
     const data = this.readStored();
     if (!data || !Array.isArray(data.bestStars) || !Array.isArray(data.completed)) return;
@@ -13,6 +19,15 @@ class ProgressStore {
       return Number.isFinite(stars) ? Math.max(0, Math.min(total, stars)) : 0;
     });
     this.completed = levels.map((_, i) => Boolean(data.completed[i]));
+    if (Array.isArray(data.bestScores)) {
+      this.bestScores = levels.map((_, i) => {
+        const score = Math.floor(Number(data.bestScores[i]));
+        return Number.isFinite(score) ? Math.max(0, score) : 0;
+      });
+    }
+    if (Array.isArray(data.unlocked)) {
+      this.unlocked = levels.map((_, i) => i === 0 || Boolean(data.unlocked[i]));
+    }
   }
 
   readStored () {
@@ -27,20 +42,47 @@ class ProgressStore {
     try {
       localStorage.setItem(PROGRESS_KEY, JSON.stringify({
         bestStars: this.bestStars,
+        bestScores: this.bestScores,
         completed: this.completed,
+        unlocked: this.unlocked,
       }));
     } catch (err) {
       // El juego sigue sin persistencia.
     }
   }
 
-  markCompleted (idx, stars) {
+  // Guarda el resultado y desbloquea el siguiente. Devuelve si mejoró una puntuación anterior
+  // (el sello "Puntuación mejorada" de DX solo sale si ya había un puntaje guardado).
+  markCompleted (idx, stars, score = 0) {
+    const previous = this.bestScores[idx];
+    const improved = previous > 0 && score > previous;
     this.completed[idx] = true;
     this.bestStars[idx] = Math.max(this.bestStars[idx], stars);
+    this.bestScores[idx] = Math.max(previous, score);
+    this.unlock(idx + 1);
+    this.save();
+    return improved;
+  }
+
+  // Saltar nivel: desbloquea el siguiente sin marcar el actual como completado.
+  skip (idx) {
+    this.unlock(idx + 1);
     this.save();
   }
 
+  unlock (idx) {
+    if (idx >= 0 && idx < this.unlocked.length) this.unlocked[idx] = true;
+  }
+
   isUnlocked (idx) {
-    return idx === 0 || this.completed[idx - 1];
+    return idx === 0 || this.unlocked[idx] || this.completed[idx - 1];
+  }
+
+  totalStars () {
+    return this.bestStars.reduce((sum, s) => sum + s, 0);
+  }
+
+  maxStars () {
+    return this.levels.reduce((sum, level) => sum + (level.stars ? level.stars.length : 0), 0);
   }
 }
