@@ -57,7 +57,25 @@ const CAMERA_T = {
 const AUTO_ROPE_T = {};
 
 // [púas] pista C (incluye el Mover)
-const SPIKES_T = {};
+const SPIKES_T = {
+  quadWidths:     [212, 333, 453, 566], // SpikesQuadWidths: largo de colisión de spike1–spike4
+  bandHalfHeight: 5,                    // SpikesCollisionBandHalfHeight
+  firstQuad:      8,                    // StaticSpikeFirstQuad: cuadro de obj_spikes para spike1
+  moverSpeedScale: 3.3,                 // DesktopMoverSpeedScale: px/s = moveSpeed × 3,3
+
+  // Dulce roto (CandyBreak.cs): 5 trozos, cuadros 3–7 de obj_candy_01_new
+  breakPieces:         5,
+  breakFirstQuad:      3,
+  breakLastQuad:       7,
+  breakGravityY:       500,   // CandyBreakGravityY (px/s²)
+  breakAngle:          -90,   // grados; hacia arriba
+  breakAngleVar:       50,
+  breakSpeed:          150,   // px/s
+  breakSpeedVar:       70,
+  breakRotateSpeedVar: 600,   // grados/s
+  breakLife:           3,     // s
+  breakLoseDelay:      1.3,   // s hasta el banner: ScheduleGameLost(0,3) + Selector_animateLevelRestart (1)
+};
 
 // [sonido] pista D
 const AUDIO_T = {};

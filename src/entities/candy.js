@@ -5,6 +5,7 @@ class Candy {
     this.y = y;
     this.radius = radius;
     this.body = null;
+    this.broken = null;   // [púas] estado del dulce roto
   }
 
   createBody () {
@@ -16,7 +17,56 @@ class Candy {
     });
   }
 
+  // [púas] Dulce roto (CandyBreak.cs de DX): trozos de obj_candy_01_new que salen hacia arriba,
+  // giran y caen con CandyBreakGravityY. El juego ya está congelado en LOSE, así que el efecto
+  // avanza con millis() desde el momento del golpe en lugar de con update().
+  shatter () {
+    const T = SPIKES_T;
+    const pos = this.body.position;
+    const spread = (v) => (Math.random() * 2 - 1) * v;
+    const pieces = [];
+    for (let i = 0; i < T.breakPieces; i++) {
+      const a = (T.breakAngle + spread(T.breakAngleVar)) * Math.PI / 180;
+      const speed = T.breakSpeed + spread(T.breakSpeedVar);
+      pieces.push({
+        frame: T.breakFirstQuad + Math.floor(Math.random() * (T.breakLastQuad - T.breakFirstQuad + 1)),
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed,
+        spin: spread(T.breakRotateSpeedVar),   // grados/s
+      });
+    }
+    this.broken = { x: pos.x, y: pos.y, start: millis(), pieces };
+  }
+
+  // Mientras dura el efecto no se muestra el banner de derrota.
+  isBreaking () {
+    return !!this.broken && millis() - this.broken.start < SPIKES_T.breakLoseDelay * 1000;
+  }
+
+  drawBroken () {
+    const b = this.broken;
+    const t = (millis() - b.start) / 1000;
+    if (t >= SPIKES_T.breakLife) return;
+    for (const p of b.pieces) {
+      const f = Sprites.frame('obj_candy_01_new', p.frame);
+      if (!f) continue;
+      push();
+      translate(b.x + p.vx * t, b.y + p.vy * t + 0.5 * SPIKES_T.breakGravityY * t * t);
+      rotate(p.spin * t * Math.PI / 180);
+      // Cada trozo gira sobre su propio centro, no sobre el del dulce entero.
+      Sprites.draw('obj_candy_01_new', p.frame, 0, 0, {
+        ax: (f.ox + f.w / 2) / f.sw,
+        ay: (f.oy + f.h / 2) / f.sh,
+      });
+      pop();
+    }
+  }
+
   draw () {
+    if (this.broken) {
+      this.drawBroken();
+      return;
+    }
     if (!this.body) return;
     const pos = this.body.position;
     noStroke();
