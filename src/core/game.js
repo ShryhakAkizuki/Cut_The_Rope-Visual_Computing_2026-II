@@ -26,9 +26,10 @@ class Game {
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
+    this.winRevealTimer = 0;
+    this.mouthIsOpen = false;
 
     Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      let eaten = false;
       for (const pair of event.pairs) {
         const labels = [pair.bodyA.label, pair.bodyB.label];
         if (!labels.includes('candy')) continue;
@@ -36,11 +37,8 @@ class Game {
           this.onStarCollected(pair.bodyA.label === 'star' ? pair.bodyA : pair.bodyB);
         } else if (labels.includes('bubble')) {
           this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
-        } else if (labels.includes('omnom')) {
-          eaten = true;
         }
       }
-      if (eaten) this.onCandyEaten();
     });
   }
 
@@ -74,6 +72,8 @@ class Game {
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
+    this.winRevealTimer = 0;
+    this.mouthIsOpen = false;
 
     this.winPanel.buttons.next.enabled = idx < this.levels.length - 1;
     this.state = STATE.PLAYING;
@@ -95,9 +95,14 @@ class Game {
 
   update (dt) {
     if (this.state === STATE.MENU) return;
-    if (this.state === STATE.WIN) return;
-    if (this.state === STATE.LOSE) return;
     if (this.state === STATE.PAUSED) return;
+    if (this.omnom) this.omnom.update(dt);
+    if (this.state === STATE.WIN) {
+      this.winRevealTimer = Math.max(0, this.winRevealTimer - dt);
+      for (const rope of this.ropes) rope.update(dt);
+      return;
+    }
+    if (this.state === STATE.LOSE) return;
 
     this.time += dt / 1000;
     if (this.candyBubble()) {
@@ -108,8 +113,39 @@ class Game {
     Matter.Engine.update(this.engine, 1000 / 60);
     for (const rope of this.ropes) rope.update(dt);
 
+    if (this.state === STATE.PLAYING) {
+      if (this.candyInMouth()) {
+        this.onCandyEaten();
+        return;
+      }
+      this.updateMouthProximity();
+    }
+
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
+      this.omnom.setAnimation('fail');
       this.state = STATE.LOSE;
+    }
+  }
+
+  candyInMouth () {
+    if (!this.candy || !this.omnom) return false;
+    const dx = this.candy.body.position.x - this.omnom.body.position.x;
+    const dy = this.candy.body.position.y - this.omnom.body.position.y;
+    return Math.hypot(dx, dy) <= TUNING.eatRadius;
+  }
+
+  updateMouthProximity () {
+    if (!this.candy || !this.omnom) return;
+    const dx = this.candy.body.position.x - this.omnom.body.position.x;
+    const dy = this.candy.body.position.y - this.omnom.body.position.y;
+    const distance = Math.hypot(dx, dy);
+
+    if (!this.mouthIsOpen && distance <= TUNING.mouthOpenRadius) {
+      this.mouthIsOpen = true;
+      this.omnom.setAnimation('mouthOpen');
+    } else if (this.mouthIsOpen && distance >= TUNING.mouthCloseRadius) {
+      this.mouthIsOpen = false;
+      this.omnom.playSequence(['mouthClose', 'idle']);
     }
   }
 
@@ -144,6 +180,17 @@ class Game {
 
   onCandyEaten () {
     if (this.state === STATE.PLAYING) {
+      const candy = this.candy;
+      if (candy) {
+        candy.eaten = true;
+        Matter.Composite.remove(this.world, candy.body);
+      }
+      const bubble = this.candyBubble();
+      if (bubble) bubble.pop();
+      for (const rope of this.ropes) rope.startEatenFade();
+      this.mouthIsOpen = false;
+      this.omnom.playSequence(['mouthClose', 'chew']);
+      this.winRevealTimer = TUNING.winRevealDelay;
       this.state = STATE.WIN;
       const result = calculateScore({
         starsCollected: this.starsCollected,
@@ -183,6 +230,7 @@ class Game {
       const bubble = this.candyBubble();
       if (bubble && bubble.contains(px, py)) this.popBubble();
     } else if (this.state === STATE.WIN) {
+      if (this.winRevealTimer > 0) return;
       const b = this.winPanel.buttons;
       if (b.replay.contains(px, py)) this.restart();
       else if (b.menu.contains(px, py)) this.showMenu();
@@ -243,7 +291,7 @@ class Game {
     });
 
     const pointer = { x: px, y: py };
-    if (this.state === STATE.WIN) {
+    if (this.state === STATE.WIN && this.winRevealTimer <= 0) {
       this.winPanel.draw({
         view: this.view,
         starsTotal: this.stars.length,

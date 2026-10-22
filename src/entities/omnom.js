@@ -1,10 +1,11 @@
-class OmNom {
+ class OmNom {
 
     constructor (x, y, radius) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.body = null;
+        this.animation = new SpriteAnimator(OMNOM_ANIMATIONS, radius * 2.5);
     }
 
     createBody () {
@@ -15,10 +16,21 @@ class OmNom {
         });
     }
 
+    setAnimation (name, preserveSequence = false) {
+        this.animation.setAnimation(name, preserveSequence);
+    }
+
+    playSequence (names) {
+        this.animation.playSequence(names);
+    }
+
+    update (dt) {
+        this.animation.update(dt);
+    }
+
     draw () {
-        noFill();
-        stroke(255, 200, 80);
-        strokeWeight(4);
-        circle(this.x, this.y, this.radius * 2);
+        if (!this.body) return;
+        const position = this.body.position;
+        this.animation.draw(position.x, position.y);
     }
 }

@@ -8,6 +8,7 @@ class Level {
     this.bubbles = [];
     this.candy = null;
     this.omnom = null;
+    this.background = LEVEL_BACKGROUNDS[data.background] || null;
   }
 
   build (game) {
@@ -61,7 +62,19 @@ class Level {
     this.omnom = null;
   }
 
+  drawBackground () {
+    const img = this.background;
+    if (!img || !img.width || !img.height) return;
+    // Cubre todo el canvas sin deformar la imagen (recorta los sobrantes).
+    const scale = Math.max(width / img.width, height / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    imageMode(CORNER);
+    image(img, (width - w) / 2, (height - h) / 2, w, h);
+  }
+
   draw () {
+    this.drawBackground();
     for (const a of this.anchors) a.draw();
     for (const r of this.ropes) r.draw();
     for (const s of this.stars) s.draw();

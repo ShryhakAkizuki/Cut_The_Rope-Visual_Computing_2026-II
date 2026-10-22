@@ -1,7 +1,11 @@
+// Imágenes de fondo cargadas en preload(), indexadas por ruta.
+const LEVEL_BACKGROUNDS = {};
+
 const LEVELS = [
   {
     name:    'Nivel 1',
     time:    30,
+    background: 'img/escenario_1.jpeg',
     candy:   { x: 195, y: 200, radius: 18 },
     anchors: [
       { x: 195, y: 80 },
@@ -16,6 +20,7 @@ const LEVELS = [
   {
     name:    'Nivel 2',
     time:    30,
+    background: 'img/escenario_1.jpeg',
     candy:   { x: 90, y: 180, radius: 18 },
     anchors: [
       { x: 77,  y: 80 },
@@ -31,6 +36,7 @@ const LEVELS = [
   },
   {
     name:    'Nivel 3',
+    background: 'img/escenario_1.jpeg',
     candy:   { x: 195, y: 260, radius: 18 },
     anchors: [
       { x: 70,  y: 120 },
@@ -42,6 +48,7 @@ const LEVELS = [
   {
     name:    'Nivel 4',
     time:    30,
+    background: 'img/escenario_1.jpeg',
     candy:   { x: 195, y: 460, radius: 18 },
     anchors: [
       { x: 195, y: 380 },
