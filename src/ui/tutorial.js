@@ -5,9 +5,12 @@
 // `repeat` veces. Los tiempos van en segundos, como en el XML.
 class Tutorial {
 
-  // Fuente del texto: null = la fuente por defecto de p5. Punto de cambio para la pista E:
-  // asignar aquí la fuente cargada con loadFont() (en DX, gooddog_new-webfont.ttf de SmallFont).
-  static font = null;
+  // Fuente del texto: la TTF de SmallFont (gooddog_new-webfont.ttf), que es con la que DX dibuja los
+  // tutoriales (SkiaFont, no la hoja bitmap small_font). Fonts.preload() la carga en preload();
+  // si falló (sin `font` de opentype) se usa la fuente por defecto de p5.
+  static get font () {
+    return Fonts.ttf && Fonts.ttf.font ? Fonts.ttf : null;
+  }
 
   constructor (data, game) {
     this.data = data;
@@ -143,32 +146,41 @@ class Tutorial {
 
   // Texto de TEXTS[clave] (si falta, la clave tal cual) con (x, y) en la esquina superior izquierda de una caja
   // de ancho `width` y cada línea centrada en ella (Text con alineación HCENTER y ancla TOP|LEFT en DX).
+  // Como SkiaTextRenderer.Draw: la primera línea empieza TopSpacing más abajo, la línea base está a la
+  // altura del ascendente y cada línea baja (int)(alto de fuente + LineSpacing) = 77.
   drawText (x, y) {
     const T = TUTORIAL_T;
     if (Tutorial.font) textFont(Tutorial.font);
     if (!this.lines) this.layoutText();
 
     textSize(this.fontSize);
-    textAlign(CENTER, BASELINE);
+    textAlign(LEFT, BASELINE);
     noStroke();
     fill(T.textColor);
 
-    const w = this.data.width || 0;
-    const lineHeight = T.fontHeight + T.lineSpacing;
+    const lineHeight = Math.floor(T.fontHeight + T.lineSpacing);
     const angle = this.data.angle || 0;
     if (angle) {
-      const h = T.topSpacing + this.lines.length * lineHeight;
-      translate(x + w / 2, y + h / 2);
+      // Gira sobre el centro de la caja (BaseElement: width/2, height/2), con el alto de
+      // Text.SetStringandWidth: (alto de fuente + LineSpacing) × líneas − LineSpacing + TopSpacing.
+      const h = (T.fontHeight + T.lineSpacing) * this.lines.length - T.lineSpacing + T.topSpacing;
+      translate(x + this.boxWidth / 2, y + h / 2);
       rotate(radians(angle));
-      translate(-(x + w / 2), -(y + h / 2));
+      translate(-(x + this.boxWidth / 2), -(y + h / 2));
     }
 
     const baseline = y + T.topSpacing + textAscent();
-    this.lines.forEach((line, i) => text(line, x + w / 2, baseline + i * lineHeight));
+    this.lines.forEach((line, i) => {
+      text(line.str, x + (this.boxWidth - line.w) / 2, baseline + i * lineHeight);
+    });
   }
 
-  // Tamaño de letra con el que ascendente + descendente mide TUTORIAL_T.fontHeight (como SkiaFont en DX),
-  // y ajuste de línea por palabras al ancho `width`; una palabra más larga que la caja ocupa su propia línea.
+  // Tamaño de letra con el que ascendente + descendente mide TUTORIAL_T.fontHeight (como SkiaFont en DX)
+  // y ajuste de línea de Text.FormatText: se parte por espacios y una palabra pasa a la línea siguiente
+  // si con ella (y su espacio) la línea supera `width`; una palabra más larga que la caja se queda sola
+  // en su línea. Los anchos son la suma de los avances de cada letra (FontGeneric.StringWidth); GoodDog
+  // no trae tabla de kerning, así que coinciden con textWidth(). Sin `width` la caja mide lo que la
+  // línea más larga (SetString con ancho −1).
   layoutText () {
     textSize(100);
     this.fontSize = TUTORIAL_T.fontHeight * 100 / (textAscent() + textDescent());
@@ -177,19 +189,21 @@ class Tutorial {
     const key = this.data.text;
     const str = TEXTS[key] !== undefined ? TEXTS[key] : String(key);
     const width = this.data.width || Infinity;
-    this.lines = [];
+    const lines = [];
     for (const paragraph of str.split('\n')) {
       let line = '';
       for (const word of paragraph.split(' ')) {
         const next = line ? `${line} ${word}` : word;
         if (line && textWidth(next) > width) {
-          this.lines.push(line);
+          lines.push(line);
           line = word;
         } else {
           line = next;
         }
       }
-      this.lines.push(line);
+      lines.push(line);
     }
+    this.lines = lines.map(s => ({ str: s, w: textWidth(s) }));
+    this.boxWidth = this.data.width || Math.max(...this.lines.map(l => l.w));
   }
 }

@@ -40,14 +40,25 @@ MAP_SCALE = 3          # GameScene.Show.cs: mapScale = 3; también MoverPathScal
 
 # Reemplazos por clave sobre es.json. Los textos del DX hablan de "deslizar el dedo" y "tocar";
 # aquí solo hay ratón. TUTORIAL_LVL_1_14_01 no existe en es.json (solo en en.json:
-# "You can skip the level in the pause menu"), así que se traduce. TUTORIAL_LVL_1_8_01 también
-# corrige la errata "reinciar" del DX. Sin punto final en 1_5_01 y 1_8_01, como en el original
-# (el de 1_8_01 sigue con el signo del botón).
+# "You can skip the level in the pause menu"; DX en español muestra ese texto en inglés), así que
+# se traduce. TUTORIAL_LVL_1_8_01 también corrige la errata "reinciar" del DX, y usa "pulsando"
+# porque su segunda línea tiene que medir lo mismo que "tocando el botón": el signo del botón
+# (tutorial08) va justo después, y con "haciendo clic en el botón" la línea llegaba debajo del
+# signo. Sin punto final en 1_5_01, 1_8_01 y 1_14_01, como en el original (el de 1_8_01 sigue
+# con el signo del botón).
 TEXT_OVERRIDES = {
     'TUTORIAL_LVL_1_1_01': 'Arrastra el ratón para cortar la cuerda.',
     'TUTORIAL_LVL_1_5_01': 'Haz clic en la burbuja para hacerla estallar',
-    'TUTORIAL_LVL_1_8_01': 'Puedes reiniciar el nivel haciendo clic en el botón',
-    'TUTORIAL_LVL_1_14_01': 'Puedes saltar el nivel desde el menú de pausa.',
+    'TUTORIAL_LVL_1_8_01': 'Puedes reiniciar el nivel pulsando el botón',
+    'TUTORIAL_LVL_1_14_01': 'Puedes saltar el nivel desde el menú de pausa',
+}
+
+# --- Ajustes de jugabilidad respecto al mapa de DX (§6 del plan) ------------------------------
+
+# Largo de cuerdas fijas cambiado a mano: (nivel, x, y del grab en el mapa) → length en VIEW.
+# Nivel 22, ancla central: 273 en vez de 300 (con 300 el nivel se ganaba sin las estrellas).
+ANCHOR_LENGTH_OVERRIDES = {
+    (22, 321, 241): 273,
 }
 
 # --- Atributos que se ignoran porque en la Caja 1 siempre tienen el valor neutro --------------
@@ -166,6 +177,7 @@ def convert_map(path, index):
     candy = None
     omnom = None
     anchors, auto_anchors, stars, bubbles, spikes = [], [], [], [], []
+    used_overrides = set()
 
     objects = layer(root, 'Objects')
     if objects is None:
@@ -190,6 +202,10 @@ def convert_map(path, index):
             entry = t.point(node, where)
             radius = num(node.get('radius', '-1'), where)
             length = scaled(num(node.get('length'), where))
+            override = (index, num(node.get('x'), where), num(node.get('y'), where))
+            if override in ANCHOR_LENGTH_OVERRIDES:
+                length = ANCHOR_LENGTH_OVERRIDES[override]
+                used_overrides.add(override)
             if radius == -1:
                 entry['length'] = length
                 anchors.append(entry)
@@ -228,6 +244,9 @@ def convert_map(path, index):
 
     if candy is None or omnom is None:
         raise ConvertError(f'{where_map}: falta el dulce o Om Nom')
+    missing = {k for k in ANCHOR_LENGTH_OVERRIDES if k[0] == index} - used_overrides
+    if missing:
+        raise ConvertError(f'{where_map}: ANCHOR_LENGTH_OVERRIDES sin grab que coincida: {sorted(missing)}')
 
     tutorials, text_keys = convert_tutorials(root, t, where_map)
 
@@ -311,6 +330,9 @@ def convert_tutorials(root, t, where_map):
             if node.get('inArea') is not None:
                 entry['inArea'] = convert_area(node.get('inArea'), t, where)
             tutorials.append(entry)
+    # Orden de dibujo de DX (GameScene.Draw: DrawTexts y luego DrawImages): primero todos los
+    # textos y después todos los signos, cada grupo en el orden del XML. Level.draw los recorre así.
+    tutorials.sort(key=lambda e: e['type'] != 'text')
     return tutorials, text_keys
 
 

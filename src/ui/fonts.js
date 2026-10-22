@@ -1,7 +1,7 @@
 // Fuentes del DX. En DX los textos se generan con GoodDog (gooddog_new-webfont.ttf) y tres
 // configuraciones (Resources.GetConfiguration); aquí se usan las mismas como hojas bitmap:
 // - big:     BigFont, blanca con borde y sombra (títulos, botones, números del menú de niveles)
-// - small:   SmallFont, negra (rótulos de resultados, etiqueta del nivel en la pausa, tutoriales)
+// - small:   SmallFont, negra (rótulos de resultados, etiqueta del nivel en la pausa)
 // - numbers: FontNumbersBig, negra (puntaje de la pantalla de resultados)
 // Cada cuadro del atlas trae su `char`; el espacio no viene en la hoja y usa `space`.
 const BITMAP_FONTS = {
@@ -10,7 +10,8 @@ const BITMAP_FONTS = {
   numbers: { sheet: 'font_numbers_big', space: 30, spacing: 2 },
 };
 
-// TTF para lo que se dibuja antes de que lleguen las hojas (pantalla de carga).
+// TTF para lo que se dibuja antes de que lleguen las hojas (pantalla de carga) y para los textos
+// de tutorial, que necesitan ajuste de línea con las medidas de SmallFont (ui/tutorial.js).
 const TTF_FONT_PATH = 'assets/fonts/gooddog_new-webfont.ttf';
 
 const Fonts = {

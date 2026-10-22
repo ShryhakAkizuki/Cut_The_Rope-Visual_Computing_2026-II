@@ -16,6 +16,8 @@ const LEVELS = [
       { x: 963, y: 1083 },
     ],
     tutorials: [
+      { type: 'text', x: 1011, y: 75, text: 'TUTORIAL_LVL_1_1_01', width: 390, duration: 10 },
+      { type: 'text', x: 1089, y: 888, text: 'TUTORIAL_LVL_1_1_02', width: 300, duration: 10 },
       { type: 'sign', sign: 10, x: 663, y: 561, angle: 10, path: [230, 0, 440, 0], moveSpeed: 440, ease: 'in,out', moveDelay: 1.5, repeat: 2, fadeIn: 0.5, fadeOut: 0.5, duration: 2.1 },
       { type: 'sign', sign: 1, x: 807, y: 378, duration: 10 },
       { type: 'sign', sign: 1, x: 651, y: 378, duration: 10 },
@@ -23,8 +25,6 @@ const LEVELS = [
       { type: 'sign', sign: 1, x: 1119, y: 378, duration: 10 },
       { type: 'sign', sign: 1, x: 1275, y: 378, duration: 10 },
       { type: 'sign', sign: 4, x: 1173, y: 1245, duration: 10 },
-      { type: 'text', x: 1011, y: 75, text: 'TUTORIAL_LVL_1_1_01', width: 390, duration: 10 },
-      { type: 'text', x: 1089, y: 888, text: 'TUTORIAL_LVL_1_1_02', width: 300, duration: 10 },
     ],
   },
   {
@@ -43,8 +43,8 @@ const LEVELS = [
       { x: 1497, y: 750 },
     ],
     tutorials: [
-      { type: 'sign', sign: 9, x: 255, y: 945 },
       { type: 'text', x: 309, y: 834, text: 'TUTORIAL_LVL_1_2_01', width: 630 },
+      { type: 'sign', sign: 9, x: 255, y: 945 },
     ],
   },
   {
@@ -98,10 +98,10 @@ const LEVELS = [
       { x: 777, y: 1173 },
     ],
     tutorials: [
-      { type: 'sign', sign: 4, x: 981, y: 1173, angle: 20 },
-      { type: 'sign', sign: 5, x: 1134, y: 234, showOn: 'bubbled', inArea: { x: 879, y: 0, w: 558, h: 399 } },
       { type: 'text', x: 894, y: 900, text: 'TUTORIAL_LVL_1_5_02', width: 480 },
       { type: 'text', x: 516, y: 132, text: 'TUTORIAL_LVL_1_5_01', width: 480, showOn: 'bubbled', inArea: { x: 879, y: 0, w: 558, h: 399 } },
+      { type: 'sign', sign: 4, x: 981, y: 1173, angle: 20 },
+      { type: 'sign', sign: 5, x: 1134, y: 234, showOn: 'bubbled', inArea: { x: 879, y: 0, w: 558, h: 399 } },
     ],
   },
   {
@@ -121,8 +121,8 @@ const LEVELS = [
       { x: 963, y: 879 },
     ],
     tutorials: [
-      { type: 'sign', sign: 9, x: 717, y: 195 },
       { type: 'text', x: 540, y: 240, text: 'TUTORIAL_LVL_1_6_01', width: 360 },
+      { type: 'sign', sign: 9, x: 717, y: 195 },
     ],
   },
   {
@@ -162,8 +162,8 @@ const LEVELS = [
       { x: 1236, y: 1101 },
     ],
     tutorials: [
-      { type: 'sign', sign: 8, x: 1089, y: 1056 },
       { type: 'text', x: 531, y: 912, text: 'TUTORIAL_LVL_1_8_01', width: 600 },
+      { type: 'sign', sign: 8, x: 1089, y: 1056 },
     ],
   },
   {
@@ -204,8 +204,8 @@ const LEVELS = [
       { x: 984, y: 1035 },
     ],
     tutorials:   [
-      { type: 'sign', sign: 4, x: 948, y: 513 },
       { type: 'text', x: 819, y: 159, text: 'TUTORIAL_LVL_1_10_01', width: 660 },
+      { type: 'sign', sign: 4, x: 948, y: 513 },
     ],
   },
   {
@@ -249,8 +249,8 @@ const LEVELS = [
       { x: 846, y: 1038 },
     ],
     tutorials:   [
-      { type: 'sign', sign: 9, x: 651, y: 192 },
       { type: 'text', x: 510, y: 231, text: 'TUTORIAL_LVL_1_12_01', width: 300 },
+      { type: 'sign', sign: 9, x: 651, y: 192 },
     ],
   },
   {
@@ -294,8 +294,8 @@ const LEVELS = [
       { x: 1194, y: 633 },
     ],
     tutorials:   [
-      { type: 'sign', sign: 9, x: 1086, y: 891 },
       { type: 'text', x: 891, y: 936, text: 'TUTORIAL_LVL_1_14_01', width: 420 },
+      { type: 'sign', sign: 9, x: 1086, y: 891 },
     ],
   },
   {
@@ -343,8 +343,8 @@ const LEVELS = [
       { x: 957, y: 687, size: 2, angle: 0 },
     ],
     tutorials: [
-      { type: 'sign', sign: 6, x: 594, y: 1098 },
       { type: 'text', x: 660, y: 987, text: 'TUTORIAL_LVL_1_16_01', width: 600 },
+      { type: 'sign', sign: 6, x: 594, y: 1098 },
     ],
   },
   {
@@ -436,12 +436,12 @@ const LEVELS = [
       { x: 792, y: 930, size: 4, angle: 100 },
     ],
     tutorials:   [
+      { type: 'text', x: 609, y: 138, text: 'TUTORIAL_LVL_1_20_01', width: 720 },
       { type: 'sign', sign: 1, x: 642, y: 330 },
       { type: 'sign', sign: 1, x: 801, y: 330 },
       { type: 'sign', sign: 1, x: 960, y: 330 },
       { type: 'sign', sign: 1, x: 1110, y: 327 },
       { type: 'sign', sign: 1, x: 1272, y: 327 },
-      { type: 'text', x: 609, y: 138, text: 'TUTORIAL_LVL_1_20_01', width: 720 },
     ],
   },
   {
