@@ -14,7 +14,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 > Esta sección es lo primero que se lee al iniciar una sesión. Mantenerla al día cada vez que cambie la fase o se cierre una decisión.
 
-- **Fase actual:** el usuario sacó las 75 estrellas (los 25 niveles con 3 estrellas, §6). Las entidades ya se dibujan con las hojas del DX (§8). Falta, en paralelo con 2 agentes en archivos separados: sonido (§11) y tutoriales por nivel (§7).
+- **Fase actual:** el usuario sacó las 75 estrellas (los 25 niveles con 3 estrellas, §6). Las entidades ya se dibujan con las hojas del DX (§8). Integrados los tutoriales (§7) y el sonido con música y botón de silencio (§11), sin commitear. Falta la estela del corte y la pantalla de resultados animada (§11), y la documentación (§12).
 
 ---
 
@@ -40,8 +40,8 @@ Se puede hacer en secuencia o con 2–3 agentes en archivos separados.
 
 - [x] Ajuste de física (§5)
 - [x] ~~Sprites de las entidades: fondo, dulce, Om Nom y soporte, estrellas, burbujas (§8)~~
-- [ ] Tutoriales por nivel (§7)
-- [ ] Conectar los eventos de sonido (§11)
+- [x] ~~Tutoriales por nivel (§7)~~
+- [x] ~~Conectar los eventos de sonido (§11)~~
 - [ ] Estela del corte y pantalla de resultados animada (§11)
 - [x] ~~Comprobar los 25 niveles con 3 estrellas (tabla de la §6)~~
 - [ ] Documentación y entrega (§12)
@@ -150,8 +150,8 @@ Ajuste respecto al mapa de DX: en el nivel 22 la cuerda del ancla central tiene 
 
 Los datos de cada nivel ya están en `levels.js`/`texts.js` y los dibuja `ui/tutorial.js`. Comportamiento de referencia en `GameMain/Tutorials/` del decomp.
 
-- [ ] Fuente del texto: asignar `Tutorial.font` (en DX los tutoriales usan SmallFont; las fuentes bitmap están en `ui/fonts.js`). Con la fuente por defecto, en el nivel 1 la última línea se monta sobre las flechas
-- [ ] Comprobar que el texto y los signos salen como en DX en los niveles 2, 5, 6, 8, 10, 12, 14, 16 y 20. El 8 señala el botón Reiniciar; el 14 habla de Saltar nivel en el menú de pausa (texto solo en `en.json`); el 20 lleva una fila de 5 flechas (`tutorial01`)
+- [x] ~~Fuente del texto: asignar `Tutorial.font` (en DX los tutoriales usan SmallFont; las fuentes bitmap están en `ui/fonts.js`). Con la fuente por defecto, en el nivel 1 la última línea se monta sobre las flechas~~
+- [x] ~~Comprobar que el texto y los signos salen como en DX en los niveles 2, 5, 6, 8, 10, 12, 14, 16 y 20. El 8 señala el botón Reiniciar; el 14 habla de Saltar nivel en el menú de pausa (texto solo en `en.json`); el 20 lleva una fila de 5 flechas (`tutorial01`)~~
 
 ## 8. Gráficos con las hojas del DX
 
@@ -175,8 +175,8 @@ Los cuadros de cada hoja están en `GFX_T` (`config.js`).
 
 Detalle y referencias en [referencia-dx.md](referencia-dx.md). El módulo de sonido es `core/audio.js` (tabla nombre → archivo → evento al principio del archivo; `Sound.play`, `Sound.playMusic`, `Sound.toggleMute`).
 
-- [ ] Música de menú y de juego según el estado, con botón para silenciar en la UI
-- [ ] Conectar los eventos de sonido: corte, autocuerda, estrellas, burbuja, dulce roto, Om Nom, victoria, botones y pausa
+- [x] ~~Música de menú y de juego según el estado, con botón para silenciar en la UI~~
+- [x] ~~Conectar los eventos de sonido: corte, autocuerda, estrellas, burbuja, dulce roto, Om Nom, victoria, botones y pausa~~
 - [ ] Estela blanca del corte que sigue al ratón (`ClassicFingerTrace.cs`)
 - [ ] Pantalla de resultados con conteo animado de bonus (`BoxOpenClose.cs`)
 

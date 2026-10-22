@@ -57,9 +57,43 @@ class Hud {
   }
 }
 
+// Botón de silencio (ToggleButton de sonido de DX): fondo de menu_options_packed con el icono de
+// sonido; silenciado, el icono se apaga y lleva la cruz. Solo dibuja: el clic lo atiende Game.
+class SoundToggle extends Button {
+
+  constructor () {
+    const T = SOUND_BUTTON_T;
+    const size = Sprites.quadSize(T.sheet, T.upQuad);
+    super(0, 0, size.w, size.h, '');
+  }
+
+  draw (mx, my) {
+    if (!this.visible) return;
+    const T = SOUND_BUTTON_T;
+    const hover = this.contains(mx, my);
+    const bg = Sprites.quadSize(T.sheet, T.upQuad);
+    const icon = Sprites.quadSize(T.sheet, T.iconQuad);
+    const ix = (bg.w - icon.w) / 2;
+    const iy = (bg.h - icon.h) / 2;
+
+    push();
+    translate(this.x, this.y);
+    Sprites.drawQuad(T.sheet, hover ? T.downQuad : T.upQuad, 0, 0);
+    if (Sound.muted) tint(128, 128);
+    Sprites.drawQuad(T.sheet, T.iconQuad, ix, iy);
+    noTint();
+    if (Sound.muted) {
+      const cross = Sprites.quadSize(T.sheet, T.crossQuad);
+      Sprites.drawQuad(T.sheet, T.crossQuad, ix + icon.w - cross.w / 2, iy + icon.h - cross.h);
+    }
+    pop();
+  }
+}
+
 // Menú de pausa: la hoja de cartón rasgado (menu_pause) cuelga de arriba con el nombre del
 // nivel, y en el centro una columna de botones largos (menu_buttons 0/1 con BigFont), como el
-// VBox de GameController: Continuar, Reiniciar, Saltar nivel y Elegir nivel.
+// VBox de GameController: Continuar, Reiniciar, Saltar nivel y Elegir nivel, con la fila de
+// audio (aquí solo el botón de silencio) debajo.
 class PauseMenu {
 
   constructor () {
@@ -77,6 +111,10 @@ class PauseMenu {
       b.centerAt(VIEW.w / 2, y);
       y += h + UI_T.pauseButtonGap;
     }
+
+    this.soundToggle = new SoundToggle();
+    const last = list[list.length - 1];
+    this.soundToggle.centerAt(VIEW.w / 2, last.y + last.h + SOUND_BUTTON_T.pauseGap + this.soundToggle.h / 2);
   }
 
   draw (state, pointer) {
@@ -96,6 +134,7 @@ class PauseMenu {
     Fonts.draw('small', label, VIEW.w / 2, 80, { scale: 0.9 });
 
     for (const b of Object.values(this.buttons)) b.draw(pointer.x, pointer.y);
+    this.soundToggle.draw(pointer.x, pointer.y);
   }
 }
 

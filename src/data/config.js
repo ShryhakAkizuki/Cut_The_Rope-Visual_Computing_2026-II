@@ -128,6 +128,26 @@ const AUDIO_T = {
   musicVolume: 0.7,
   musicFadeMs: 250,           // fundido al parar o cambiar de pista (evita el chasquido)
   storageKey:  'ctr_muted_v1',
+
+  // Momentos de los sonidos de Om Nom en DX (GameScene.Update, LoadTarget, GameLost)
+  mouthOpenDistance: 200,     // MouthOpenDistance (modelo de PC): abre la boca con el dulce a menos de esto
+  mouthCloseDelay:   1,       // TryOpenMouth/AdvanceMouthClose: s mínimos con la boca abierta
+  greetDelay:        1.3,     // LoadTarget: el saludo llega 1,3 s después de cargar el nivel
+  sadDelayAfterBreak: 0.3,    // BreakCandyBody: ScheduleGameLost(0,3) antes del sonido triste
+  omnomVoiceChance:  0.5,     // PlayOmNomSound: saludo y emoción suenan la mitad de las veces
+};
+
+// [sonido] botón de silencio con menu_options_packed, como CreateAudioElementForQuadwithCrosspressediconOffset
+// de DX: fondo (0 normal, 1 presionado), icono de sonido (2) y, si está silenciado, el icono a
+// RGBA(0.5, 0.5, 0.5, 0.5) con la cruz (4) en su esquina inferior derecha.
+const SOUND_BUTTON_T = {
+  sheet:      'menu_options_packed',
+  upQuad:     0,
+  downQuad:   1,
+  iconQuad:   2,
+  crossQuad:  4,
+  pauseGap:   5,              // VBox del menú de pausa: la fila de audio va debajo de los botones
+  menuMargin: 30,             // menú de niveles (DX lo tiene en Opciones): esquina superior izquierda
 };
 
 // [tutoriales] pista F

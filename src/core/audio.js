@@ -14,6 +14,8 @@
 // El navegador no deja sonar nada hasta el primer gesto: el primer clic o tecla en el documento
 // reanuda el AudioContext. Antes de eso play() no hace nada y playMusic() deja la pista pendiente.
 //
+// Todos los efectos y la música se piden desde Game (core/game.js); las entidades no suenan solas.
+//
 // Efectos (nombre → archivo → evento del juego, según el decomp DX):
 //   cut1..cut4    rope_bleak_1..4.wav   cortar una cuerda; DX elige por lo floja que está (Bungee.relaxed 0..3)
 //   ropeGet       rope_get.wav          se crea una cuerda automática

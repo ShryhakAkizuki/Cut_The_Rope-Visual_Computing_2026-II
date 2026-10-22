@@ -27,6 +27,7 @@ const SPRITE_SHEETS = [
   'menu_buttons',
   'menu_bgr',
   'menu_popup',
+  'menu_options_packed',
   'menu_results',
   'confetti_particles',
   'small_font',
