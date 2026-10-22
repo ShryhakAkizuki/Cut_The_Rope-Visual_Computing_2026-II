@@ -16,10 +16,10 @@ class Game {
     this.pauseMenu = new PauseMenu();
     this.winPanel = new WinPanel();
 
+    // Matter solo detecta sensores: el dulce y las cuerdas son puntos de Verlet (core/verlet.js).
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
-    // Con gravity.scale = 0.001, Matter aplica gravity.y × 1000 px/s².
-    this.engine.gravity.y = TUNING.gravityY / 1000;
+    this.engine.gravity.y = 0;
 
     this.level = null;
     this.camera = new Camera();
@@ -36,9 +36,7 @@ class Game {
       for (const pair of event.pairs) {
         const labels = [pair.bodyA.label, pair.bodyB.label];
         if (!labels.includes('candy')) continue;
-        if (labels.includes('star')) {
-          this.onStarCollected(pair.bodyA.label === 'star' ? pair.bodyA : pair.bodyB);
-        } else if (labels.includes('bubble')) {
+        if (labels.includes('bubble')) {
           this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
         } else if (labels.includes('autoAnchor')) {
           // [autocuerdas] pista B: sin uso; AutoAnchor detecta por distancia en update() y no tiene body
@@ -47,12 +45,7 @@ class Game {
           // quita el dulce del mundo y pasa a LOSE; el dulce roto se anima en Candy.draw.
           if (this.state === STATE.PLAYING && !this.candy.broken) {
             this.popBubble();
-            for (const rope of this.ropes) {
-              if (!rope.constraint) continue;
-              Matter.Composite.remove(this.world, rope.constraint);
-              rope.constraint = null;
-              rope.isCut = true;
-            }
+            for (const rope of this.ropes) rope.release();
             this.candy.shatter();
             Matter.Composite.remove(this.world, this.candy.body);
             this.state = STATE.LOSE;
@@ -121,16 +114,29 @@ class Game {
 
     // Como en DX, el reloj no corre durante el paneo inicial de la cámara.
     if (!this.camera.panning) this.time += dt / 1000;
-    if (this.candyBubble()) {
-      const b = this.candy.body;
-      const g = this.engine.gravity;
-      Matter.Body.applyForce(b, b.position, { x: 0, y: -b.mass * g.scale * g.y * TUNING.bubbleLift });
-    }
     // [púas] pista C: avance por path de púas y estrellas, antes del paso de física
     for (const s of this.spikes) s.update(dt);
     for (const s of this.stars) s.update(dt);
-    Matter.Engine.update(this.engine, 1000 / 60);
-    for (const rope of this.ropes) rope.update(dt);
+
+    // Orden de GameScene.Update de DX: cuerdas, punto del dulce y burbuja. Cuerdas y dulce avanzan
+    // con delta × ropePhysicsSpeed; los Mover y la burbuja, con delta.
+    const delta = TUNING.stepSeconds;
+    const ropeDelta = delta * TUNING.ropePhysicsSpeed;
+    for (const rope of this.ropes) rope.update(ropeDelta);
+    const point = this.candy.point;
+    point.update(ropeDelta);
+    if (this.candyBubble()) {
+      // ApplyImpulseDelta(−v / BubbleImpulseDamping + (0, BubbleImpulseY), delta)
+      const damping = TUNING.bubbleImpulseDamping;
+      point.applyImpulse(-point.v.x / damping, -point.v.y / damping + TUNING.bubbleImpulseY, delta);
+    }
+    this.candy.syncBody();
+    // Estrellas con las cajas de DX (Star.touches), antes del Engine.update para que una estrella
+    // tocada en el mismo frame de la victoria cuente.
+    for (const star of this.stars) {
+      if (!star.collected && star.touches(point.pos)) this.onStarCollected(star);
+    }
+    Matter.Engine.update(this.engine, delta * 1000);
     // [autocuerdas] pista B: desvanecimiento del círculo y unión por distancia (la cuerda va a this.ropes)
     for (const a of this.autoAnchors) a.update(dt, this);
     // [tutoriales] pista F
@@ -142,12 +148,9 @@ class Game {
     }
   }
 
-  onStarCollected (body) {
-    if (this.state !== STATE.PLAYING) return;
-    const star = this.stars.find((s) => s.body === body);
-    if (!star || star.collected) return;
+  onStarCollected (star) {
+    if (this.state !== STATE.PLAYING || star.collected) return;
     star.collected = true;
-    Matter.Composite.remove(this.world, star.body);
     this.starsCollected += 1;
   }
 
@@ -157,7 +160,6 @@ class Game {
     if (!bubble || bubble.captured || bubble.popped) return;
     bubble.capture(this.candy);
     Matter.Composite.remove(this.world, bubble.body);
-    this.candy.body.frictionAir = TUNING.bubbleFrictionAir;
   }
 
   candyBubble () {
@@ -168,7 +170,6 @@ class Game {
     const bubble = this.candyBubble();
     if (!bubble) return;
     bubble.pop();
-    this.candy.body.frictionAir = TUNING.candyFrictionAir;
   }
 
   onCandyEaten () {
@@ -195,7 +196,10 @@ class Game {
     if (this.state !== STATE.PLAYING || this.camera.blocksInput) return;
     const w1 = this.camera.toWorld(p1);
     const w2 = this.camera.toWorld(p2);
-    for (const rope of this.ropes) rope.tryCut(w1, w2);
+    // Como CutWithRazorOrLine1Line2Immediate, cada arrastre corta como mucho una cuerda.
+    for (const rope of this.ropes) {
+      if (rope.tryCut(w1, w2)) break;
+    }
   }
 
   onInput (px, py) {

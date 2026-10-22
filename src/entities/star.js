@@ -9,12 +9,13 @@ class Star {
         this.mover = createMover(x, y, path, moveSpeed);   // [púas] estrella móvil del nivel 24
     }
 
-    createBody () {
-        this.body = Matter.Bodies.circle(this.x, this.y, this.radius, {
-            label: 'star',
-            isStatic: true,
-            isSensor: true
-        });
+    // Sin body: Game prueba el contacto con touches() en cada paso (Level.build filtra los null).
+    createBody () {}
+
+    // GameObject.ObjectsIntersect de DX: la caja del dulce contra la de la estrella, bordes incluidos.
+    touches (pos) {
+        return Math.abs(pos.x + CANDY_STAR_BOX.dx - (this.x + STAR_BOX.dx)) <= CANDY_STAR_BOX.hw + STAR_BOX.hw
+            && Math.abs(pos.y + CANDY_STAR_BOX.dy - (this.y + STAR_BOX.dy)) <= CANDY_STAR_BOX.hh + STAR_BOX.hh;
     }
 
     // Avance por `path` (solo las estrellas móviles); se llama antes del paso de física.
@@ -23,7 +24,6 @@ class Star {
         this.mover.update(dt / 1000);
         this.x = this.mover.pos.x;
         this.y = this.mover.pos.y;
-        if (this.body) Matter.Body.setPosition(this.body, { x: this.x, y: this.y });
     }
 
     draw () {

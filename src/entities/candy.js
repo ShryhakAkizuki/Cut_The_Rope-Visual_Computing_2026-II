@@ -5,16 +5,25 @@ class Candy {
     this.y = y;
     this.radius = radius;
     this.body = null;
+    this.point = null;
     this.broken = null;   // [púas] estado del dulce roto
   }
 
+  // La física es el punto de Verlet (peso 1, como en DX); el body de Matter es un sensor que solo
+  // sigue al punto (syncBody) para que el collisionStart de Game detecte estrellas, burbujas, etc.
+  // No es estático porque Matter no busca colisiones entre dos bodies estáticos.
   createBody () {
+    this.point = new VerletPoint(this.x, this.y, 1);
     this.body = Matter.Bodies.circle(this.x, this.y, this.radius, {
       label: 'candy',
-      restitution: 0.3,
-      frictionAir: 0.01,
-      friction: 0.05
+      isSensor: true,
+      frictionAir: 0
     });
+  }
+
+  syncBody () {
+    Matter.Body.setPosition(this.body, this.point.pos);
+    Matter.Body.setVelocity(this.body, { x: 0, y: 0 });
   }
 
   // [púas] Dulce roto (CandyBreak.cs de DX): trozos de obj_candy_01_new que salen hacia arriba,

@@ -22,23 +22,27 @@ const TUNING = {
   timeBonusPerSecond: 100,
   defaultLevelTime:   30,
   gravityY:          784,   // px/s², GravityEarthY de DX (ya en el espacio ×3)
-  bubbleLift:         1.5,
-  bubbleFrictionAir:  0.05,
-  candyFrictionAir:   0.01,
+  stepSeconds:       1 / 60, // paso fijo de la simulación por frame
+  ropePhysicsSpeed:  1.4,   // ropePhysicsSpeed del mapa (1 en la Caja 1) × RopePhysicsSpeedMultiplier
+  bubbleImpulseY:    -40,   // BubbleImpulseY
+  bubbleImpulseDamping: 14, // BubbleImpulseDamping
   maxFrameDeltaMs:    100,
   loseMarginTop:     400,   // DX: GameScene.PointOutOfScreen
   loseMarginBottom:  400,
 };
 
 const ROPE_T = {
-  pieceLifetime:  3000,
-  pieceFadeStart: 2000,
-  tautEpsilon:    0.5,
-  curveSegments:  16,
-  lineWidth:      10,     // DX: Bungee.lineWidth
-  pieceRadius:    10,
-  // Dibujo como Bungee.DrawBungee y RopeColorHelper (piel por defecto, índice 0)
+  // Física de Bungee.cs y ConstrainedPoint.cs
   restSegmentLength:   105,  // BungeeRestLength: largo de reposo de cada tramo
+  partWeight:          0.02, // peso de los puntos intermedios (el dulce pesa 1)
+  cutPartWeight:       1e-5, // peso de los puntos tras el corte (RemovePart)
+  relaxationTimes:     30,   // BUNGEE_RELAXION_TIMES
+  qcpTimestep:         0.016, // QCP_FIXED_TIMESTEP: los puntos de la cuerda integran con delta × 0,016
+  cutTime:             2,    // SetCut: segundos (de simulación) del desvanecimiento
+  cutFadeTime:         1.95, // GetCutFadeAlpha: alpha = cutTime / 1,95; antes, un instante en blanco
+  relaxThresholds:     [0.3, 1, 4], // BungeeRelaxThresholdSoft/Medium/Hard → Bungee.relaxed 0..3
+  lineWidth:      10,     // DX: Bungee.lineWidth
+  // Dibujo como Bungee.DrawBungee y RopeColorHelper (piel por defecto, índice 0)
   stretchRedThreshold: 7,    // BungeeStretchRedThreshold: px de más por tramo para ponerse roja
   samplesPerSegment:   4,    // BungeeDrawSamplePoints
   stripeSamples:       3,    // muestras por franja de color
@@ -175,5 +179,11 @@ const OMNOM_RADIUS  = 54;
 const STAR_RADIUS   = 42;
 const BUBBLE_RADIUS = 60;
 const ANCHOR_RADIUS = 20;
+
+// Cajas de recolección de estrellas (GetCandyBoundingBox/GetStarBoundingBox de DX, modelo de PC):
+// desfase del centro respecto a la posición del objeto y semiancho/semialto. DX las cruza con
+// ObjectsIntersect (rectángulo contra rectángulo), más amplio en diagonal que dos círculos.
+const CANDY_STAR_BOX = { dx: 1.5, dy: 0, hw: 56, hh: 52 };    // bb (142, 157, 112, 104) en un lienzo de 393×418
+const STAR_BOX       = { dx: -7, dy: -6.5, hw: 41, hh: 41 };  // bb (70, 64, 82, 82) en el cuadro 0 de 236×223
 
 const PROGRESS_KEY = 'ctr_progress_v1';

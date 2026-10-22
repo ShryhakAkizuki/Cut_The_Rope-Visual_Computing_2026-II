@@ -31,7 +31,7 @@ LEVEL_COUNT = 25
 BOX = 1
 LOCALE = 'es'          # tutoriales: solo los nodos con este locale (capa `Es`)
 
-# --- Transformación de coordenadas (§1 del plan, D1) -----------------------------------------
+# --- Transformación de coordenadas (D1 del plan) ----------------------------------------------
 
 VIEW_W = 1920
 MAP_SCALE = 3          # GameScene.Show.cs: mapScale = 3; también MoverPathScale para los path

@@ -37,7 +37,7 @@ Todos los números de este documento están en el espacio DX (mapa × 3), salvo 
 | Cámara | `GameMain/GameScene.Show.cs:189-196`, `GameScene.cs:426-427` | Solo se mueve si el mapa × 3 supera 2560×1440 |
 | Borde de derrota | `GameMain/GameScene.cs:63-64` | Relativo al tamaño del mapa, no al de la pantalla |
 
-**Tamaño de los mapas de la Caja 1** (`<map width height>` de la capa `settings`): la mayoría mide 320×480, pero los niveles 2, 3, 10, 13, 17, 22 y 24 miden **640×480** y el nivel 15 mide **320×960**. Cómo encajarlos en nuestro `VIEW` es la decisión **D1** de [plan-caja1.md](plan-caja1.md#d1-mapas-que-no-miden-320480--bloquea-la-1-y-el-conversor).
+**Tamaño de los mapas de la Caja 1** (`<map width height>` de la capa `settings`): la mayoría mide 320×480, pero los niveles 2, 3, 10, 13, 17, 22 y 24 miden **640×480** y el nivel 15 mide **320×960**. Cómo encajarlos en nuestro `VIEW` es la decisión **D1** de [plan-caja1.md](plan-caja1.md#d1-coordenadas-y-escala).
 
 ## 3. Datos
 
@@ -92,7 +92,7 @@ No es código para copiar línea por línea: es la referencia del comportamiento
 | Estela del corte | `GameMain/FingerTraces/ClassicFingerTrace.cs` | Cinta Bézier blanca que sigue al ratón y se desvanece | Caja 1 |
 | Cortes simultáneos | `ROPE_CUT_AT_ONCE_TIMEOUT` | Contar las cuerdas cortadas en 0,1 s (tutorial del nivel 20) | Caja 1 |
 | Pantalla de resultados | `GameMain/BoxOpenClose.cs` | Conteo del bonus de estrellas y de tiempo hacia el total | Caja 1 |
-| Cuerda como cadena de puntos | `Framework/Physics/ConstrainedPoint.cs`, `Framework/Physics/MaterialPoint.cs`, `GameMain/Bungee.cs:597-710` | DX usa una cadena de puntos con restricciones de distancia (tramos de 105, 30 iteraciones de relajación); hoy usamos un solo `Constraint` de Matter. Daría el balanceo y el corte del original, pero la cuerda dejaría de simularse en Matter, que es la física elegida para el proyecto. | Evaluar |
+| Cuerda como cadena de puntos | `Framework/Physics/ConstrainedPoint.cs`, `Framework/Physics/MaterialPoint.cs`, `GameMain/Bungee.cs:597-710` | DX usa una cadena de puntos con restricciones de distancia (tramos de 105, 30 iteraciones de relajación); se porta según D2 (Matter queda solo para los sensores); tareas en la §5 del plan. | Caja 1 |
 | Om Nom abre la boca | `MOUTH_OPEN_RADIUS`, `GameMain/TargetIdleState.cs`, `TargetFeedingState.cs` | Cambiar de cuadro cuando el dulce está cerca | Fuera (es animación) |
 
 ## 7. Imágenes

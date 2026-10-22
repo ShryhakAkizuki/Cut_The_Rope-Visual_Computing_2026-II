@@ -473,7 +473,7 @@ const LEVELS = [
     anchors: [
       { x: 1350, y: 309, length: 300 },
       { x: 579, y: 309, length: 300 },
-      { x: 963, y: 723, length: 300 },
+      { x: 963, y: 723, length: 273 },
     ],
     stars:   [
       { x: 1302, y: 810 },
