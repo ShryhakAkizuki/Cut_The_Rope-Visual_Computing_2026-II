@@ -5,6 +5,7 @@ class Candy {
     this.y = y;
     this.radius = radius;
     this.body = null;
+    this.eaten = false;
   }
 
   createBody () {
@@ -17,7 +18,7 @@ class Candy {
   }
 
   draw () {
-    if (!this.body) return;
+    if (!this.body || this.eaten) return;
     const pos = this.body.position;
     noStroke();
     fill(COLORS.candy);

@@ -8,6 +8,9 @@ class Rope {
         this.constraint = null;
         this.game = null;
         this.isCut = false;
+        this.removed = false;
+        this.eaten = false;
+        this.eatenAge = 0;
         this.pieces = [];
     }
 
@@ -120,7 +123,41 @@ class Rope {
         return { upperBody, lowerBody, upper, lower, age: 0 };
     }
 
+    // Al comerse el dulce la cuerda se desvanece gradualmente (igual que los
+    // trozos de un corte) en lugar de desaparecer de golpe.
+    startEatenFade () {
+        if (this.eaten || this.removed) return;
+        this.eaten = true;
+        this.eatenAge = 0;
+    }
+
+    eatenAlpha () {
+        if (!this.eaten) return 255;
+        const t = Math.min(1, this.eatenAge / ROPE_T.eatenFadeDuration);
+        return Math.round(255 * (1 - t));
+    }
+
+    remove () {
+        if (this.removed || !this.game) return;
+        if (this.constraint) {
+            Matter.Composite.remove(this.game.world, this.constraint);
+            this.constraint = null;
+        }
+        for (const piece of this.pieces) {
+            Matter.Composite.remove(this.game.world,
+                [piece.upperBody, piece.lowerBody, piece.upper, piece.lower]);
+        }
+        this.pieces = [];
+        this.removed = true;
+    }
+
     update (delta_Time) {
+        if (this.eaten) {
+            this.eatenAge += delta_Time;
+            if (this.eatenAge >= ROPE_T.eatenFadeDuration) this.remove();
+            return;
+        }
+
         for (let i = this.pieces.length - 1; i >= 0; i--) {
             const piece = this.pieces[i];
             piece.age += delta_Time;
@@ -140,8 +177,12 @@ class Rope {
     }
 
     draw () {
+        if (this.removed) return;
+        const eatenAlpha = this.eatenAlpha();
+        if (eatenAlpha <= 0) return;
+
         if (!this.isCut && this.constraint) {
-            stroke(COLORS.rope);
+            stroke(COLORS.rope[0], COLORS.rope[1], COLORS.rope[2], eatenAlpha);
             strokeWeight(3);
             noFill();
             beginShape();
@@ -151,7 +192,7 @@ class Rope {
         }
 
         for (const piece of this.pieces) {
-            const alpha = this.pieceAlpha(piece.age);
+            const alpha = Math.round(this.pieceAlpha(piece.age) * eatenAlpha / 255);
             const u = piece.upperBody.position;
             const l = piece.lowerBody.position;
             const c = this.candy.body.position;
