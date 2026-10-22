@@ -1,8 +1,13 @@
 // Menú de niveles de la caja como en DX (MenuController.CreateLevelSelect y
 // CreateButtonForLevelPack): tapa de la caja de fondo, cuadrícula de 5 columnas con el cuadro 0
 // de menu_level_ui (o el 1 con candado), el número con BigFont y la insignia de estrellas
-// (cuadros 2 a 5 según las estrellas obtenidas). Arriba a la derecha, el total de estrellas.
+// (cuadros 2 a 5 según las estrellas obtenidas). Arriba a la derecha, el total de estrellas;
+// abajo a la izquierda, el botón Atrás hacia la pantalla de título (ui/main-menu.js).
 class LevelMenu {
+
+  constructor () {
+    this.backButton = createBackButton();
+  }
 
   // Centro de la casilla `i` y su área de clic, con las filas centradas como el HBox/VBox de DX.
   cellRect (i, count) {
@@ -59,6 +64,7 @@ class LevelMenu {
     }
 
     this.drawStarCounter(progress.totalStars(), progress.maxStars());
+    this.backButton.draw(pointer.x, pointer.y);
   }
 
   // "obtenidas/posibles" con una estrella al lado (CreateTextWithStar: BigFont a 0.7).

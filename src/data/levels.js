@@ -1,6 +1,5 @@
-// Generado por tools/convert-maps.py; no editar a mano.
 // Los 25 niveles de la Caja 1 (content/maps/1_N.xml del DX) en coordenadas de VIEW:
-// x·3 + offsetX, y·3, con offsetX = (1920 − anchoMapa·3) / 2. Formato en docs/plan-caja1.md.
+// x·3 + offsetX, y·3, con offsetX = (1920 − anchoMapa·3) / 2. Formato en docs/niveles.md.
 const LEVELS = [
   {
     name:      'Nivel 1',

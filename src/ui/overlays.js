@@ -72,19 +72,30 @@ class SoundToggle extends Button {
     const T = SOUND_BUTTON_T;
     const hover = this.contains(mx, my);
     const bg = Sprites.quadSize(T.sheet, T.upQuad);
+    const k = T.iconScale;
     const icon = Sprites.quadSize(T.sheet, T.iconQuad);
-    const ix = (bg.w - icon.w) / 2;
-    const iy = (bg.h - icon.h) / 2;
+    const iw = icon.w * k;
+    const ih = icon.h * k;
+    const ix = (bg.w - iw) / 2;
+    const iy = (bg.h - ih) / 2;
 
     push();
     translate(this.x, this.y);
     Sprites.drawQuad(T.sheet, hover ? T.downQuad : T.upQuad, 0, 0);
     if (Sound.muted) tint(128, 128);
-    Sprites.drawQuad(T.sheet, T.iconQuad, ix, iy);
+    push();
+    translate(ix, iy);
+    scale(k);
+    Sprites.drawQuad(T.sheet, T.iconQuad, 0, 0);
+    pop();
     noTint();
     if (Sound.muted) {
       const cross = Sprites.quadSize(T.sheet, T.crossQuad);
-      Sprites.drawQuad(T.sheet, T.crossQuad, ix + icon.w - cross.w / 2, iy + icon.h - cross.h);
+      push();
+      translate(ix + iw - cross.w * k / 2, iy + ih - cross.h * k);
+      scale(k);
+      Sprites.drawQuad(T.sheet, T.crossQuad, 0, 0);
+      pop();
     }
     pop();
   }

@@ -26,6 +26,8 @@ const SPRITE_SHEETS = [
   'menu_level_ui',
   'menu_buttons',
   'menu_bgr',
+  'menu_bgr_shadow',
+  'menu_extra_buttons',
   'menu_popup',
   'menu_options_packed',
   'menu_results',
@@ -40,6 +42,7 @@ const SPRITE_SHEETS = [
 const SPRITE_IMAGES = [
   'backgrounds/bgr_01_p1',
   'backgrounds/bgr_01_p2',
+  'cut_the_rope_logo',   // logo sin "DX" (propio, no sale del DX)
 ];
 
 const Sprites = {

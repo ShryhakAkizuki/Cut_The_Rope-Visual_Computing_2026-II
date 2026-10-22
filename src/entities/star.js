@@ -6,7 +6,7 @@ class Star {
         this.radius = STAR_RADIUS;
         this.body = null;
         this.collected = false;
-        this.mover = createMover(x, y, path, moveSpeed);   // [púas] estrella móvil del nivel 24
+        this.mover = createMover(x, y, path, moveSpeed);   // estrella móvil del nivel 24
     }
 
     // Sin body: Game prueba el contacto con touches() en cada paso (Level.build filtra los null).

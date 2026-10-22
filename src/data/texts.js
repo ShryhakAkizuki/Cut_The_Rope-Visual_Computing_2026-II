@@ -1,4 +1,3 @@
-// Generado por tools/convert-maps.py; no editar a mano.
 // Textos de los tutoriales de la Caja 1 (content/locales/es.json del DX), adaptados al ratón.
 const TEXTS = {
   TUTORIAL_LVL_1_1_01: 'Arrastra el ratón para cortar la cuerda.',

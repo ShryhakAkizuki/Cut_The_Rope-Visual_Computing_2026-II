@@ -1,4 +1,4 @@
-// Pista C: púas (`spike1`–`spike4`, Spikes.cs de DX). Tocarlas destruye el dulce.
+// Púas (`spike1`–`spike4`, Spikes.cs de DX). Tocarlas destruye el dulce.
 // La colisión es una banda rotada de largo SpikesQuadWidths[size − 1] y semialto 5 (UpdateRotation).
 class Spikes {
 

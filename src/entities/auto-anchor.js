@@ -1,4 +1,4 @@
-// Pista B: cuerda automática (`grab` con radius > 0), como AutoRadiusSource.cs y
+// Cuerda automática (`grab` con radius > 0), como AutoRadiusSource.cs y
 // GameScene.TryAutoAttachGrabToBody de DX. Crea la cuerda cuando el dulce entra al radio; es de un
 // solo uso y luego el círculo se desvanece. La detección es por distancia en Game.update(), así que
 // no tiene body (Level.build filtra los null).

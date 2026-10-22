@@ -47,7 +47,7 @@ function draw () {
         if (loading.done && Sprites.ready) {
             loading = null;
             game = new Game(LEVELS);
-            game.showMenu();
+            game.showTitle();
         }
         return;
     }

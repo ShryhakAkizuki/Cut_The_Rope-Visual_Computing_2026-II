@@ -1,4 +1,4 @@
-// Pista F: elementos de tutorial (texto, signos, dedo animado y fades), uno por nodo de `tutorials` en LEVELS.
+// Elementos de tutorial (texto, signos, dedo animado y fades), uno por nodo de `tutorials` en LEVELS.
 // Comportamiento de GameMain/Tutorials/ de DX: cada elemento espera su disparador (TutorialTrigger),
 // y al dispararse reproduce una línea de tiempo (TutorialPromptLoader.BuildEnvelope) con la opacidad
 // (fadeIn → duration → fadeOut) y, si tiene `path`, el recorrido del dedo (TutorialMotion), repetida

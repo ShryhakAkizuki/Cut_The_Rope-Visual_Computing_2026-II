@@ -3,10 +3,14 @@ class Game {
   constructor (levels) {
     this.levels = levels;
     this.levelIndex = 0;
-    this.state = STATE.MENU;
+    this.state = STATE.TITLE;
     this.autoPaused = false;
     this.view = { w: VIEW.w, h: VIEW.h };
 
+    // Flujo de menús: TITLE → (Jugar) MENU → nivel; TITLE → (Créditos) CREDITS; Atrás o Escape vuelven a TITLE.
+    this.title = new TitleScreen();
+    this.credits = new CreditsScreen();
+    this.screenShownAt = 0;      // millis() del último cambio de pantalla de menú (fundido)
     this.menu = new LevelMenu();
     this.progress = new ProgressStore(levels);
 
@@ -31,7 +35,7 @@ class Game {
     this.timeBonus = 0;
     this.score = 0;
 
-    // [sonido] estado de los sonidos que decide Game (las entidades no suenan solas).
+    // Estado de los sonidos que decide Game (las entidades no suenan solas).
     this.menuSoundToggle = new SoundToggle();
     this.menuSoundToggle.x = SOUND_BUTTON_T.menuMargin;
     this.menuSoundToggle.y = SOUND_BUTTON_T.menuMargin;
@@ -47,10 +51,8 @@ class Game {
         if (!labels.includes('candy')) continue;
         if (labels.includes('bubble')) {
           this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
-        } else if (labels.includes('autoAnchor')) {
-          // [autocuerdas] pista B: sin uso; AutoAnchor detecta por distancia en update() y no tiene body
         } else if (labels.includes('spikes')) {
-          // [púas] pista C: como BreakCandyBody de DX, revienta la burbuja, suelta las cuerdas,
+          // Como BreakCandyBody de DX, revienta la burbuja, suelta las cuerdas,
           // quita el dulce del mundo y pasa a LOSE; el dulce roto se anima en Candy.draw.
           if (this.state === STATE.PLAYING && !this.candy.broken) {
             this.popBubble();
@@ -80,8 +82,15 @@ class Game {
   get tutorials () { return this.level ? this.level.tutorials : []; }
 
   onKeyDown (key) {
-    if (this.state === STATE.MENU) return;
     const k = String(key).toLowerCase();
+    if (this.state === STATE.TITLE) {
+      if (k === 'enter') this.tapThen(() => this.showMenu());
+      return;
+    }
+    if (this.state === STATE.MENU || this.state === STATE.CREDITS) {
+      if (k === 'escape') this.tapThen(() => this.showTitle());
+      return;
+    }
     if (k === 'r') this.restart();
     if (k === 'p' || k === 'escape') this.togglePause();
   }
@@ -122,7 +131,19 @@ class Game {
     this.state = STATE.MENU;
     this.pendingSounds = [];
     this.showGreeting = true;
+    this.screenShownAt = millis();
     Sound.playMusic('menu');
+  }
+
+  showTitle () {
+    this.state = STATE.TITLE;
+    this.screenShownAt = millis();
+    Sound.playMusic('menu');
+  }
+
+  showCredits () {
+    this.state = STATE.CREDITS;
+    this.screenShownAt = millis();
   }
 
   nextLevel () {
@@ -134,14 +155,12 @@ class Game {
   update (dt) {
     // Los sonidos con retraso corren jugando o en la derrota (el triste tras las púas).
     if (this.state === STATE.PLAYING || this.state === STATE.LOSE) this.updatePendingSounds(dt);
-    if (this.state === STATE.MENU) return;
-    if (this.state === STATE.WIN) return;
-    if (this.state === STATE.LOSE) return;
-    if (this.state === STATE.PAUSED) return;
+    // Menús, pausa, victoria y derrota congelan la física y el reloj.
+    if (this.state !== STATE.PLAYING) return;
 
     // Como en DX, el reloj no corre durante el paneo inicial de la cámara.
     if (!this.camera.panning) this.time += dt / 1000;
-    // [púas] pista C: avance por path de púas y estrellas, antes del paso de física
+    // Avance por path de púas y estrellas, antes del paso de física
     for (const s of this.spikes) s.update(dt);
     for (const s of this.stars) s.update(dt);
 
@@ -164,11 +183,10 @@ class Game {
       if (!star.collected && star.touches(point.pos)) this.onStarCollected(star);
     }
     Matter.Engine.update(this.engine, delta * 1000);
-    // [autocuerdas] pista B: desvanecimiento del círculo y unión por distancia (la cuerda va a this.ropes)
+    // Desvanecimiento del círculo y unión por distancia (la cuerda va a this.ropes)
     for (const a of this.autoAnchors) {
       if (a.update(dt, this)) Sound.play('ropeGet');   // TryAutoAttachGrabToBody
     }
-    // [tutoriales] pista F
     for (const t of this.tutorials) t.update(dt);
     this.camera.update(dt / 1000, this.candy.body.position);
     if (this.state === STATE.PLAYING) this.updateMouth(delta);
@@ -289,9 +307,26 @@ class Game {
   }
 
   onInput (px, py) {
+    if (this.state === STATE.TITLE) {
+      const b = this.title.buttons;
+      if (this.title.soundToggle.contains(px, py)) this.toggleMute();
+      else if (b.play.contains(px, py)) this.tapThen(() => this.showMenu());
+      else if (b.credits.contains(px, py)) this.tapThen(() => this.showCredits());
+      return;
+    }
+
+    if (this.state === STATE.CREDITS) {
+      if (this.credits.backButton.contains(px, py)) this.tapThen(() => this.showTitle());
+      return;
+    }
+
     if (this.state === STATE.MENU) {
       if (this.menuSoundToggle.contains(px, py)) {
         this.toggleMute();
+        return;
+      }
+      if (this.menu.backButton.contains(px, py)) {
+        this.tapThen(() => this.showTitle());
         return;
       }
       const idx = this.menu.levelAt(px, py, this.levels.length);
@@ -387,9 +422,17 @@ class Game {
   draw (px, py) {
     background(0);
 
-    if (this.state === STATE.MENU) {
-      this.menu.draw(this.levels, this.progress, (i) => this.progress.isUnlocked(i), this.view, { x: px, y: py });
-      this.menuSoundToggle.draw(px, py);
+    if (this.state === STATE.TITLE || this.state === STATE.CREDITS || this.state === STATE.MENU) {
+      const pointer = { x: px, y: py };
+      if (this.state === STATE.TITLE) {
+        this.title.draw(pointer);
+      } else if (this.state === STATE.CREDITS) {
+        this.credits.draw(pointer);
+      } else {
+        this.menu.draw(this.levels, this.progress, (i) => this.progress.isUnlocked(i), this.view, pointer);
+        this.menuSoundToggle.draw(px, py);
+      }
+      drawScreenFade(this.screenShownAt);
       return;
     }
 
@@ -417,7 +460,7 @@ class Game {
         score: this.score,
       }, pointer);
     } else if (this.state === STATE.LOSE) {
-      // [púas] el aviso espera a que termine el dulce roto
+      // El aviso espera a que termine el dulce roto
       if (!this.candy.isBreaking()) Banner.draw('¡Oh, no!', 'Haz clic o pulsa R para reintentar', this.view);
       this.hud.draw(hudState, pointer);
     } else if (this.state === STATE.PAUSED) {

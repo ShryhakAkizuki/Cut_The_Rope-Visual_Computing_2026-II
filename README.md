@@ -1,23 +1,31 @@
 # Cut_The_Rope-Visual_Computing_2026-II
 
-Recreación de *Cut the Rope* en el navegador con P5.js. El objetivo de este proyecto es implementar los 25 niveles de la primera caja (Cardboard Box).
+Recreación de *Cut the Rope* en el navegador con p5.js: los 25 niveles de la primera caja (Cardboard Box), con cuerdas, cuerdas automáticas, burbujas, púas, estrellas, tutoriales, música y efectos.
 
 **Jugar:** https://shryhakakizuki.github.io/Cut_The_Rope-Visual_Computing_2026-II/
 
 ## Integrantes
 
--
--
--
--
+| Integrante | GitHub |
+|---|---|
+| Oscar Leonardo Riveros Perez | [ShryhakAkizuki](https://github.com/ShryhakAkizuki) |
+| Camilo Londoño Moreno | [CamiloLM](https://github.com/CamiloLM) |
+| Omar Nicolas Guerrero Guerrero | [camisabo](https://github.com/camisabo) |
+| Oscar Ivan Ulises Gutierrez Palacios | [10scar](https://github.com/10scar) |
 
 ## Cómo jugar
 
-- Arrastra el ratón sobre una cuerda para cortarla.
-- Haz clic en una burbuja para reventarla.
-- `P` pausa, `R` reinicia el nivel.
+Lleva el dulce hasta Om Nom y recoge las estrellas por el camino. Cada nivel da hasta 3 estrellas; el puntaje suma 1000 por estrella y un bonus por rapidez. Ganar un nivel desbloquea el siguiente y el progreso se guarda en el navegador.
 
-Lleva el dulce hasta Om Nom y recoge las estrellas por el camino.
+| Control | Acción |
+|---|---|
+| Arrastrar el ratón sobre una cuerda | Cortarla |
+| Clic en la burbuja que lleva el dulce | Reventarla |
+| `P` o `Escape` | Pausar / continuar |
+| `R` | Reiniciar el nivel |
+| `Enter` / `Escape` | En el título, abrir el menú de niveles / en los menús, volver al título |
+
+Las cuerdas automáticas (círculo punteado) se unen al dulce cuando se acerca; las púas lo rompen; el menú de pausa permite saltar un nivel.
 
 ## Correr en local
 
@@ -27,18 +35,37 @@ No hay nada que instalar; basta con servir la carpeta `src/`:
 python3 -m http.server 8000 -d src
 ```
 
-y abrir http://localhost:8000.
+y abrir http://localhost:8000. Cada push a `main` publica `src/` en GitHub Pages con [`deploy.yml`](.github/workflows/deploy.yml).
 
 ## Tecnologías
 
-JavaScript, [p5.js](https://p5js.org/) para el dibujo y la entrada, y [Matter.js](https://brm.io/matter-js/) para la física.
+JavaScript plano, sin módulos ni build:
+
+- [p5.js](https://p5js.org/): dibujo, entrada y game loop.
+- Física de Verlet propia ([`verlet.js`](src/core/verlet.js)), portada de Cut the Rope DX: el dulce y las cuerdas son cadenas de puntos con restricciones de distancia.
+- [Matter.js](https://brm.io/matter-js/): solo detección de sensores (Om Nom, burbujas, púas).
+- Web Audio para el sonido.
+
+## Estructura
+
+```
+src/
+├── index.html
+├── core/       Game (estados y bucle), Level, cámara, Verlet, progreso, audio, adaptador p5
+├── entities/   Dulce, cuerdas, anclas, Om Nom, estrellas, burbujas, púas
+├── ui/         Sprites y fuentes, HUD, pausa, resultados, título, créditos, menú de niveles, tutoriales
+├── data/       Constantes, los 25 niveles, textos y créditos
+├── libraries/  p5.js y Matter.js
+└── assets/     Imágenes (hojas + atlas), sonidos y fuente
+```
 
 ## Documentación
 
-- [Plan de la Caja 1](docs/plan-caja1.md): estado actual, fases y tareas pendientes.
-- [Referencia del DX](docs/referencia-dx.md): qué se reutiliza de Cut the Rope DX (constantes, lógica, imágenes, sonido).
-- [Arquitectura MVP](docs/arquitectura-mvp.md): componentes y diagramas (estados, game loop, clases, corte de cuerda).
+- [Arquitectura](docs/arquitectura-mvp.md): estados, capas, game loop y orden de carga.
+- [Física y mecánicas](docs/fisica-y-cuerdas.md): Verlet, cuerdas y corte, burbujas, estrellas, púas.
+- [Niveles](docs/niveles.md): formato de `LEVELS`, coordenadas y cómo agregar un nivel.
+- [Assets](docs/assets.md): hojas, sonido y fuentes, y de dónde salen.
 
 ## Créditos
 
-Los niveles, las imágenes y el comportamiento de referencia vienen del proyecto de fans [Cut the Rope DX](https://github.com/yell0wsuit/cuttherope-dx). *Cut the Rope*, sus personajes y sus assets son propiedad de ZeptoLab. Este es un proyecto académico sin fines comerciales.
+Los niveles, las imágenes, los sonidos y el comportamiento de referencia vienen del proyecto de fans [Cut the Rope DX](https://github.com/yell0wsuit/cuttherope-dx). *Cut the Rope*, sus personajes y sus assets son propiedad de ZeptoLab. Este es un proyecto académico sin fines comerciales.

@@ -1,4 +1,4 @@
-// Pista C: movimiento en ciclo por `path` (Mover.cs de DX), para las púas del nivel 22 y la estrella del nivel 24.
+// Movimiento en ciclo por `path` (Mover.cs de DX), para las púas del nivel 22 y la estrella del nivel 24.
 // Recorre el punto inicial y los offsets de `path` (ya ×3 en LEVELS) y vuelve al primero;
 // con un solo offset el objeto va y vuelve. La entidad copia `pos` a su body en cada frame.
 class Mover {

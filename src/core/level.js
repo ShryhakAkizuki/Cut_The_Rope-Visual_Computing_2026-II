@@ -34,7 +34,6 @@ class Level {
       this.ropes.push(rope);
     }
 
-    // [autocuerdas] pista B
     for (const a of d.autoAnchors || []) {
       const autoAnchor = new AutoAnchor(a.x, a.y, a.radius, a.length, a.chain);
       autoAnchor.createBody();
@@ -53,14 +52,12 @@ class Level {
       this.bubbles.push(bubble);
     }
 
-    // [púas] pista C
     for (const s of d.spikes || []) {
       const spikes = new Spikes(s.x, s.y, s.size, s.angle, s.path, s.moveSpeed);
       spikes.createBody();
       this.spikes.push(spikes);
     }
 
-    // [tutoriales] pista F
     for (const t of d.tutorials || []) {
       this.tutorials.push(new Tutorial(t, game));
     }
