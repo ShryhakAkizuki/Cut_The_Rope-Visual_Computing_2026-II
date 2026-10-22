@@ -336,8 +336,8 @@ classDiagram
 | `Anchor` ([`anchor.js`](../src/entities/anchor.js)) | Su `Body` circular estático + sensor (radio 8), render | No se mueve, no decide nada |
 | `Candy` ([`candy.js`](../src/entities/candy.js)) | Su `Body` circular con label `candy`, render, `isOffscreen()` (los 4 bordes, margen = radio) y bandera `eaten` para ocultarlo tras ser comido | No decide cuándo se gana |
 | `Rope` ([`rope.js`](../src/entities/rope.js)) | Su `Constraint` ancla→dulcé con largo opcional (`length`); tensión de un solo lado con `updateTension()` (`stiffness` 1 si está estirada, 0 si tiene holgura); forma con `points()` (recta o curva colgante); `tryCut()` sobre los tramos de esa forma; creación y ciclo de vida de los trozos post-corte; `startEatenFade()`/`eatenAlpha()` desvanecen gradualmente la cuerda y sus trozos al comerse el dulce, y `remove()` los quita del mundo al terminar el fundido; render de cuerda/trozos | No lee el ratón directamente |
-| `SpriteAnimator` ([`animation.js`](../src/core/animation.js)) | Carga atlas, reproduce estados y secuencias, avanza frames y renderiza rectángulos fuente con sus dimensiones y offsets | No conoce entidades, física ni reglas de gameplay |
-| animaciones ([`animations.js`](../src/data/animations.js)) | Define atlas y estados reutilizables de OmNom con rangos de frames; `prepareOmNomAnimations()` deriva los rectángulos de origen y el ancho de referencia desde `char_estados.json` y `char_lose.json` | No carga imágenes ni JSON, ni dibuja |
+| `SpriteAnimator` ([`animation.js`](../src/core/animation.js)) | Carga atlas, reproduce estados y secuencias, avanza frames y renderiza rectángulos fuente con sus dimensiones; usa `pivotX`/`pivotY` locales del frame para mantener al personaje alineado | No conoce entidades, física ni reglas de gameplay |
+| animaciones ([`animations.js`](../src/data/animations.js)) | Define atlas y estados reutilizables de OmNom con rangos de frames; `prepareOmNomAnimations()` deriva los rectángulos de origen, el ancho de referencia y los pivotes desde `char_estados.json` y `char_lose.json` | No carga imágenes ni JSON, ni dibuja |
 | `OmNom` ([`omnom.js`](../src/entities/omnom.js)) | Su `Body` circular estático + sensor con label `omnom`; delega animación y render a `SpriteAnimator`; mantiene `mouthOpen` cuando el dulce está cerca, cierra con `mouthClose → idle` al alejarse y con `mouthClose → chew` al comer; reproduce `fail` al perder | No detecta colisiones, no calcula recortes ni decide el resultado del nivel |
 | `Star` ([`star.js`](../src/entities/star.js)) | Su `Body` circular estático + sensor (radio 20) con label `star`, bandera `collected`, render de estrella de 5 puntas dentro de `draw()` (no se dibuja si está recogida) | No suma puntos ni se quita del mundo (eso lo hace `Game`) |
 | `Bubble` ([`bubble.js`](../src/entities/bubble.js)) | Su `Body` circular estático + sensor (`BUBBLE_RADIUS` 30) con label `bubble`; estado `captured` (tiene dulcé y no está reventada) y `popped`; `contains()` para el clic sobre el dulcé; render de círculo azul semitransparente, en su sitio o alrededor del dulcé | No aplica fuerzas ni se quita del mundo (eso lo hace `Game`) |
@@ -345,6 +345,17 @@ classDiagram
 | [`main.js`](../src/core/main.js) | Adaptador p5: `preload()` carga los JSON de los atlas, `setup()` prepara las animaciones, crea el `Game` y abre el menú (`showMenu()`), `draw()`, conecta `mouseDragged`/`touchMoved` → `onCutAttempt`, `mousePressed`/`touchStarted` → `onInput(mouseX, mouseY)`, la tecla `R` → `restart()` y la tecla `P` → `togglePause()` (ambas salvo en `MENU`), filtra los eventos de ratón sintéticos posteriores a un toque (`TOUCH_MOUSE_GUARD_MS`) y registra `document.visibilitychange` → `game.autoPause()` / `game.autoResume()` | Cero lógica de juego |
 
 **Regla de oro de la MVP:** cada archivo es pequeño y con un solo trabajo. `main.js` cabe en ~30 líneas.
+
+### Pivotes de los sprites
+
+Los JSON de TexturePacker no conservan la alineación original de cada recorte (`trimmed: false`, `spriteSourceSize` en `0,0`), así que centrar cada frame por su bounding box hace que el personaje se desplace al animarse. La herramienta [`tools/sprite_pivots.py`](../tools/sprite_pivots.py) analiza el canal alfa de la imagen, ancla los pies de cada frame y escribe `pivotX`/`pivotY` (coordenadas locales del recorte) dentro del `frame` del JSON:
+
+```bash
+python3 tools/sprite_pivots.py --image src/img/char_estados.png --atlas src/img/char_estados.json
+python3 tools/sprite_pivots.py --image src/img/char_lose.png --atlas src/img/char_lose.json
+```
+
+El modo por defecto es `hybrid`: fija los pies y refina el eje X por registro de siluetas. `--mode bottom` usa solo el ancla por pies y `--mode register` hace registro puro. Con `--debug ruta.png` genera una hoja de verificación. Requiere `Pillow` y `numpy`.
 
 ---
 

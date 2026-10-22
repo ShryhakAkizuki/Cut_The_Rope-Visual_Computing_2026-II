@@ -20,6 +20,7 @@ const OMNOM_ANIMATIONS = {
 function prepareOmNomAnimations (atlasJson) {
     for (const [name, atlas] of Object.entries(OMNOM_ANIMATIONS.atlases)) {
         const data = atlasJson[name];
+        // entry.frame puede incluir pivotX/pivotY (los genera tools/sprite_pivots.py).
         atlas.frames = data.frames.map((entry) => entry.frame);
         atlas.referenceWidth = Math.max(...atlas.frames.map((frame) => frame.w));
     }

@@ -70,12 +70,12 @@ class SpriteAnimator {
         const scale = this.fallbackSize / atlas.referenceWidth;
         const drawWidth = frame.w * scale;
         const drawHeight = frame.h * scale;
-        const cropCenterX = frame.x + frame.w / 2;
-        const cropCenterY = frame.y + frame.h / 2;
-        const pivotX = frame.pivotX ?? cropCenterX;
-        const pivotY = frame.pivotY ?? cropCenterY;
-        const drawX = Math.round(x + (pivotX - cropCenterX) * scale - drawWidth / 2);
-        const drawY = Math.round(y + (pivotY - cropCenterY) * scale - drawHeight / 2);
+        // pivotX/pivotY son coordenadas locales del recorte que se colocan
+        // sobre la posición de la entidad. Si no existen, se usa su centro.
+        const pivotX = frame.pivotX ?? frame.w / 2;
+        const pivotY = frame.pivotY ?? frame.h / 2;
+        const drawX = Math.round(x - pivotX * scale);
+        const drawY = Math.round(y - pivotY * scale);
 
         imageMode(CORNER);
         image(
