@@ -77,10 +77,13 @@ class Candy {
       return;
     }
     if (!this.body) return;
+    // CreateCandyVisual de DX: fondo, cuerpo y brillo de obj_candy_01_new, centrados y a escala 0,71.
     const pos = this.body.position;
-    noStroke();
-    fill(COLORS.candy);
-    circle(pos.x, pos.y, this.radius * 2);
+    push();
+    translate(pos.x, pos.y);
+    scale(GFX_T.candyScale);
+    for (const q of GFX_T.candyQuads) Sprites.draw('obj_candy_01_new', q, 0, 0);
+    pop();
   }
 
   // Como PointOutOfScreen de DX: margen vertical fijo y uno horizontal del ancho de VIEW.

@@ -7,6 +7,8 @@ class Bubble {
         this.body = null;
         this.candy = null;
         this.popped = false;
+        const T = GFX_T;
+        this.stainQuad = T.bubbleStainFirst + Math.floor(Math.random() * (T.bubbleStainLast - T.bubbleStainFirst + 1));
     }
 
     createBody () {
@@ -39,12 +41,17 @@ class Bubble {
         return Math.hypot(px - c.x, py - c.y) <= this.radius;
     }
 
+    // Como LoadBubble de DX: la mancha se queda en la pared aunque la burbuja atrape al dulce o
+    // reviente; la burbuja libre va encima de la mancha.
     draw () {
-        if (this.popped) return;
+        Sprites.draw('obj_bubble', this.stainQuad, this.x, this.y);
+        if (!this.candy) Sprites.draw('obj_bubble', GFX_T.bubbleQuad, this.x, this.y);
+    }
+
+    // Burbuja que lleva al dulce (BubbleAnimation de CandyBody); se dibuja después del dulce.
+    drawOnCandy () {
+        if (!this.captured) return;
         const c = this.center();
-        stroke(150, 200, 255, 180);
-        strokeWeight(5);
-        fill(80, 160, 255, 90);
-        circle(c.x, c.y, this.radius * 2);
+        Sprites.draw('obj_bubble', GFX_T.bubbleOnCandyQuad, c.x, c.y);
     }
 }

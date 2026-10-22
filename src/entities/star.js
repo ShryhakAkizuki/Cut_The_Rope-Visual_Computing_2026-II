@@ -28,6 +28,8 @@ class Star {
 
     draw () {
         if (this.collected) return;
-        drawStarShape(this.x, this.y, this.radius, true);
+        // Star.CreateAnimations de DX: brillo debajo y la estrella encima, centrados en (x, y).
+        Sprites.draw('obj_star_idle', GFX_T.starGlowQuad, this.x, this.y);
+        Sprites.draw('obj_star_idle', GFX_T.starQuad, this.x, this.y);
     }
 }

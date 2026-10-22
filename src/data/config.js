@@ -3,10 +3,7 @@ const VIEW = { w: 1920, h: 1440 };
 const MAP_SCALE = 3;
 
 const COLORS = {
-  star:  [255, 220, 60],
   rope:  [220, 220, 220],
-  candy: [255, 120, 120],
-  map:   [28, 22, 16],
 };
 
 const STATE = {
@@ -171,6 +168,21 @@ const UI_T = {
   buttonTextPadding: 70,
   loaderLerp:        0.15,    // suavizado de la barra por cuadro (LoadingView usa 0.5)
   loaderScale:       2,
+};
+
+// [gráficos] sprites estáticos de las entidades con las hojas del DX (cuadros de cada atlas)
+const GFX_T = {
+  bgP2Y:          1120,       // boxBackgroundP2Y de la Caja 1: bgr_01_p2 tapa la costura entre dos bgr_01_p1
+  candyScale:     0.71,       // CreateCandyVisual: obj_candy_01_new se dibuja al 71 %
+  candyQuads:     [0, 1, 2],  // fondo, cuerpo y brillo, en ese orden
+  omnomQuad:      0,          // char_animations: primer cuadro del idle (IdleLoopTimeline 0–18)
+  supportQuad:    0,          // char_supports: sittingPlatform de la Caja 1
+  starGlowQuad:   0,          // obj_star_idle: brillo (ImgObjStarIdleGlow)
+  starQuad:       1,          // primer cuadro de la animación de la estrella (1–18)
+  bubbleQuad:     0,          // obj_bubble: burbuja libre
+  bubbleStainFirst: 1,        // LoadBubble: mancha de la pared, RND_RANGE(1, 3)
+  bubbleStainLast:  3,
+  bubbleOnCandyQuad: 4,       // BubbleAnimationFactory: primer cuadro de la burbuja con el dulce (4–16)
 };
 
 // Radios de colisión en el espacio de VIEW (cajas de GameScene.BoundingBoxes.cs y STAR_RADIUS de DX)

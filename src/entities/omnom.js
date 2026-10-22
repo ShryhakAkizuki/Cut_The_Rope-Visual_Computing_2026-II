@@ -15,10 +15,10 @@ class OmNom {
         });
     }
 
+    // LoadTarget de DX: soporte y Om Nom centrados en (x, y); Om Nom queda quieto en el primer
+    // cuadro del idle (las animaciones de personaje están fuera de alcance).
     draw () {
-        noFill();
-        stroke(255, 200, 80);
-        strokeWeight(10);
-        circle(this.x, this.y, this.radius * 2);
+        Sprites.draw('char_supports', GFX_T.supportQuad, this.x, this.y);
+        Sprites.draw('char_animations', GFX_T.omnomQuad, this.x, this.y);
     }
 }

@@ -94,20 +94,29 @@ class Level {
     return { x: (VIEW.w - this.map.w) / 2, y: 0, w: this.map.w, h: this.map.h };
   }
 
+  // Orden de GameScene.Draw de DX: fondo, Om Nom, tutoriales, burbujas, púas, ganchos, cuerdas,
+  // estrellas y dulce (con la burbuja que lo lleva encima).
   draw () {
-    const b = this.bounds();
-    noStroke();
-    fill(COLORS.map);
-    rect(b.x, b.y, b.w, b.h);
-
+    this.drawBackground();
+    if (this.omnom) this.omnom.draw();
     for (const t of this.tutorials) t.draw();
+    for (const b of this.bubbles) b.draw();
+    for (const s of this.spikes) s.draw();
     for (const a of this.autoAnchors) a.draw();
     for (const a of this.anchors) a.draw();
     for (const r of this.ropes) r.draw();
-    for (const s of this.spikes) s.draw();
     for (const s of this.stars) s.draw();
-    if (this.omnom) this.omnom.draw();
     if (this.candy) this.candy.draw();
-    for (const b of this.bubbles) b.draw();
+    for (const b of this.bubbles) b.drawOnCandy();
+  }
+
+  // Fondo de la caja como GameScene.Draw de DX: bgr_01_p1 centrado en VIEW (cubre también las
+  // franjas laterales de los mapas de 320) y repetido hacia abajo en los mapas altos (nivel 15);
+  // bgr_01_p2 tapa cada costura entre dos copias (BackgroundTiling.GetP2Count / ResolveP2Y).
+  drawBackground () {
+    const h = Sprites.size('bgr_01_p1').h;
+    const rows = Math.max(1, Math.ceil(this.map.h / h - 0.001));
+    for (let i = 0; i < rows; i++) Sprites.draw('bgr_01_p1', 0, VIEW.w / 2, i * h, { ay: 0 });
+    for (let i = 0; i < rows - 1; i++) Sprites.draw('bgr_01_p2', 0, VIEW.w / 2, GFX_T.bgP2Y + i * h, { ay: 0 });
   }
 }

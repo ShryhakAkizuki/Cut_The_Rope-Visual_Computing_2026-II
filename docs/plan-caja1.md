@@ -14,7 +14,7 @@ Referencia: decomp en `/home/camilo/Work/cuttherope-dx` — mapas `content/maps/
 
 > Esta sección es lo primero que se lee al iniciar una sesión. Mantenerla al día cada vez que cambie la fase o se cierre una decisión.
 
-- **Fase actual:** el usuario sacó las 75 estrellas (los 25 niveles con 3 estrellas, §6). Falta hora, en paralelo con 2–3 agentes en archivos separados: sprites de entidades (§8), sonido (§11) y tutoriales por nivel (§7).
+- **Fase actual:** el usuario sacó las 75 estrellas (los 25 niveles con 3 estrellas, §6). Las entidades ya se dibujan con las hojas del DX (§8). Falta, en paralelo con 2 agentes en archivos separados: sonido (§11) y tutoriales por nivel (§7).
 
 ---
 
@@ -39,7 +39,7 @@ Se porta la física de `Bungee.cs` + `ConstrainedPoint.cs`: cada cuerda es una c
 Se puede hacer en secuencia o con 2–3 agentes en archivos separados.
 
 - [x] Ajuste de física (§5)
-- [ ] Sprites de las entidades: fondo, dulce, Om Nom y soporte, estrellas, burbujas (§8)
+- [x] ~~Sprites de las entidades: fondo, dulce, Om Nom y soporte, estrellas, burbujas (§8)~~
 - [ ] Tutoriales por nivel (§7)
 - [ ] Conectar los eventos de sonido (§11)
 - [ ] Estela del corte y pantalla de resultados animada (§11)
@@ -157,12 +157,14 @@ Los datos de cada nivel ya están en `levels.js`/`texts.js` y los dibuja `ui/tut
 
 Sprites estáticos con `Sprites.draw` (ver `CLAUDE.md`); las animaciones de personaje quedan fuera de alcance. Hojas y atlas: [referencia-dx.md §7](referencia-dx.md#7-imágenes).
 
-- [ ] Fondo del nivel (`backgrounds/bgr_01_p1`, `bgr_01_p2`, `bgr_01_cover`), también en las franjas laterales (D1)
-- [ ] Dulce (`candies/obj_candy_01_new`)
-- [ ] Om Nom estático (`char_animations`, un cuadro) y su soporte (`char_supports`)
-- [ ] Estrellas (`obj_star_idle`, primer cuadro)
-- [ ] Burbujas (`obj_bubble`)
-- [ ] Orden de dibujo como DX en `Level.draw`: tutoriales encima de Om Nom y debajo de burbujas, estrellas, cuerdas y dulce (hoy van al fondo; obliga a dibujar a Om Nom antes que las cuerdas)
+Los cuadros de cada hoja están en `GFX_T` (`config.js`).
+
+- [x] ~~Fondo del nivel (`backgrounds/bgr_01_p1`, `bgr_01_p2`), también en las franjas laterales (D1)~~: `Level.drawBackground()`, `bgr_01_p1` centrado y repetido hacia abajo, y `bgr_01_p2` en la costura (y = 1120, solo en el nivel 15). `bgr_01_cover` no es fondo de nivel en DX (es la tapa de la caja; ya la usa `drawBoxCover`)
+- [x] ~~Dulce (`candies/obj_candy_01_new`)~~: cuadros 0–2 a escala 0,71
+- [x] ~~Om Nom estático (`char_animations`, un cuadro) y su soporte (`char_supports`)~~
+- [x] ~~Estrellas (`obj_star_idle`, primer cuadro)~~: brillo (cuadro 0) y estrella (cuadro 1)
+- [x] ~~Burbujas (`obj_bubble`)~~: mancha en la pared (cuadro 1–3 al azar, se queda tras la captura) y burbuja (cuadro 0); con el dulce dentro, cuadro 4 encima del dulce
+- [x] ~~Orden de dibujo como DX en `Level.draw`: tutoriales encima de Om Nom y debajo de burbujas, estrellas, cuerdas y dulce (hoy van al fondo; obliga a dibujar a Om Nom antes que las cuerdas)~~
 
 ## 10. UI y flujo
 
