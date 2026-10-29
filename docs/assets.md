@@ -10,7 +10,7 @@ Cada hoja es un PNG con un JSON del mismo nombre que indica dónde está cada di
 |---|---|
 | Fondo del nivel | `backgrounds/bgr_01_p1`, `backgrounds/bgr_01_p2`, `bgr_01_cover` |
 | Dulce | `candies/obj_candy_01_new`, `candies/obj_candy_fx` |
-| Om Nom y su soporte | `char_animations`, `char_supports` |
+| Om Nom y su soporte | `char_animations` (título), `char_animations_hd` (estados del nivel), `char_supports` |
 | Anclas | `obj_hook`, `obj_hook_chain`, `obj_hook_auto_chain` |
 | Estrellas, burbujas, púas | `obj_star_idle`, `obj_star_disappear`, `obj_bubble`, `obj_spikes` |
 | Tutoriales | `tutorial_signs` |

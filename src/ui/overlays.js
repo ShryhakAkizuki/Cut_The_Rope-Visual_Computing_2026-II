@@ -184,16 +184,23 @@ class WinPanel {
     button.centerAt(c.x, c.y);
   }
 
-  // Se llama al ganar; `improved` muestra el sello de puntuación mejorada.
-  show (improved) {
-    this.shownAt = millis();
+  // Se llama al ganar; `improved` muestra el sello de puntuación mejorada. `delayMs`
+  // retrasa la aparición para que se vea a Om Nom cerrar la boca y masticar.
+  show (improved, delayMs = 0) {
+    this.shownAt = millis() + delayMs;
     this.improved = improved;
+  }
+
+  get visible () {
+    return millis() >= this.shownAt;
   }
 
   layout () {}
 
   draw (state, pointer) {
-    const t = Math.min(1, (millis() - this.shownAt) / UI_T.resultsFadeMs);
+    if (!this.visible) return;
+
+    const t = constrain((millis() - this.shownAt) / UI_T.resultsFadeMs, 0, 1);
 
     push();
     drawingContext.globalAlpha = t;

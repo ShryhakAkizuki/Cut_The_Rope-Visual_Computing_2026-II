@@ -155,6 +155,8 @@ class Game {
   update (dt) {
     // Los sonidos con retraso corren jugando o en la derrota (el triste tras las púas).
     if (this.state === STATE.PLAYING || this.state === STATE.LOSE) this.updatePendingSounds(dt);
+    // La animación de Om Nom sigue en WIN/LOSE (masticar tras comer), pero la pausa la congela.
+    if (this.level && this.state !== STATE.PAUSED) this.omnom.update(dt);
     // Menús, pausa, victoria y derrota congelan la física y el reloj.
     if (this.state !== STATE.PLAYING) return;
 
@@ -197,9 +199,10 @@ class Game {
     }
   }
 
-  // Boca de Om Nom como TargetFeedingState de DX, solo para el sonido (Om Nom se dibuja quieto):
-  // se abre con el dulce a menos de mouthOpenDistance y se cierra cuando lleva mouthCloseDelay
-  // abierta sin el dulce cerca; si sigue cerca, la espera se renueva.
+  // Boca de Om Nom como TargetFeedingState de DX: se abre con el dulce a menos de
+  // mouthOpenDistance y se cierra cuando lleva mouthCloseDelay abierta sin el dulce cerca;
+  // si sigue cerca, la espera se renueva. La animación (idle/openMouth) sigue estos mismos
+  // cambios para que el gesto y el sonido coincidan.
   updateMouth (delta) {
     const p = this.candy.point.pos;
     const near = Math.hypot(p.x - this.omnom.x, p.y - this.omnom.y) < AUDIO_T.mouthOpenDistance;
@@ -207,6 +210,7 @@ class Game {
       if (near) {
         this.mouthOpen = true;
         this.mouthCloseTime = AUDIO_T.mouthCloseDelay;
+        this.omnom.openMouth();
         Sound.play('omnomOpen');
       }
       return;
@@ -218,6 +222,7 @@ class Game {
       return;
     }
     this.mouthOpen = false;
+    this.omnom.closeMouth();
     Sound.play('omnomClose');
   }
 
@@ -272,7 +277,9 @@ class Game {
   onCandyEaten () {
     if (this.state === STATE.PLAYING) {
       this.state = STATE.WIN;
-      // DX: masticar al comer y win al mostrar los resultados (aquí aparecen enseguida).
+      // DX: el dulce se traga, Om Nom cierra la boca y mastica mientras aparecen los resultados.
+      this.candy.hide();
+      this.omnom.eat();
       Sound.play('omnomChew');
       Sound.play('win');
       const result = calculateScore({
@@ -283,7 +290,7 @@ class Game {
       this.timeBonus = result.timeBonus;
       this.score = result.total;
       const improved = this.progress.markCompleted(this.levelIndex, this.starsCollected, this.score);
-      this.winPanel.show(improved);
+      this.winPanel.show(improved, OMNOM_T.winShowDelay * 1000);
       this.layoutWinButtons();
     }
   }
@@ -365,6 +372,7 @@ class Game {
       const bubble = this.candyBubble();
       if (bubble && bubble.contains(w.x, w.y)) this.popBubble();
     } else if (this.state === STATE.WIN) {
+      if (!this.winPanel.visible) return;   // aún se está viendo a Om Nom masticar
       const b = this.winPanel.buttons;
       if (b.replay.contains(px, py)) this.tapThen(() => this.restart());
       else if (b.menu.contains(px, py)) this.tapThen(() => this.showMenu());

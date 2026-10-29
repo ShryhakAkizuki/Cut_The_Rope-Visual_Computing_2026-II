@@ -221,6 +221,18 @@ const MENU_T = {
   omnomY:          1190,
 };
 
+// Animación de Om Nom en los niveles (hoja HD migrada; estados en data/omnom-animation.js).
+// El sprite se estira a un cuadrado como en DX; 203 px es el ancho del cuadro del idle del
+// atlas anterior, así que Om Nom conserva el tamaño que tenía.
+const OMNOM_T = {
+  sheet:            'char_animations_hd',
+  spriteSize:       203,
+  spriteOffsetY:    10,    // centro del cuadro respecto a (x, y); así queda apoyado en el soporte
+  mouthOffsetY:     40,    // centro visual de la boca respecto a (x, y)
+  mouthSensorRadius: 1,    // la boca es un sensor: el dulce se come cuando su centro llega a ella
+  winShowDelay:     1.5,   // s de masticado antes de que aparezca el panel de resultados
+};
+
 // Sprites estáticos de las entidades con las hojas del DX (cuadros de cada atlas)
 const GFX_T = {
   bgP2Y:          1120,       // boxBackgroundP2Y de la Caja 1: bgr_01_p2 tapa la costura entre dos bgr_01_p1

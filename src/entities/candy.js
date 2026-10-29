@@ -7,6 +7,7 @@ class Candy {
     this.body = null;
     this.point = null;
     this.broken = null;   // estado del dulce roto
+    this.eaten = false;   // ya se lo tragó Om Nom (deja de dibujarse)
   }
 
   // La física es el punto de Verlet (peso 1, como en DX); el body de Matter es un sensor que solo
@@ -71,7 +72,13 @@ class Candy {
     }
   }
 
+  // El dulce desaparece al entrar en la boca; Om Nom sigue con la animación de comer.
+  hide () {
+    this.eaten = true;
+  }
+
   draw () {
+    if (this.eaten) return;
     if (this.broken) {
       this.drawBroken();
       return;

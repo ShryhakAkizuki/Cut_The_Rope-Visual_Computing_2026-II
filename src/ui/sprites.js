@@ -43,6 +43,7 @@ const SPRITE_IMAGES = [
   'backgrounds/bgr_01_p1',
   'backgrounds/bgr_01_p2',
   'cut_the_rope_logo',   // logo sin "DX" (propio, no sale del DX)
+  'char_animations_hd',  // sheet de los estados de Om Nom (posiciones en data/omnom-animation.js)
 ];
 
 const Sprites = {
