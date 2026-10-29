@@ -9,7 +9,6 @@ function preload () {
 }
 
 function setup () {
-    prepareOmNomAnimations(OMNOM_ATLAS_JSON);
     createCanvas(VIEW.w, VIEW.h);
     fitCanvas();
 

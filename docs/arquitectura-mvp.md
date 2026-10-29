@@ -101,17 +101,6 @@ Objetos del nivel:
 
 Para añadir una mecánica nueva: crea el objeto en `entities/`, constrúyelo en `Level.build` y haz que `Game` reaccione cuando el dulce lo toque.
 
-### Pivotes de los sprites
-
-Los JSON de TexturePacker no conservan la alineación original de cada recorte (`trimmed: false`, `spriteSourceSize` en `0,0`), así que centrar cada frame por su bounding box hace que el personaje se desplace al animarse. La herramienta [`tools/sprite_pivots.py`](../tools/sprite_pivots.py) analiza el canal alfa de la imagen, ancla los pies de cada frame y escribe `pivotX`/`pivotY` (coordenadas locales del recorte) dentro del `frame` del JSON:
-
-```bash
-python3 tools/sprite_pivots.py --image src/img/char_estados.png --atlas src/img/char_estados.json
-python3 tools/sprite_pivots.py --image src/img/char_lose.png --atlas src/img/char_lose.json
-```
-
-El modo por defecto es `hybrid`: fija los pies y refina el eje X por registro de siluetas. `--mode bottom` usa solo el ancla por pies y `--mode register` hace registro puro. Con `--debug ruta.png` genera una hoja de verificación. Requiere `Pillow` y `numpy`.
-
 ---
 
 ## 4. Qué pasa en cada frame
