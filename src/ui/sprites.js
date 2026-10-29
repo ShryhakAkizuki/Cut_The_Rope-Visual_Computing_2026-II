@@ -9,20 +9,16 @@ const BOOT_SHEETS = [
 const SPRITE_SHEETS = [
   'bgr_01_cover',
   'candies/obj_candy_01_new',
-  'candies/obj_candy_fx',
-  'char_animations',
   'char_supports',
   'obj_hook',
   'obj_hook_chain',
   'obj_hook_auto_chain',
   'obj_star_idle',
-  'obj_star_disappear',
   'obj_bubble',
   'obj_spikes',
   'tutorial_signs',
   'hud_ui',
   'menu_pause',
-  'obj_pause',
   'menu_level_ui',
   'menu_buttons',
   'menu_bgr',
@@ -31,11 +27,9 @@ const SPRITE_SHEETS = [
   'menu_popup',
   'menu_options_packed',
   'menu_results',
-  'confetti_particles',
   'small_font',
   'big_font',
   'font_numbers_big',
-  'menu_processing_hd',
 ];
 
 // Imágenes sin atlas: cuentan como una hoja de un solo cuadro (índice 0).

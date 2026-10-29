@@ -51,9 +51,6 @@ class OmNom {
         if (this.anim && this.anim.frame) {
             // Como el DX: cada frame se estira a un cuadrado centrado en Om Nom.
             this.anim.draw(this.x, this.y + OMNOM_T.spriteOffsetY, OMNOM_T.spriteSize, OMNOM_T.spriteSize);
-        } else {
-            // Respaldo por si la hoja HD no llegara a cargarse.
-            Sprites.draw('char_animations', GFX_T.omnomQuad, this.x, this.y);
         }
     }
 }

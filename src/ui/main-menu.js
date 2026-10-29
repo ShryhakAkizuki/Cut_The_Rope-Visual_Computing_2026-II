@@ -81,6 +81,8 @@ class CreditsScreen {
 
   constructor () {
     this.backButton = createBackButton();
+    const sheet = Sprites.sheets[OMNOM_T.sheet];
+    this.omnom = sheet && sheet.img ? new Animation(OMNOM_ANIMATION, { image: sheet.img }) : null;
   }
 
   draw (pointer) {
@@ -112,7 +114,10 @@ class CreditsScreen {
     }
 
     Sprites.draw('char_supports', GFX_T.supportQuad, T.omnomX, T.omnomY);
-    Sprites.draw('char_animations', GFX_T.omnomQuad, T.omnomX, T.omnomY);
+    if (this.omnom) {
+      this.omnom.update(Math.min(deltaTime, TUNING.maxFrameDeltaMs));
+      this.omnom.draw(T.omnomX, T.omnomY + OMNOM_T.spriteOffsetY, OMNOM_T.spriteSize, OMNOM_T.spriteSize);
+    }
 
     this.backButton.draw(pointer.x, pointer.y);
   }

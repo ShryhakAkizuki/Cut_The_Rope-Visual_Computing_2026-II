@@ -9,17 +9,17 @@ Cada hoja es un PNG con un JSON del mismo nombre que indica dónde está cada di
 | Uso | Hoja |
 |---|---|
 | Fondo del nivel | `backgrounds/bgr_01_p1`, `backgrounds/bgr_01_p2`, `bgr_01_cover` |
-| Dulce | `candies/obj_candy_01_new`, `candies/obj_candy_fx` |
-| Om Nom y su soporte | `char_animations` (título), `char_animations_hd` (estados del nivel), `char_supports` |
+| Dulce | `candies/obj_candy_01_new` |
+| Om Nom y su soporte | `char_animations_hd` (créditos y estados del nivel), `char_supports` |
 | Anclas | `obj_hook`, `obj_hook_chain`, `obj_hook_auto_chain` |
-| Estrellas, burbujas, púas | `obj_star_idle`, `obj_star_disappear`, `obj_bubble`, `obj_spikes` |
+| Estrellas, burbujas, púas | `obj_star_idle`, `obj_bubble`, `obj_spikes` |
 | Tutoriales | `tutorial_signs` |
-| HUD y pausa | `hud_ui`, `menu_pause`, `obj_pause` |
+| HUD y pausa | `hud_ui`, `menu_pause` |
 | Menú de niveles y botones | `menu_level_ui`, `menu_buttons`, `menu_options_packed` |
 | Título y créditos | `menu_bgr`, `menu_bgr_shadow`, `menu_extra_buttons`, `menu_popup`, `cut_the_rope_logo` |
-| Resultados | `menu_results`, `confetti_particles` |
+| Resultados | `menu_results` |
 | Fuentes | `small_font`, `big_font`, `font_numbers_big` |
-| Carga | `loaderbar_full`, `menu_processing_hd` |
+| Carga | `loaderbar_full` |
 
 Para añadir una hoja nueva, copia el PNG y el JSON a esa carpeta y regístrala en [`sprites.js`](../src/ui/sprites.js).
 

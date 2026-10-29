@@ -238,7 +238,6 @@ const GFX_T = {
   bgP2Y:          1120,       // boxBackgroundP2Y de la Caja 1: bgr_01_p2 tapa la costura entre dos bgr_01_p1
   candyScale:     0.71,       // CreateCandyVisual: obj_candy_01_new se dibuja al 71 %
   candyQuads:     [0, 1, 2],  // fondo, cuerpo y brillo, en ese orden
-  omnomQuad:      0,          // char_animations: primer cuadro del idle (IdleLoopTimeline 0–18)
   supportQuad:    0,          // char_supports: sittingPlatform de la Caja 1
   starGlowQuad:   0,          // obj_star_idle: brillo (ImgObjStarIdleGlow)
   starQuad:       1,          // primer cuadro de la animación de la estrella (1–18)
