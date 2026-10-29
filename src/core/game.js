@@ -34,6 +34,8 @@ class Game {
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
+    this.winRevealTimer = 0;
+    this.mouthIsOpen = false;
 
     // Estado de los sonidos que decide Game (las entidades no suenan solas).
     this.menuSoundToggle = new SoundToggle();
@@ -45,7 +47,6 @@ class Game {
     this.mouthCloseTime = 0;
 
     Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      let eaten = false;
       for (const pair of event.pairs) {
         const labels = [pair.bodyA.label, pair.bodyB.label];
         if (!labels.includes('candy')) continue;
@@ -68,7 +69,6 @@ class Game {
           eaten = true;
         }
       }
-      if (eaten) this.onCandyEaten();
     });
   }
 
@@ -118,6 +118,8 @@ class Game {
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
+    this.winRevealTimer = 0;
+    this.mouthIsOpen = false;
 
     this.winPanel.buttons.next.enabled = idx < this.levels.length - 1;
     this.state = STATE.PLAYING;
@@ -193,16 +195,22 @@ class Game {
     this.camera.update(dt / 1000, this.candy.body.position);
     if (this.state === STATE.PLAYING) this.updateMouth(delta);
 
+    if (this.state === STATE.PLAYING) {
+      if (this.candyInMouth()) {
+        this.onCandyEaten();
+        return;
+      }
+      this.updateMouthProximity();
+    }
+
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
+      this.omnom.setAnimation('fail');
       this.state = STATE.LOSE;
       Sound.play('omnomSad');   // GameLost
     }
   }
 
-  // Boca de Om Nom como TargetFeedingState de DX: se abre con el dulce a menos de
-  // mouthOpenDistance y se cierra cuando lleva mouthCloseDelay abierta sin el dulce cerca;
-  // si sigue cerca, la espera se renueva. La animación (idle/openMouth) sigue estos mismos
-  // cambios para que el gesto y el sonido coincidan.
+
   updateMouth (delta) {
     const p = this.candy.point.pos;
     const near = Math.hypot(p.x - this.omnom.x, p.y - this.omnom.y) < AUDIO_T.mouthOpenDistance;
@@ -276,6 +284,17 @@ class Game {
 
   onCandyEaten () {
     if (this.state === STATE.PLAYING) {
+      const candy = this.candy;
+      if (candy) {
+        candy.eaten = true;
+        Matter.Composite.remove(this.world, candy.body);
+      }
+      const bubble = this.candyBubble();
+      if (bubble) bubble.pop();
+      for (const rope of this.ropes) rope.startEatenFade();
+      this.mouthIsOpen = false;
+      this.omnom.playSequence(['mouthClose', 'chew']);
+      this.winRevealTimer = TUNING.winRevealDelay;
       this.state = STATE.WIN;
       // DX: el dulce se traga, Om Nom cierra la boca y mastica mientras aparecen los resultados.
       this.candy.hide();

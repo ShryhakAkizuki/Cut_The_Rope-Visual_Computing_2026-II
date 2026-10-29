@@ -1,4 +1,4 @@
-class OmNom {
+ class OmNom {
 
     constructor (x, y, radius) {
         this.x = x;

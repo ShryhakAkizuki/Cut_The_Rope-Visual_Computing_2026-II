@@ -12,6 +12,7 @@ class Level {
     this.tutorials = [];
     this.candy = null;
     this.omnom = null;
+    this.background = LEVEL_BACKGROUNDS[data.background] || null;
   }
 
   build (game) {
