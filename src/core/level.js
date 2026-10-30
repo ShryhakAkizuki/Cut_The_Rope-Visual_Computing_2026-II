@@ -23,43 +23,40 @@ class Level {
     this.omnom = new OmNom(d.omnom.x, d.omnom.y, OMNOM_RADIUS);
     this.omnom.createBody();
 
-    for (const a of d.anchors) {
-      const anchor = new Anchor(a.x, a.y);
-      anchor.createBody();
+    const BUILDERS = {
+      anchors:     (e) => {
+        const anchor = new Anchor(e.x, e.y);
+        anchor.createBody();
 
-      const rope = new Rope(anchor, this.candy, a.length);
-      rope.create(game);
-
-      this.anchors.push(anchor);
-      this.ropes.push(rope);
-    }
-
-    for (const a of d.autoAnchors || []) {
-      const autoAnchor = new AutoAnchor(a.x, a.y, a.radius, a.length, a.chain);
-      autoAnchor.createBody();
-      this.autoAnchors.push(autoAnchor);
-    }
-
-    for (const s of d.stars || []) {
-      const star = new Star(s.x, s.y, s.path, s.moveSpeed);
-      star.createBody();
-      this.stars.push(star);
-    }
-
-    for (const b of d.bubbles || []) {
-      const bubble = new Bubble(b.x, b.y);
-      bubble.createBody();
-      this.bubbles.push(bubble);
-    }
-
-    for (const s of d.spikes || []) {
-      const spikes = new Spikes(s.x, s.y, s.size, s.angle, s.path, s.moveSpeed);
-      spikes.createBody();
-      this.spikes.push(spikes);
-    }
-
-    for (const t of d.tutorials || []) {
-      this.tutorials.push(new Tutorial(t, game));
+        const rope = new Rope(anchor, this.candy, e.length);
+        rope.create(game);
+        this.ropes.push(rope);
+        return anchor;
+      },
+      autoAnchors: (e) => {
+        const autoAnchor = new AutoAnchor(e.x, e.y, e.radius, e.length, e.chain);
+        autoAnchor.createBody();
+        return autoAnchor;
+      },
+      stars:       (e) => {
+        const star = new Star(e.x, e.y, e.path, e.moveSpeed);
+        star.createBody();
+        return star;
+      },
+      bubbles:     (e) => {
+        const bubble = new Bubble(e.x, e.y);
+        bubble.createBody();
+        return bubble;
+      },
+      spikes:      (e) => {
+        const spikes = new Spikes(e.x, e.y, e.size, e.angle, e.path, e.moveSpeed);
+        spikes.createBody();
+        return spikes;
+      },
+      tutorials:   (e) => new Tutorial(e, game),
+    };
+    for (const [tipo, crear] of Object.entries(BUILDERS)) {
+      for (const e of this.data[tipo] || []) this[tipo].push(crear(e));
     }
 
     Matter.Composite.add(game.world, [
@@ -86,13 +83,10 @@ class Level {
     this.omnom = null;
   }
 
-  // Rectángulo del mapa en VIEW: centrado en horizontal (offsetX = (VIEW.w − map.w) / 2), desde y = 0.
   bounds () {
     return { x: (VIEW.w - this.map.w) / 2, y: 0, w: this.map.w, h: this.map.h };
   }
 
-  // Orden de GameScene.Draw de DX: fondo, Om Nom, tutoriales, burbujas, púas, ganchos, cuerdas,
-  // estrellas y dulce (con la burbuja que lo lleva encima).
   draw () {
     this.drawBackground();
     if (this.omnom) this.omnom.draw();
@@ -107,9 +101,6 @@ class Level {
     for (const b of this.bubbles) b.drawOnCandy();
   }
 
-  // Fondo de la caja como GameScene.Draw de DX: bgr_01_p1 centrado en VIEW (cubre también las
-  // franjas laterales de los mapas de 320) y repetido hacia abajo en los mapas altos (nivel 15);
-  // bgr_01_p2 tapa cada costura entre dos copias (BackgroundTiling.GetP2Count / ResolveP2Y).
   drawBackground () {
     const h = Sprites.size('bgr_01_p1').h;
     const rows = Math.max(1, Math.ceil(this.map.h / h - 0.001));
