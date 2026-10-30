@@ -153,7 +153,7 @@ src/
 └── assets/      imágenes, sonidos y fuentes
 ```
 
-No hay módulos: cada archivo declara globales y [`index.html`](../src/index.html) los carga en orden de dependencia. **Un archivo nuevo debe añadirse ahí, en la posición correcta**, o no existirá cuando se use.
+El código del proyecto usa **módulos ES**: cada archivo declara sus `export` y los consume con `import`; [`index.html`](../src/index.html) solo carga las librerías (p5, Matter) y un `<script type="module" src="core/main.js">`, y el navegador resuelve la graffa de imports desde ahí. **Un archivo nuevo no hay que registrarlo en ningún lado: solo exportar e importarlo.** p5.js y Matter.js se quedan en modo global (`window.p5`, `window.Matter`); [`core/main.js`](../src/core/main.js) asigna `window.preload/setup/draw/...` para que el modo global de p5 los encuentre, y `Matter` se usa por el nombre global.
 
 ---
 

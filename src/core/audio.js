@@ -1,43 +1,6 @@
-// Módulo de audio con Web Audio (sin p5.sound). Rutas, volúmenes y clave de localStorage en AUDIO_T (config.js).
-//
-// API:
-//   Sound.play(name)        efecto de una vez; no lanza errores si no ha cargado, falla o el nombre no existe
-//   Sound.playMusic(name)   música en bucle ('menu' o 'game'); si ya suena esa pista no la reinicia
-//   Sound.stopMusic()       para la música con un fundido corto
-//   Sound.setMuted(bool)    silencia todo y lo guarda en localStorage
-//   Sound.toggleMute()      alterna el silencio y devuelve el nuevo valor
-//   Sound.muted             true si está silenciado (solo lectura)
-//   Sound.isLoaded(name)    true si ese efecto o pista ya está decodificado
-//   Sound.ready             promesa que se resuelve cuando terminaron todas las cargas (bien o mal)
-//
-// Los archivos se cargan solos al incluir este script (fetch + decodeAudioData), sin bloquear preload().
-// El navegador no deja sonar nada hasta el primer gesto: el primer clic o tecla en el documento
-// reanuda el AudioContext. Antes de eso play() no hace nada y playMusic() deja la pista pendiente.
-//
-// Todos los efectos y la música se piden desde Game (core/game.js); las entidades no suenan solas.
-//
-// Efectos (nombre → archivo → evento del juego, según el decomp DX):
-//   cut1..cut4    rope_bleak_1..4.wav   cortar una cuerda; DX elige por lo floja que está (Bungee.relaxed 0..3)
-//   ropeGet       rope_get.wav          se crea una cuerda automática
-//   star1..star3  star_1..3.wav         se recoge la 1.ª, 2.ª o 3.ª estrella del nivel
-//   bubble        bubble.wav            una burbuja atrapa el dulce
-//   bubbleBreak   bubble_break.wav      la burbuja revienta (clic sobre ella)
-//   candyBreak    candy_break.wav       el dulce se rompe con las púas
-//   omnomOpen     monster_open.wav      Om Nom abre la boca (dulce cerca)
-//   omnomClose    monster_close.wav     Om Nom cierra la boca (el dulce se alejó)
-//   omnomChew     monster_chewing.wav   Om Nom se come el dulce
-//   omnomSad      monster_sad.wav       se pierde el dulce (sale de pantalla o se rompe)
-//   omnomGreet    monster_greeting.wav  saludo al empezar el nivel (DX: 50 % de las veces)
-//   omnomExcited  monster_excited.wav   se recoge una estrella con Om Nom en reposo (DX: 50 %)
-//   win           win.wav               pantalla de victoria
-//   tap           tap.wav               clic en botones de menús y paneles
-//   pauseDown     pause_down.wav        entrar en pausa
-//   pauseUp       pause_up.wav          salir de la pausa
-// Música:
-//   menu          menu_music.mp3        menú y selección de nivel
-//   game          game_music.mp3        dentro de un nivel (música de la Caja 1 en DX)
+import { AUDIO_T } from '../data/config.js';
 
-const Sound = {
+export const Sound = {
   ctx: null,
   masterGain: null,
   sfxGain: null,

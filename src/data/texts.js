@@ -1,5 +1,4 @@
-// Textos de los tutoriales de la Caja 1 (content/locales/es.json del DX), adaptados al ratón.
-const TEXTS = {
+export const TEXTS = {
   TUTORIAL_LVL_1_1_01: 'Arrastra el ratón para cortar la cuerda.',
   TUTORIAL_LVL_1_1_02: 'Haz llegar el caramelo hasta Om Nom.',
   TUTORIAL_LVL_1_2_01: 'Consigue tantas estrellas como puedas.',

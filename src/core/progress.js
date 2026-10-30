@@ -1,4 +1,6 @@
-class ProgressStore {
+import { PROGRESS_KEY } from '../data/config.js';
+
+export class ProgressStore {
 
   constructor (levels) {
     this.levels = levels;

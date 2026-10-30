@@ -1,4 +1,7 @@
-class Bubble {
+import { Sprites } from '../ui/sprites.js';
+import { BUBBLE_RADIUS, GFX_T } from '../data/config.js';
+
+export class Bubble {
 
     constructor (x, y) {
         this.x = x;
@@ -41,14 +44,11 @@ class Bubble {
         return Math.hypot(px - c.x, py - c.y) <= this.radius;
     }
 
-    // Como LoadBubble de DX: la mancha se queda en la pared aunque la burbuja atrape al dulce o
-    // reviente; la burbuja libre va encima de la mancha.
     draw () {
         Sprites.draw('obj_bubble', this.stainQuad, this.x, this.y);
         if (!this.candy) Sprites.draw('obj_bubble', GFX_T.bubbleQuad, this.x, this.y);
     }
 
-    // Burbuja que lleva al dulce (BubbleAnimation de CandyBody); se dibuja después del dulce.
     drawOnCandy () {
         if (!this.captured) return;
         const c = this.center();

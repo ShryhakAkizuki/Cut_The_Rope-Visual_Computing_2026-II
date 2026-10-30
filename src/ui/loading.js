@@ -1,14 +1,13 @@
-// Pantalla de carga: mientras llegan las hojas pedidas con Sprites.loadAll(), una barra
-// (loaderbar_full, que se recorta según el avance) y "Cargando..." con la TTF de GoodDog,
-// lo único que está disponible desde preload(). El avance se suaviza como en LoadingView de DX
-// y la pantalla termina cuando la barra llega al 100 %.
-class LoadingScreen {
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { UI_T, VIEW } from '../data/config.js';
+
+export class LoadingScreen {
 
   constructor () {
     this.shown = 0;
   }
 
-  // Avance mostrado; `target` es la fracción realmente cargada (0 a 1).
   update (target) {
     this.shown += (target - this.shown) * UI_T.loaderLerp;
     if (target >= 1 && 1 - this.shown < 0.01) this.shown = 1;
@@ -28,7 +27,6 @@ class LoadingScreen {
     const x = (VIEW.w - w) / 2;
     const y = VIEW.h / 2 + 40;
 
-    // Canal de la barra.
     noStroke();
     fill(0, 0, 0, 160);
     rect(x - 10, y - 10, w + 20, h + 20, (h + 20) / 2);

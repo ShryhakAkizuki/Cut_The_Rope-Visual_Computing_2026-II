@@ -1,3 +1,6 @@
+import { Sound } from './audio.js';
+import { STATE } from '../data/config.js';
+
 function playClick (game, px, py) {
   if (game.state === STATE.PLAYING || game.state === STATE.LOSE) {
     if (game.pauseButton.contains(px, py)) {
@@ -93,11 +96,11 @@ const STATE_INPUT = {
   [STATE.LOSE]:    { click: playClick, key: gameKey },
 };
 
-function dispatchClick (game, px, py) {
+export function dispatchClick (game, px, py) {
   const h = STATE_INPUT[game.state];
   if (h && h.click) h.click(game, px, py);
 }
-function dispatchKey (game, k) {
+export function dispatchKey (game, k) {
   const h = STATE_INPUT[game.state];
   if (h && h.key) h.key(game, k);
 }

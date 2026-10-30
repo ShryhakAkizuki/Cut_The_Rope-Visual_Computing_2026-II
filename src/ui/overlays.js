@@ -3,7 +3,14 @@ const HUD_STAR_LAST = 11;
 const HUD_PAUSE_FRAME = 18;
 const HUD_RESTART_FRAME = 0;
 
-class Hud {
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { Button, SpriteButton } from './button.js';
+import { drawVeil, drawBoxCover } from './shapes.js';
+import { Sound } from '../core/audio.js';
+import { UI_T, VIEW, SOUND_BUTTON_T } from '../data/config.js';
+
+export class Hud {
 
   constructor () {
     this.pauseButton = new SpriteButton('hud_ui', HUD_PAUSE_FRAME, HUD_PAUSE_FRAME, '', { hoverScale: 1.08 });
@@ -52,7 +59,7 @@ class Hud {
 }
 
 // Botón de silencio 
-class SoundToggle extends Button {
+export class SoundToggle extends Button {
 
   constructor () {
     const T = SOUND_BUTTON_T;
@@ -94,7 +101,7 @@ class SoundToggle extends Button {
   }
 }
 
-class PauseMenu {
+export class PauseMenu {
 
   constructor () {
     this.buttons = {
@@ -140,10 +147,10 @@ class PauseMenu {
 const RESULTS_STAR_ON = 13;
 const RESULTS_STAR_OFF = 14;
 const RESULTS_PLATE = 15;
-const RESULTS_STAMP_ES = 22;    // menu_result_es: "PUNTUACIÓN MEJORADA"
-const RESULTS_CLEARED = ['¡No está mal!', '¡Bien!', '¡Genial!', '¡Excelente!'];   // LEVEL_CLEARED1-4
+const RESULTS_STAMP_ES = 22;    // "PUNTUACIÓN MEJORADA"
+const RESULTS_CLEARED = ['¡No está mal!', '¡Bien!', '¡Genial!', '¡Excelente!'];
 
-class WinPanel {
+export class WinPanel {
 
   constructor () {
     this.buttons = {
@@ -225,7 +232,7 @@ class WinPanel {
   }
 }
 
-class Banner {
+export class Banner {
 
   static draw (title, subtitle, view) {
     drawVeil(160);

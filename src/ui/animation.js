@@ -1,11 +1,5 @@
-// Reproducción de animaciones por recortes de un spritesheet, adaptada al dibujo del
-// proyecto con p5: los frames se recortan a p5.Image con `img.get()` y se dibujan con
-// `image()`, igual que Sprites.draw. Los recortes, fps y loops viven en los datos
-// (data/omnom-animation.js).
-class Animation {
+export class Animation {
 
-  // Frames ya recortados por hoja y estado. Como el sheet no cambia, el recorte se hace
-  // una sola vez aunque se cree una Animation nueva en cada nivel o reinicio.
   static _cache = new Map();
 
   constructor (data, options = {}) {
@@ -41,7 +35,6 @@ class Animation {
     return config;
   }
 
-  // Frames recortados del estado; se recortan on-demand y se guardan en la caché.
   frames (name = this._stateName) {
     const key = `${this.data.sheet ? this.data.sheet.src : ''}:${name}`;
     let frames = Animation._cache.get(key);
@@ -77,7 +70,6 @@ class Animation {
     return !!this.frame;
   }
 
-  // Progreso 0..1 del estado actual.
   get progress () {
     const config = this.getStateConfig();
     const fps = config.fps > 0 ? config.fps : 12;
@@ -86,8 +78,6 @@ class Animation {
     return total > 0 ? Math.min(1, elapsed / total) : 1;
   }
 
-  // Cambia de estado y lo reproduce desde el frame 0. Con `restart: false`, repetir el
-  // estado actual no lo reinicia (sirve para estados que se quedan en su último frame).
   play (name, options = {}) {
     if (!this.hasState(name)) throw new Error(`Animation: estado desconocido "${name}".`);
     const restart = options.restart !== false;
@@ -113,7 +103,6 @@ class Animation {
     return this;
   }
 
-  // Avanza la animación. `deltaMs` son milisegundos reales (deltaTime de p5).
   update (deltaMs) {
     if (!Number.isFinite(deltaMs) || deltaMs <= 0) return this;
     if (!this._playing || this._finished) return this;
@@ -142,8 +131,6 @@ class Animation {
     return this;
   }
 
-  // Dibuja el frame actual centrado en (x, y) y estirado a w×h, como los quads de DX.
-  // `ax`/`ay` (0..1) cambian el anclaje; `opacity` va de 0 a 1.
   draw (x, y, w, h, options = {}) {
     const frame = this.frame;
     if (!frame) return false;

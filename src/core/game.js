@@ -1,4 +1,16 @@
-class Game {
+import { Sound } from './audio.js';
+import { Camera } from './camera.js';
+import { ProgressStore } from './progress.js';
+import { calculateScore } from './rules.js';
+import { Level } from './level.js';
+import { createCollisionHandler } from './collisions.js';
+import { dispatchClick, dispatchKey } from './state-input.js';
+import { TitleScreen, CreditsScreen, drawScreenFade } from '../ui/main-menu.js';
+import { LevelMenu } from '../ui/level-menu.js';
+import { Hud, PauseMenu, WinPanel, SoundToggle, Banner } from '../ui/overlays.js';
+import { STATE, VIEW, TUNING, AUDIO_T, SOUND_BUTTON_T, OMNOM_T } from '../data/config.js';
+
+export class Game {
 
   constructor (levels) {
     this.levels = levels;
@@ -7,7 +19,6 @@ class Game {
     this.autoPaused = false;
     this.view = { w: VIEW.w, h: VIEW.h };
 
-    // Flujo de menús
     this.title = new TitleScreen();
     this.credits = new CreditsScreen();
     this.screenShownAt = 0;
@@ -35,7 +46,6 @@ class Game {
     this.timeBonus = 0;
     this.score = 0;
 
-    // Estado de los sonidos que decide Game
     this.menuSoundToggle = new SoundToggle();
     this.menuSoundToggle.x = SOUND_BUTTON_T.menuMargin;
     this.menuSoundToggle.y = SOUND_BUTTON_T.menuMargin;
@@ -139,7 +149,7 @@ class Game {
     }
     Matter.Engine.update(this.engine, delta * 1000);
     for (const a of this.autoAnchors) {
-      if (a.update(dt, this)) Sound.play('ropeGet');   // TryAutoAttachGrabToBody
+      if (a.update(dt, this)) Sound.play('ropeGet');
     }
     for (const t of this.tutorials) t.update(dt);
     this.camera.update(dt / 1000, this.candy.body.position);
@@ -147,7 +157,7 @@ class Game {
 
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
       this.state = STATE.LOSE;
-      Sound.play('omnomSad');   // GameLost
+      Sound.play('omnomSad');
     }
   }
 

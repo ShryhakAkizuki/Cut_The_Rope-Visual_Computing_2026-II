@@ -1,4 +1,16 @@
-class Level {
+import { Sprites } from '../ui/sprites.js';
+import { Candy } from '../entities/candy.js';
+import { OmNom } from '../entities/omnom.js';
+import { Anchor } from '../entities/anchor.js';
+import { Rope } from '../entities/rope.js';
+import { AutoAnchor } from '../entities/auto-anchor.js';
+import { Star } from '../entities/star.js';
+import { Bubble } from '../entities/bubble.js';
+import { Spikes } from '../entities/spikes.js';
+import { Tutorial } from '../ui/tutorial.js';
+import { CANDY_RADIUS, OMNOM_RADIUS, VIEW, GFX_T } from '../data/config.js';
+
+export class Level {
 
   constructor (data) {
     this.data = data;

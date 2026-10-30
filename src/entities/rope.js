@@ -1,6 +1,7 @@
-// Cuerda como Bungee.cs de DX: cadena de puntos de Verlet desde el ancla (fija) hasta el punto del
-// dulce, que comparten todas sus cuerdas. Tramos de BungeeRestLength y 30 pasadas de relajación.
-class Rope {
+import { VerletPoint } from '../core/verlet.js';
+import { ROPE_T } from '../data/config.js';
+
+export class Rope {
 
     constructor (anchor, candy, length) {
         this.anchor = anchor;
@@ -9,17 +10,16 @@ class Rope {
         this.head = null;
         this.tail = null;
         this.parts = [];
-        this.cut = -1;          // índice del tramo cortado; -1 = entera
+        this.cut = -1;
         this.cutTime = 0;
         this.forceWhite = false;
-        this.relaxed = 0;       // nivel de estiramiento 0..3 (Bungee.relaxed), para el sonido del corte
+        this.relaxed = 0;
     }
 
     get isCut () {
         return this.cut !== -1;
     }
 
-    // Bungee.InitWithHeadAtXYTailAtTXTYandLength + pin del ancla (LoadGrabs, TryAutoAttachGrabToBody).
     create () {
         const REST = ROPE_T.restSegmentLength;
         this.head = new VerletPoint(this.anchor.x, this.anchor.y, ROPE_T.partWeight);
@@ -28,7 +28,6 @@ class Rope {
         this.parts = [this.head, this.tail];
         this.tail.addConstraint(this.head, REST);
 
-        // Sin `length` la cuerda nace justa: el largo total es length + REST.
         const len = this.requestedLength ?? Math.max(0, this.distance() - REST);
         const n = Math.trunc(len / REST + 2);
         const off = {
@@ -42,8 +41,6 @@ class Rope {
         return Math.hypot(this.tail.pos.x - this.anchor.x, this.tail.pos.y - this.anchor.y);
     }
 
-    // Bungee.RollplacingWithOffset: intercala puntos de REST entre el último punto y el dulce; el
-    // sobrante va en el tramo del dulce. Largo en reposo = REST + len.
     roll (len, off) {
         const REST = ROPE_T.restSegmentLength;
         let tailRestLength = Math.trunc(this.tail.constraintTo(this.parts[this.parts.length - 2]).restLength);
@@ -70,7 +67,6 @@ class Rope {
         }
     }
 
-    // Bungee.Update: integra sus puntos (el dulce lo integra Game) y relaja todas sus restricciones.
     update (delta) {
         if (this.cutTime > 0) {
             this.cutTime = Math.max(0, this.cutTime - delta);
@@ -87,9 +83,7 @@ class Rope {
         }
     }
 
-    // CutWithRazorOrLine1Line2Immediate: el arrastre contra cada tramo entre dos puntos.
     tryCut (p1, p2) {
-        // Una cadena (breakable="false") en DX solo la corta el hacha; en la Caja 1 no hay.
         if (this.isCut || this.anchor.chain) return false;
 
         for (let j = 0; j < this.parts.length - 1; j++) {
@@ -101,15 +95,12 @@ class Rope {
         return false;
     }
 
-    // Bungee.SetCut: la cuerda sigue entera y en blanco un instante; luego se separa (removePart).
     setCut (part) {
         this.cut = part;
         this.cutTime = ROPE_T.cutTime;
         this.forceWhite = true;
     }
 
-    // Bungee.RemovePart: quita la restricción del tramo cortado, deja un punto suelto al final del
-    // trozo del ancla y aligera todos los puntos para que los trozos no tiren del dulce.
     removePart (part) {
         this.forceWhite = false;
         const cutPart = this.parts[part];
@@ -128,7 +119,6 @@ class Rope {
         }
     }
 
-    // Suelta la cuerda del dulce y deja de simularla: al acabar el desvanecimiento o si el dulce se rompe.
     release () {
         const own = new Set(this.parts);
         if (this.tail) this.tail.constraints = this.tail.constraints.filter((c) => !own.has(c.cp));
@@ -138,8 +128,6 @@ class Rope {
         this.parts = [];
     }
 
-    // Bungee.Draw: entera, o separada en el trozo del ancla y el del dulce a partir del primer punto
-    // libre que ya no está unido al anterior.
     draw () {
         if (this.parts.length > 0) {
             const alpha = this.cut === -1 || this.forceWhite ? 1 : this.cutTime / ROPE_T.cutFadeTime;
@@ -166,8 +154,6 @@ class Rope {
         if (this.anchor.drawFront) this.anchor.drawFront();
     }
 
-    // Bungee.DrawBungee: una Bézier con los puntos como control, BungeeDrawSamplePoints muestras por
-    // tramo; con menos de 3 puntos DX no dibuja nada. El largo del primer tramo da el rojo y `relaxed`.
     drawPiece (parts, alpha) {
         if (parts.length < 3) return;
         const segmentLength = Math.hypot(parts[1].pos.x - parts[0].pos.x, parts[1].pos.y - parts[0].pos.y);
@@ -181,14 +167,12 @@ class Rope {
     }
 }
 
-// Bungee.StretchLevelFor: 0 en reposo y 1..3 según cuánto se estira el primer tramo.
 function stretchLevelFor (segmentLength) {
     const rest = ROPE_T.restSegmentLength;
     const level = ROPE_T.relaxThresholds.findIndex((t) => segmentLength <= rest + t);
     return level === -1 ? ROPE_T.relaxThresholds.length : level;
 }
 
-// DrawHelper.CalcPathBezier: De Casteljau con todos los puntos como control.
 function pathBezier (pts, t) {
     let p = pts;
     while (p.length > 1) {
@@ -201,10 +185,6 @@ function pathBezier (pts, t) {
     return p[0];
 }
 
-// RopeColorHelper.GetDrawColors con la piel por defecto (índice 0): cada color tiene su extremo
-// claro (base) y su extremo oscuro (sombra). Si el tramo supera BungeeRestLength + BungeeStretchRedThreshold,
-// el rojo de la sombra se multiplica por segmentLength / BungeeRestLength × 2. Con forceWhite
-// (instante del corte) toda la cuerda va en blanco.
 function ropeDrawColors (alpha, segmentLength, white = false) {
     const t = ROPE_T;
     if (white) {
@@ -223,8 +203,6 @@ function ropeDrawColors (alpha, segmentLength, white = false) {
     };
 }
 
-// Franjas de `stripeSamples` muestras que alternan los dos colores (empieza el segundo), con
-// degradado de la sombra en el ancla a la base en el dulce, como Bungee.DrawBungee.
 function drawRopeStripes (pts, colors) {
     const n = pts.length - 1;
     const steps = Math.max(1, n - 1);

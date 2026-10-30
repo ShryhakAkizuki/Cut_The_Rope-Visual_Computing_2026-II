@@ -1,4 +1,8 @@
-class Candy {
+import { VerletPoint } from '../core/verlet.js';
+import { Sprites } from '../ui/sprites.js';
+import { SPIKES_T, GFX_T, TUNING, VIEW } from '../data/config.js';
+
+export class Candy {
 
   constructor (x, y, radius) {
     this.x = x;

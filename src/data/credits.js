@@ -1,6 +1,4 @@
-// Textos de la pantalla de créditos (ui/main-menu.js). Solo datos: para cambiar los nombres
-// basta con editar `students`; la lista se reparte sola en el panel (una o dos columnas).
-const CREDITS = {
+export const CREDITS = {
   title:    'Créditos',
   course:   'Computación Visual 2026-II',
   heading:  'Estudiantes',

@@ -29,17 +29,26 @@ Las cuerdas automáticas (círculo punteado) se unen al dulce cuando se acerca; 
 
 ## Correr en local
 
-No hay nada que instalar; basta con servir la carpeta `src/`:
+El juego no necesita nada que instalar; basta con servir la carpeta `src/`:
 
 ```bash
 python3 -m http.server 8000 -d src
 ```
 
-y abrir http://localhost:8000. Cada push a `main` publica `src/` en GitHub Pages con [`deploy.yml`](.github/workflows/deploy.yml).
+y abrir http://localhost:8000.
+
+Para desarrollar, instala las dependencias y corre el linter (la red de seguridad de los refactors):
+
+```bash
+npm install
+npm run lint
+```
+
+Cada push a `main` publica `src/` en GitHub Pages con [`deploy.yml`](.github/workflows/deploy.yml).
 
 ## Tecnologías
 
-JavaScript plano, sin módulos ni build:
+JavaScript con módulos ES, sin build (p5.js y Matter.js siguen como `<script>` de librería):
 
 - [p5.js](https://p5js.org/): dibujo, entrada y game loop.
 - Física de Verlet propia ([`verlet.js`](src/core/verlet.js)), portada de Cut the Rope DX: el dulce y las cuerdas son cadenas de puntos con restricciones de distancia.

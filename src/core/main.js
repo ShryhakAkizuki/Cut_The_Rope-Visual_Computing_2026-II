@@ -1,8 +1,15 @@
+import { Sprites } from '../ui/sprites.js';
+import { Fonts } from '../ui/fonts.js';
+import { LoadingScreen } from '../ui/loading.js';
+import { Game } from './game.js';
+import { VIEW, TUNING } from '../data/config.js';
+import { LEVELS } from '../data/levels.js';
+
 let game = null;
 let loading = null;
 let viewScale = 1;
 
-// preload() no dibuja nada: aquí solo se trae lo que necesita la pantalla de carga.
+// preload() no dibuja nada, aquí solo se trae lo que necesita la pantalla de carga.
 function preload () {
     Sprites.preloadBoot();
     Fonts.preload();
@@ -12,8 +19,6 @@ function setup () {
     createCanvas(VIEW.w, VIEW.h);
     fitCanvas();
 
-    // El resto de hojas llega en segundo plano; draw() muestra la carga y crea el juego al final.
-    // Mientras tanto `game` es un sustituto que ignora la entrada.
     Sprites.loadAll();
     loading = new LoadingScreen();
     game = { onCutAttempt () {}, onInput () {}, onKeyDown () {}, autoPause () {}, autoResume () {} };
@@ -28,8 +33,6 @@ function windowResized () {
     fitCanvas();
 }
 
-// El canvas ocupa lo más que quepa de la ventana con la proporción de VIEW;
-// el juego siempre recibe y dibuja en coordenadas de VIEW.
 function fitCanvas () {
     viewScale = Math.min(windowWidth / VIEW.w, windowHeight / VIEW.h);
     resizeCanvas(Math.floor(VIEW.w * viewScale), Math.floor(VIEW.h * viewScale));
@@ -70,3 +73,12 @@ function mousePressed () {
 function keyPressed () {
     game.onKeyDown(key);
 }
+
+// p5 en modo global busca estas funciones en `window`.
+window.preload = preload;
+window.setup = setup;
+window.draw = draw;
+window.windowResized = windowResized;
+window.mousePressed = mousePressed;
+window.mouseDragged = mouseDragged;
+window.keyPressed = keyPressed;

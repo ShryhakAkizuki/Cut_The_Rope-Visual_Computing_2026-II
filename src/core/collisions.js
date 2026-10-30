@@ -1,4 +1,7 @@
-function createCollisionHandler (game) {
+import { Sound } from './audio.js';
+import { STATE, AUDIO_T } from '../data/config.js';
+
+export function createCollisionHandler (game) {
   return (event) => {
     let eaten = false;
     for (const pair of event.pairs) {

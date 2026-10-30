@@ -1,8 +1,14 @@
-// Pantalla de título y créditos. El fondo es el de los menús de DX
-// (CreateBackgroundWithLogowithShadow): menu_bgr a 1,25 anclado abajo al centro, la franja de papel
-// (cuadro 1) solo en la de título, y encima la sombra menu_bgr_shadow girando despacio.
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { Animation } from './animation.js';
+import { SpriteButton } from './button.js';
+import { SoundToggle } from './overlays.js';
+import { drawVeil } from './shapes.js';
+import { CREDITS } from '../data/credits.js';
+import { OMNOM_ANIMATION } from '../data/omnom-animation.js';
+import { MENU_T, VIEW, OMNOM_T, GFX_T, TUNING, SOUND_BUTTON_T } from '../data/config.js';
 
-function drawMenuBackdrop (front) {
+export function drawMenuBackdrop (front) {
   const T = MENU_T;
   background(0);
 
@@ -22,24 +28,19 @@ function drawMenuBackdrop (front) {
   pop();
 }
 
-// Fundido desde negro durante MENU_T.fadeMs después de `since` (millis()).
-function drawScreenFade (since) {
+export function drawScreenFade (since) {
   const k = 1 - (millis() - since) / MENU_T.fadeMs;
   if (k > 0) drawVeil(255 * k);
 }
 
-// Botón Atrás de DX (CreateBackButtonWithDelegateID): menu_extra_buttons 0/1, abajo a la izquierda.
-function createBackButton () {
+export function createBackButton () {
   const b = new SpriteButton('menu_extra_buttons', MENU_T.backQuadUp, MENU_T.backQuadDown);
   b.x = 0;
   b.y = VIEW.h - b.h;
   return b;
 }
 
-// Menú principal de DX (CreateMainMenu) con Jugar y Créditos en lugar de Jugar y Opciones:
-// el logo (sin "DX", con el dulce colgado) arriba al centro y la columna de botones abajo.
-// El botón de silencio va arriba a la izquierda como en el menú de niveles.
-class TitleScreen {
+export class TitleScreen {
 
   constructor () {
     const T = MENU_T;
@@ -74,10 +75,7 @@ class TitleScreen {
   }
 }
 
-// Créditos (nuevo, DX no tiene esta pantalla): el panel menu_popup centrado sobre el fondo de
-// los menús, con el curso, la lista de estudiantes de CREDITS (data/credits.js) y Om Nom
-// sentado a su lado. Atrás vuelve al título.
-class CreditsScreen {
+export class CreditsScreen {
 
   constructor () {
     this.backButton = createBackButton();
@@ -122,8 +120,6 @@ class CreditsScreen {
     this.backButton.draw(pointer.x, pointer.y);
   }
 
-  // Reparte los nombres desde `y0` sin pasar de `y1`, en una columna o en dos si son muchos;
-  // la letra se reduce si las filas no caben con su alto máximo.
   drawNames (names, cx, y0, y1, pw) {
     const T = MENU_T;
     if (names.length === 0) return;

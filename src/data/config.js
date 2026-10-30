@@ -1,7 +1,7 @@
 // Espacio de juego
-const VIEW = { w: 1920, h: 1440 };
+export const VIEW = { w: 1920, h: 1440 };
 
-const STATE = {
+export const STATE = {
   TITLE:   'TITLE',
   CREDITS: 'CREDITS',
   MENU:    'MENU',
@@ -11,7 +11,7 @@ const STATE = {
   LOSE:    'LOSE',
 };
 
-const TUNING = {
+export const TUNING = {
   starPoints:        1000,
   timeBonusPerSecond: 100,
   defaultLevelTime:   30,
@@ -25,7 +25,7 @@ const TUNING = {
   loseMarginBottom:  400,
 };
 
-const ROPE_T = {
+export const ROPE_T = {
   restSegmentLength:   105,
   partWeight:          0.02,
   cutPartWeight:       1e-5,
@@ -46,7 +46,7 @@ const ROPE_T = {
 };
 
 // Cámara vertical
-const CAMERA_T = {
+export const CAMERA_T = {
   panStartSpeed:       20,
   panAcceleration:     800,
   panDeceleration:     400,
@@ -59,7 +59,7 @@ const CAMERA_T = {
 };
 
 // Constantes de cada pista
-const AUTO_ROPE_T = {
+export const AUTO_ROPE_T = {
   grabPadding:       42,
   fadeRatePerSecond: 1.5,
   circleColor:       [51, 128, 230],
@@ -67,7 +67,7 @@ const AUTO_ROPE_T = {
 };
 
 // Púas
-const SPIKES_T = {
+export const SPIKES_T = {
   quadWidths:     [212, 333, 453, 566],
   bandHalfHeight: 5,
   firstQuad:      8,
@@ -88,7 +88,7 @@ const SPIKES_T = {
 };
 
 // Sonido
-const AUDIO_T = {
+export const AUDIO_T = {
   basePath: 'assets/sounds/',
   sfx: {
     cut1:         'rope_bleak_1.wav',
@@ -131,7 +131,7 @@ const AUDIO_T = {
 };
 
 // Botón de silencio
-const SOUND_BUTTON_T = {
+export const SOUND_BUTTON_T = {
   sheet:      'menu_options_packed',
   upQuad:     0,
   downQuad:   1,
@@ -143,7 +143,7 @@ const SOUND_BUTTON_T = {
 };
 
 // Tutoriales
-const TUTORIAL_T = {
+export const TUTORIAL_T = {
   fadeIn:       1,
   textDuration: 5,
   signDuration: 5.2,
@@ -158,7 +158,7 @@ const TUTORIAL_T = {
 };
 
 // HUD, menús, resultados y pantalla de carga.
-const UI_T = {
+export const UI_T = {
   designOffsetX:     (VIEW.w - 2560) / 2,
   hudStarSlot:       100,
   hudStarFrameMs:    50,
@@ -180,7 +180,7 @@ const UI_T = {
 };
 
 // Pantalla de título y créditos
-const MENU_T = {
+export const MENU_T = {
   bgrScale:        1.25,
   shadowScale:     2,
   shadowStartDeg:  45,
@@ -208,7 +208,7 @@ const MENU_T = {
 };
 
 // Animación de Om Nom en los niveles
-const OMNOM_T = {
+export const OMNOM_T = {
   sheet:            'char_animations_hd',
   spriteSize:       203,
   spriteOffsetY:    10,
@@ -218,7 +218,7 @@ const OMNOM_T = {
 };
 
 // Sprites estáticos de las entidades
-const GFX_T = {
+export const GFX_T = {
   bgP2Y:          1120,
   candyScale:     0.71,
   candyQuads:     [0, 1, 2],
@@ -232,14 +232,14 @@ const GFX_T = {
 };
 
 // Radios de colisión en el espacio de VIEW
-const CANDY_RADIUS  = 54;
-const OMNOM_RADIUS  = 54;
-const STAR_RADIUS   = 42;
-const BUBBLE_RADIUS = 60;
-const ANCHOR_RADIUS = 20;
+export const CANDY_RADIUS  = 54;
+export const OMNOM_RADIUS  = 54;
+export const STAR_RADIUS   = 42;
+export const BUBBLE_RADIUS = 60;
+export const ANCHOR_RADIUS = 20;
 
 // Cajas de recolección de estrellas
-const CANDY_STAR_BOX = { dx: 1.5, dy: 0, hw: 56, hh: 52 };
-const STAR_BOX       = { dx: -7, dy: -6.5, hw: 41, hh: 41 };
+export const CANDY_STAR_BOX = { dx: 1.5, dy: 0, hw: 56, hh: 52 };
+export const STAR_BOX       = { dx: -7, dy: -6.5, hw: 41, hh: 41 };
 
-const PROGRESS_KEY = 'ctr_progress_v1';
+export const PROGRESS_KEY = 'ctr_progress_v1';
