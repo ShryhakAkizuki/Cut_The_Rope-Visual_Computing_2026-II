@@ -60,6 +60,7 @@ export default [
         Sound: 'readonly', ProgressStore: 'readonly',
         Camera: 'readonly', Level: 'readonly', Game: 'readonly',
         dispatchClick: 'readonly', dispatchKey: 'readonly',
+        createCollisionHandler: 'readonly',
 
         // entities/
         Candy: 'readonly', OmNom: 'readonly', Anchor: 'readonly',

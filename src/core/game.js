@@ -44,29 +44,7 @@ class Game {
     this.mouthOpen = false;
     this.mouthCloseTime = 0;
 
-    Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      let eaten = false;
-      for (const pair of event.pairs) {
-        const labels = [pair.bodyA.label, pair.bodyB.label];
-        if (!labels.includes('candy')) continue;
-        if (labels.includes('bubble')) {
-          this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
-        } else if (labels.includes('spikes')) {
-          if (this.state === STATE.PLAYING && !this.candy.broken) {
-            this.popBubble();
-            for (const rope of this.ropes) rope.release();
-            this.candy.shatter();
-            Sound.play('candyBreak');
-            this.scheduleSound(AUDIO_T.sadDelayAfterBreak, () => Sound.play('omnomSad'));
-            Matter.Composite.remove(this.world, this.candy.body);
-            this.state = STATE.LOSE;
-          }
-        } else if (labels.includes('omnom')) {
-          eaten = true;
-        }
-      }
-      if (eaten) this.onCandyEaten();
-    });
+    Matter.Events.on(this.engine, 'collisionStart', createCollisionHandler(this));
   }
 
   get candy () { return this.level ? this.level.candy : null; }
