@@ -1,8 +1,12 @@
-# Cut_The_Rope-Visual_Computing_2026-II
+# Cut the Rope — Visual Computing 2026-II
 
 Recreación de *Cut the Rope* en el navegador con p5.js: los 25 niveles de la primera caja (Cardboard Box), con cuerdas, cuerdas automáticas, burbujas, púas, estrellas, tutoriales, música y efectos.
 
-**Jugar:** https://shryhakakizuki.github.io/Cut_The_Rope-Visual_Computing_2026-II/
+| |
+|---|
+| ![Pantalla del juego](docs/screenshots/capa.png) |
+
+**Jugar en línea:** [https://shryhakakizuki.github.io/Cut_The_Rope-Visual_Computing_2026-II/](https://shryhakakizuki.github.io/Cut_The_Rope-Visual_Computing_2026-II/)
 
 ## Integrantes
 
@@ -15,7 +19,7 @@ Recreación de *Cut the Rope* en el navegador con p5.js: los 25 niveles de la pr
 
 ## Cómo jugar
 
-Lleva el dulce hasta Om Nom y recoge las estrellas por el camino. Cada nivel da hasta 3 estrellas; el puntaje suma 1000 por estrella y un bonus por rapidez. Ganar un nivel desbloquea el siguiente y el progreso se guarda en el navegador.
+Lleva el dulce hasta Om Nom y recoge las estrellas por el camino. Cada nivel da hasta 3 estrellas; el puntaje suma 1000 por estrella más un bonus por rapidez. Ganar un nivel desbloquea el siguiente y el progreso se guarda en el navegador.
 
 | Control | Acción |
 |---|---|
@@ -32,28 +36,21 @@ Las cuerdas automáticas (círculo punteado) se unen al dulce cuando se acerca; 
 El juego no necesita nada que instalar; basta con servir la carpeta `src/`:
 
 ```bash
-python3 -m http.server 8000 -d src
+python -m http.server 8000 -d src
 ```
 
 y abrir http://localhost:8000.
 
-Para desarrollar, instala las dependencias y corre el linter (la red de seguridad de los refactors):
-
-```bash
-npm install
-npm run lint
-```
-
-Cada push a `main` publica `src/` en GitHub Pages con [`deploy.yml`](.github/workflows/deploy.yml).
+Para desarrollar (linter, despliegue y guías de extensión), ver [Desarrollo](docs/06-desarrollo.md).
 
 ## Tecnologías
 
 JavaScript con módulos ES, sin build (p5.js y Matter.js siguen como `<script>` de librería):
 
 - [p5.js](https://p5js.org/): dibujo, entrada y game loop.
-- Física de Verlet propia ([`verlet.js`](src/core/verlet.js)), portada de Cut the Rope DX: el dulce y las cuerdas son cadenas de puntos con restricciones de distancia.
+- Física de Verlet propia ([`src/core/verlet.js`](src/core/verlet.js)), portada de Cut the Rope DX: el dulce y las cuerdas son cadenas de puntos con restricciones de distancia.
 - [Matter.js](https://brm.io/matter-js/): solo detección de sensores (Om Nom, burbujas, púas).
-- Web Audio para el sonido.
+- Web Audio API para el sonido.
 
 ## Estructura
 
@@ -70,10 +67,16 @@ src/
 
 ## Documentación
 
-- [Arquitectura](docs/arquitectura-mvp.md): estados, capas, game loop y orden de carga.
-- [Física y mecánicas](docs/fisica-y-cuerdas.md): Verlet, cuerdas y corte, burbujas, estrellas, púas.
-- [Niveles](docs/niveles.md): formato de `LEVELS`, coordenadas y cómo agregar un nivel.
-- [Assets](docs/assets.md): hojas, sonido y fuentes, y de dónde salen.
+Versión final del proyecto. La documentación completa vive en [`docs/`](docs/README.md):
+
+| Documento | Contenido |
+|---|---|
+| [Arquitectura](docs/01-arquitectura.md) | Estados, capas, game loop, cámara, entrada y orden de carga |
+| [Física y mecánicas](docs/02-fisica.md) | Verlet, cuerdas y corte, burbujas, estrellas, púas, movimiento |
+| [Niveles](docs/03-niveles.md) | Formato de `LEVELS`, coordenadas y cómo agregar un nivel |
+| [Sonido](docs/04-sonido.md) | Arquitectura Web Audio, canales, música y silencio |
+| [Assets](docs/05-assets.md) | Hojas de sprite, fuentes, sonido y de dónde salen |
+| [Desarrollo](docs/06-desarrollo.md) | Entorno local, linter, despliegue y guías de extensión |
 
 ## Créditos
 
