@@ -1,12 +1,11 @@
-function pointInRect (px, py, x, y, w, h) {
+import { Sprites } from './sprites.js';
+import { VIEW, UI_T } from '../data/config.js';
+
+export function pointInRect (px, py, x, y, w, h) {
   return px >= x && px <= x + w && py >= y && py <= y + h;
 }
 
-// Tapa de la caja cerrada, fondo del menú de niveles y de los resultados (MenuController.
-// CreateLevelSelect y LoadingView de DX): la mitad izquierda de bgr_01_cover termina en el
-// centro y la derecha es la misma mitad girada 180°; encima, las dos tiras de cinta (cuadros
-// 6 y 7 de menu_level_ui, a y = 80). `dim` oscurece la tapa (1 = sin cambio).
-function drawBoxCover (dim = 1) {
+export function drawBoxCover (dim = 1) {
   const half = Sprites.quadSize('bgr_01_cover', 0);
   const mid = VIEW.w / 2;
 
@@ -25,8 +24,7 @@ function drawBoxCover (dim = 1) {
   }
 }
 
-// Velo oscuro sobre toda la vista.
-function drawVeil (alpha) {
+export function drawVeil (alpha) {
   noStroke();
   fill(0, 0, 0, alpha);
   rect(0, 0, VIEW.w, VIEW.h);

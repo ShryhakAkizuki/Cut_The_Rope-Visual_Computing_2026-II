@@ -1,19 +1,19 @@
-// Punto de Verlet con restricciones de distancia, como ConstrainedPoint/MaterialPoint de DX.
-// Lo usan el dulce y los puntos de las cuerdas; Matter no los simula.
+import { ROPE_T, TUNING } from '../data/config.js';
+
 const CONSTRAINT = {
   DISTANCE:      'DISTANCE',
   NOT_MORE_THAN: 'NOT_MORE_THAN',
   NOT_LESS_THAN: 'NOT_LESS_THAN',
 };
 
-class VerletPoint {
+export class VerletPoint {
 
   constructor (x, y, weight = 1) {
     this.pos = { x, y };
-    this.prevPos = null;      // DX: vectUndefined hasta la primera integración
+    this.prevPos = null;
     this.v = { x: 0, y: 0 };
-    this.pin = null;          // posición fija; null = libre
-    this.constraints = [];    // { cp, restLength, type }
+    this.pin = null;
+    this.constraints = [];
     this.setWeight(weight);
   }
 
@@ -35,18 +35,14 @@ class VerletPoint {
     if (i !== -1) this.constraints.splice(i, 1);
   }
 
-  // ConstrainedPoint.Update con el modelo de PC: aceleración × delta².
   update (delta) {
     this.integrate(delta * delta, delta);
   }
 
-  // ConstrainedPoint.Qcpupdate (puntos de la cuerda): aceleración × delta × 0,016.
   updateRopePart (delta) {
     this.integrate(delta * ROPE_T.qcpTimestep, delta);
   }
 
-  // Verlet sin amortiguación. La gravedad se multiplica por el peso y se divide por él, así que
-  // acelera igual a todos los puntos.
   integrate (accelerationScale, delta) {
     if (!this.prevPos) this.prevPos = { x: this.pos.x, y: this.pos.y };
     const dx = this.pos.x - this.prevPos.x;
@@ -57,14 +53,11 @@ class VerletPoint {
     this.pos.y += dy;
   }
 
-  // MaterialPoint.ApplyImpulseDelta: desplaza la posición sin tocar prevPos, así que también cambia la velocidad.
   applyImpulse (ix, iy, delta) {
     this.pos.x += ix * delta;
     this.pos.y += iy * delta;
   }
 
-  // ConstrainedPoint.SatisfyConstraints: cada restricción corrige a los dos puntos en proporción
-  // a su inverso del peso; un punto fijo no se mueve, y su parte de la corrección se pierde.
   satisfyConstraints () {
     if (this.pin) {
       this.pos.x = this.pin.x;

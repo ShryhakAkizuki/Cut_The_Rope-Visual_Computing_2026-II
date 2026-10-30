@@ -1,15 +1,15 @@
-// Menú de niveles de la caja como en DX (MenuController.CreateLevelSelect y
-// CreateButtonForLevelPack): tapa de la caja de fondo, cuadrícula de 5 columnas con el cuadro 0
-// de menu_level_ui (o el 1 con candado), el número con BigFont y la insignia de estrellas
-// (cuadros 2 a 5 según las estrellas obtenidas). Arriba a la derecha, el total de estrellas;
-// abajo a la izquierda, el botón Atrás hacia la pantalla de título (ui/main-menu.js).
-class LevelMenu {
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { pointInRect, drawBoxCover } from './shapes.js';
+import { createBackButton } from './main-menu.js';
+import { UI_T, VIEW } from '../data/config.js';
+
+export class LevelMenu {
 
   constructor () {
     this.backButton = createBackButton();
   }
 
-  // Centro de la casilla `i` y su área de clic, con las filas centradas como el HBox/VBox de DX.
   cellRect (i, count) {
     const m = UI_T;
     const cols = m.levelColumns;
@@ -26,7 +26,6 @@ class LevelMenu {
     const cx = (VIEW.w - rowW) / 2 + col * stepX + m.levelTile / 2;
     const cy = top + row * stepY + m.levelRowHeight / 2;
 
-    // Área táctil de DX: el cuadro de 218 recortado 5 px por cada lado en horizontal.
     const w = m.levelTile - 10;
     const h = m.levelRowHeight;
     return { cx, cy, x: cx - w / 2, y: cy - h / 2, w, h };
@@ -67,7 +66,6 @@ class LevelMenu {
     this.backButton.draw(pointer.x, pointer.y);
   }
 
-  // "obtenidas/posibles" con una estrella al lado (CreateTextWithStar: BigFont a 0.7).
   drawStarCounter (got, max) {
     const textScale = 0.7;
     const starScale = 0.4;

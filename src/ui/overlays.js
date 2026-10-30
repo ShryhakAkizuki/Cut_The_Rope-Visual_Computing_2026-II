@@ -1,13 +1,16 @@
-// HUD del nivel como en DX (GameController.CreateGameView y GameScene.Init):
-// - arriba a la derecha, el botón MENÚ de hud_ui (abre la pausa) y a su izquierda Reiniciar;
-// - arriba a la izquierda, una casilla de 100 px por estrella del nivel; al recoger una estrella
-//   su casilla reproduce los cuadros 1 a 11 de hud_ui a 50 ms por cuadro y se queda en el 11.
 const HUD_STAR_FIRST = 1;
 const HUD_STAR_LAST = 11;
-const HUD_PAUSE_FRAME = 18;     // 26_hud_buttons_es ("MENÚ")
+const HUD_PAUSE_FRAME = 18;
 const HUD_RESTART_FRAME = 0;
 
-class Hud {
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { Button, SpriteButton } from './button.js';
+import { drawVeil, drawBoxCover } from './shapes.js';
+import { Sound } from '../core/audio.js';
+import { UI_T, VIEW, SOUND_BUTTON_T } from '../data/config.js';
+
+export class Hud {
 
   constructor () {
     this.pauseButton = new SpriteButton('hud_ui', HUD_PAUSE_FRAME, HUD_PAUSE_FRAME, '', { hoverScale: 1.08 });
@@ -19,17 +22,15 @@ class Hud {
     this.restartButton.y = m;
 
     this.shownStars = 0;
-    this.starStart = [];     // millis() en que empezó la animación de cada casilla
+    this.starStart = [];
   }
 
-  // Los botones solo responden mientras se juega.
   setInteractive (on) {
     this.pauseButton.enabled = on;
     this.restartButton.enabled = on;
   }
 
   drawStars (collected, total) {
-    // Al reiniciar el nivel el contador vuelve a 0: se reinician las casillas.
     if (collected < this.shownStars) {
       this.shownStars = 0;
       this.starStart = [];
@@ -57,9 +58,8 @@ class Hud {
   }
 }
 
-// Botón de silencio (ToggleButton de sonido de DX): fondo de menu_options_packed con el icono de
-// sonido; silenciado, el icono se apaga y lleva la cruz. Solo dibuja: el clic lo atiende Game.
-class SoundToggle extends Button {
+// Botón de silencio 
+export class SoundToggle extends Button {
 
   constructor () {
     const T = SOUND_BUTTON_T;
@@ -101,11 +101,7 @@ class SoundToggle extends Button {
   }
 }
 
-// Menú de pausa: la hoja de cartón rasgado (menu_pause) cuelga de arriba con el nombre del
-// nivel, y en el centro una columna de botones largos (menu_buttons 0/1 con BigFont), como el
-// VBox de GameController: Continuar, Reiniciar, Saltar nivel y Elegir nivel, con la fila de
-// audio (aquí solo el botón de silencio) debajo.
-class PauseMenu {
+export class PauseMenu {
 
   constructor () {
     this.buttons = {
@@ -131,7 +127,6 @@ class PauseMenu {
   draw (state, pointer) {
     drawVeil(UI_T.pauseDim);
 
-    // La hoja se escala para llegar justo a los dos lados (PausePlateScale de DX).
     const plate = Sprites.size('menu_pause', 0);
     const s = VIEW.w / plate.w;
     push();
@@ -149,16 +144,13 @@ class PauseMenu {
   }
 }
 
-// Pantalla de resultados (BoxOpenClose.InitWithButtonDelegate) sin el conteo animado: se ve
-// directamente su estado final. Cada pieza va en el centro de su marcador de menu_results
-// (cuadros 0 a 12, en la pantalla de diseño de 2560), sobre la tapa de la caja cerrada.
 const RESULTS_STAR_ON = 13;
 const RESULTS_STAR_OFF = 14;
 const RESULTS_PLATE = 15;
-const RESULTS_STAMP_ES = 22;    // menu_result_es: "PUNTUACIÓN MEJORADA"
-const RESULTS_CLEARED = ['¡No está mal!', '¡Bien!', '¡Genial!', '¡Excelente!'];   // LEVEL_CLEARED1-4
+const RESULTS_STAMP_ES = 22;    // "PUNTUACIÓN MEJORADA"
+const RESULTS_CLEARED = ['¡No está mal!', '¡Bien!', '¡Genial!', '¡Excelente!'];
 
-class WinPanel {
+export class WinPanel {
 
   constructor () {
     this.buttons = {
@@ -173,7 +165,6 @@ class WinPanel {
     this.improved = false;
   }
 
-  // Centro de un marcador de menu_results en VIEW.
   marker (quad) {
     const c = Sprites.quadCenter('menu_results', quad);
     return { x: c.x + UI_T.designOffsetX, y: c.y };
@@ -184,8 +175,6 @@ class WinPanel {
     button.centerAt(c.x, c.y);
   }
 
-  // Se llama al ganar; `improved` muestra el sello de puntuación mejorada. `delayMs`
-  // retrasa la aparición para que se vea a Om Nom cerrar la boca y masticar.
   show (improved, delayMs = 0) {
     this.shownAt = millis() + delayMs;
     this.improved = improved;
@@ -194,8 +183,6 @@ class WinPanel {
   get visible () {
     return millis() >= this.shownAt;
   }
-
-  layout () {}
 
   draw (state, pointer) {
     if (!this.visible) return;
@@ -229,7 +216,6 @@ class WinPanel {
     if (this.improved) this.drawStamp();
   }
 
-  // El sello entra después de la caja: escala de 3 a 1 y aparece en 0,5 s.
   drawStamp () {
     const delay = UI_T.resultsFadeMs;
     const k = constrain((millis() - this.shownAt - delay) / 500, 0, 1);
@@ -246,8 +232,7 @@ class WinPanel {
   }
 }
 
-// Aviso a pantalla completa (derrota).
-class Banner {
+export class Banner {
 
   static draw (title, subtitle, view) {
     drawVeil(160);

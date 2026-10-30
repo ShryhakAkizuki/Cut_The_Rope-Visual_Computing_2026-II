@@ -1,21 +1,13 @@
-// Recortes (atlas) de la hoja char_animations_hd.png para Om Nom.
-// Origen: OMNOM_SPRITES de Cut the Rope DX.
-// Cada frame es un rectángulo { x, y, w, h } en píxeles absolutos del PNG; los frames
-// están tal cual los usaba el juego, incluidos el ping-pong manual del idle y las
-// repeticiones del frame final de eating.
-const OMNOM_ANIMATION = {
+export const OMNOM_ANIMATION = {
   sheet: {
     src: 'assets/images/char_animations_hd.png',
     width: 2048,
     height: 2048,
   },
 
-  // Estado que se muestra al crear la animación sin especificar uno.
   defaultState: 'idle',
 
   states: {
-    // Reposo / respiración. El ping-pong está escrito a mano (el frame 0 y el
-    // último son el mismo recorte).
     idle: {
       label: 'Idle (reposo / respiración)',
       fps: 12,
@@ -50,8 +42,6 @@ const OMNOM_ANIMATION = {
       ],
     },
 
-    // Abre la boca cuando el dulce entra en el radio de detección. No es cíclica:
-    // al terminar se queda en el último frame (boca abierta).
     openMouth: {
       label: 'Open mouth (detecta el dulce)',
       fps: 16,
@@ -70,8 +60,6 @@ const OMNOM_ANIMATION = {
       ],
     },
 
-    // Cierra la boca y mastica. No es cíclica: los últimos frames están repetidos
-    // a propósito para dejar fijo el gesto final.
     eating: {
       label: 'Eating (mastica el dulce)',
       fps: 8,

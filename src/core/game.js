@@ -1,4 +1,16 @@
-class Game {
+import { Sound } from './audio.js';
+import { Camera } from './camera.js';
+import { ProgressStore } from './progress.js';
+import { calculateScore } from './rules.js';
+import { Level } from './level.js';
+import { createCollisionHandler } from './collisions.js';
+import { dispatchClick, dispatchKey } from './state-input.js';
+import { TitleScreen, CreditsScreen, drawScreenFade } from '../ui/main-menu.js';
+import { LevelMenu } from '../ui/level-menu.js';
+import { Hud, PauseMenu, WinPanel, SoundToggle, Banner } from '../ui/overlays.js';
+import { STATE, VIEW, TUNING, AUDIO_T, SOUND_BUTTON_T, OMNOM_T } from '../data/config.js';
+
+export class Game {
 
   constructor (levels) {
     this.levels = levels;
@@ -7,10 +19,9 @@ class Game {
     this.autoPaused = false;
     this.view = { w: VIEW.w, h: VIEW.h };
 
-    // Flujo de menús: TITLE → (Jugar) MENU → nivel; TITLE → (Créditos) CREDITS; Atrás o Escape vuelven a TITLE.
     this.title = new TitleScreen();
     this.credits = new CreditsScreen();
-    this.screenShownAt = 0;      // millis() del último cambio de pantalla de menú (fundido)
+    this.screenShownAt = 0;
     this.menu = new LevelMenu();
     this.progress = new ProgressStore(levels);
 
@@ -20,7 +31,7 @@ class Game {
     this.pauseMenu = new PauseMenu();
     this.winPanel = new WinPanel();
 
-    // Matter solo detecta sensores: el dulce y las cuerdas son puntos de Verlet (core/verlet.js).
+    // Matter solo detecta sensores
     this.engine = Matter.Engine.create();
     this.world = this.engine.world;
     this.engine.gravity.y = 0;
@@ -35,41 +46,15 @@ class Game {
     this.timeBonus = 0;
     this.score = 0;
 
-    // Estado de los sonidos que decide Game (las entidades no suenan solas).
     this.menuSoundToggle = new SoundToggle();
     this.menuSoundToggle.x = SOUND_BUTTON_T.menuMargin;
     this.menuSoundToggle.y = SOUND_BUTTON_T.menuMargin;
-    this.showGreeting = false;   // RootController.showGreeting: solo saluda el primer nivel tras el menú
-    this.pendingSounds = [];     // sonidos con retraso (DelayedDispatcher de DX)
-    this.mouthOpen = false;      // TargetFeedingPhase.MouthOpen, solo para el sonido
+    this.showGreeting = false;
+    this.pendingSounds = [];
+    this.mouthOpen = false;
     this.mouthCloseTime = 0;
 
-    Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      let eaten = false;
-      for (const pair of event.pairs) {
-        const labels = [pair.bodyA.label, pair.bodyB.label];
-        if (!labels.includes('candy')) continue;
-        if (labels.includes('bubble')) {
-          this.onBubbleTouched(pair.bodyA.label === 'bubble' ? pair.bodyA : pair.bodyB);
-        } else if (labels.includes('spikes')) {
-          // Como BreakCandyBody de DX, revienta la burbuja, suelta las cuerdas,
-          // quita el dulce del mundo y pasa a LOSE; el dulce roto se anima en Candy.draw.
-          if (this.state === STATE.PLAYING && !this.candy.broken) {
-            this.popBubble();
-            for (const rope of this.ropes) rope.release();
-            this.candy.shatter();
-            // SpawnCandyBreakParticles y, tras ScheduleGameLost(0,3), el Om Nom triste de GameLost.
-            Sound.play('candyBreak');
-            this.scheduleSound(AUDIO_T.sadDelayAfterBreak, () => Sound.play('omnomSad'));
-            Matter.Composite.remove(this.world, this.candy.body);
-            this.state = STATE.LOSE;
-          }
-        } else if (labels.includes('omnom')) {
-          eaten = true;
-        }
-      }
-      if (eaten) this.onCandyEaten();
-    });
+    Matter.Events.on(this.engine, 'collisionStart', createCollisionHandler(this));
   }
 
   get candy () { return this.level ? this.level.candy : null; }
@@ -82,17 +67,7 @@ class Game {
   get tutorials () { return this.level ? this.level.tutorials : []; }
 
   onKeyDown (key) {
-    const k = String(key).toLowerCase();
-    if (this.state === STATE.TITLE) {
-      if (k === 'enter') this.tapThen(() => this.showMenu());
-      return;
-    }
-    if (this.state === STATE.MENU || this.state === STATE.CREDITS) {
-      if (k === 'escape') this.tapThen(() => this.showTitle());
-      return;
-    }
-    if (k === 'r') this.restart();
-    if (k === 'p' || k === 'escape') this.togglePause();
+    dispatchKey(this, String(key).toLowerCase());
   }
 
   startLevel (idx) {
@@ -100,9 +75,7 @@ class Game {
     this.pendingSounds = [];
     this.mouthOpen = false;
     this.mouthCloseTime = 0;
-    // GameController.Activate: música de la caja; si ya suena (reinicio, siguiente) no se reinicia.
     Sound.playMusic('game');
-    // LoadTarget: el saludo, 1,3 s después de cargar y solo al entrar desde el menú.
     if (this.showGreeting) {
       this.showGreeting = false;
       this.scheduleSound(AUDIO_T.greetDelay, () => this.playOmNomVoice('omnomGreet'));
@@ -114,7 +87,7 @@ class Game {
 
     this.starsCollected = 0;
     this.time = 0;
-    this.timeLimit = TUNING.defaultLevelTime;   // como en DX, 30 s en todos los niveles
+    this.timeLimit = TUNING.defaultLevelTime;
     this.starBonus = 0;
     this.timeBonus = 0;
     this.score = 0;
@@ -153,41 +126,30 @@ class Game {
   }
 
   update (dt) {
-    // Los sonidos con retraso corren jugando o en la derrota (el triste tras las púas).
     if (this.state === STATE.PLAYING || this.state === STATE.LOSE) this.updatePendingSounds(dt);
-    // La animación de Om Nom sigue en WIN/LOSE (masticar tras comer), pero la pausa la congela.
     if (this.level && this.state !== STATE.PAUSED) this.omnom.update(dt);
-    // Menús, pausa, victoria y derrota congelan la física y el reloj.
     if (this.state !== STATE.PLAYING) return;
 
-    // Como en DX, el reloj no corre durante el paneo inicial de la cámara.
     if (!this.camera.panning) this.time += dt / 1000;
-    // Avance por path de púas y estrellas, antes del paso de física
     for (const s of this.spikes) s.update(dt);
     for (const s of this.stars) s.update(dt);
 
-    // Orden de GameScene.Update de DX: cuerdas, punto del dulce y burbuja. Cuerdas y dulce avanzan
-    // con delta × ropePhysicsSpeed; los Mover y la burbuja, con delta.
     const delta = TUNING.stepSeconds;
     const ropeDelta = delta * TUNING.ropePhysicsSpeed;
     for (const rope of this.ropes) rope.update(ropeDelta);
     const point = this.candy.point;
     point.update(ropeDelta);
     if (this.candyBubble()) {
-      // ApplyImpulseDelta(−v / BubbleImpulseDamping + (0, BubbleImpulseY), delta)
       const damping = TUNING.bubbleImpulseDamping;
       point.applyImpulse(-point.v.x / damping, -point.v.y / damping + TUNING.bubbleImpulseY, delta);
     }
     this.candy.syncBody();
-    // Estrellas con las cajas de DX (Star.touches), antes del Engine.update para que una estrella
-    // tocada en el mismo frame de la victoria cuente.
     for (const star of this.stars) {
       if (!star.collected && star.touches(point.pos)) this.onStarCollected(star);
     }
     Matter.Engine.update(this.engine, delta * 1000);
-    // Desvanecimiento del círculo y unión por distancia (la cuerda va a this.ropes)
     for (const a of this.autoAnchors) {
-      if (a.update(dt, this)) Sound.play('ropeGet');   // TryAutoAttachGrabToBody
+      if (a.update(dt, this)) Sound.play('ropeGet');
     }
     for (const t of this.tutorials) t.update(dt);
     this.camera.update(dt / 1000, this.candy.body.position);
@@ -195,14 +157,10 @@ class Game {
 
     if (this.state === STATE.PLAYING && this.isCandyOffscreen()) {
       this.state = STATE.LOSE;
-      Sound.play('omnomSad');   // GameLost
+      Sound.play('omnomSad');
     }
   }
 
-  // Boca de Om Nom como TargetFeedingState de DX: se abre con el dulce a menos de
-  // mouthOpenDistance y se cierra cuando lleva mouthCloseDelay abierta sin el dulce cerca;
-  // si sigue cerca, la espera se renueva. La animación (idle/openMouth) sigue estos mismos
-  // cambios para que el gesto y el sonido coincidan.
   updateMouth (delta) {
     const p = this.candy.point.pos;
     const near = Math.hypot(p.x - this.omnom.x, p.y - this.omnom.y) < AUDIO_T.mouthOpenDistance;
@@ -226,8 +184,6 @@ class Game {
     Sound.play('omnomClose');
   }
 
-  // CallObjectSelectorParamafterDelay: `play` se llama tras `seconds` de juego; startLevel y
-  // showMenu descartan los pendientes.
   scheduleSound (seconds, play) {
     this.pendingSounds.push({ t: seconds, play });
   }
@@ -240,7 +196,6 @@ class Game {
     for (const s of due) s.play();
   }
 
-  // PlayOmNomSound: el saludo y la emoción solo suenan la mitad de las veces.
   playOmNomVoice (name) {
     if (Math.random() < AUDIO_T.omnomVoiceChance) Sound.play(name);
   }
@@ -250,7 +205,6 @@ class Game {
     star.collected = true;
     this.starsCollected += 1;
     Sound.play('star' + Math.min(3, this.starsCollected));
-    // Om Nom se emociona si está en reposo (aquí: con la boca cerrada).
     if (!this.mouthOpen) this.playOmNomVoice('omnomExcited');
   }
 
@@ -271,13 +225,12 @@ class Game {
     const bubble = this.candyBubble();
     if (!bubble) return;
     bubble.pop();
-    Sound.play('bubbleBreak');   // PopBubbleAtXY
+    Sound.play('bubbleBreak');
   }
 
   onCandyEaten () {
     if (this.state === STATE.PLAYING) {
       this.state = STATE.WIN;
-      // DX: el dulce se traga, Om Nom cierra la boca y mastica mientras aparecen los resultados.
       this.candy.hide();
       this.omnom.eat();
       Sound.play('omnomChew');
@@ -291,20 +244,13 @@ class Game {
       this.score = result.total;
       const improved = this.progress.markCompleted(this.levelIndex, this.starsCollected, this.score);
       this.winPanel.show(improved, OMNOM_T.winShowDelay * 1000);
-      this.layoutWinButtons();
     }
-  }
-
-  layoutWinButtons () {
-    this.winPanel.layout(this.view, this.stars.length);
   }
 
   onCutAttempt (p1, p2) {
     if (this.state !== STATE.PLAYING || this.camera.blocksInput) return;
     const w1 = this.camera.toWorld(p1);
     const w2 = this.camera.toWorld(p2);
-    // Como CutWithRazorOrLine1Line2Immediate, cada arrastre corta como mucho una cuerda.
-    // El sonido según lo estirada que estaba (Bungee.relaxed 0..3 → rope_bleak_1..4).
     for (const rope of this.ropes) {
       if (rope.tryCut(w1, w2)) {
         Sound.play('cut' + (rope.relaxed + 1));
@@ -314,85 +260,18 @@ class Game {
   }
 
   onInput (px, py) {
-    if (this.state === STATE.TITLE) {
-      const b = this.title.buttons;
-      if (this.title.soundToggle.contains(px, py)) this.toggleMute();
-      else if (b.play.contains(px, py)) this.tapThen(() => this.showMenu());
-      else if (b.credits.contains(px, py)) this.tapThen(() => this.showCredits());
-      return;
-    }
-
-    if (this.state === STATE.CREDITS) {
-      if (this.credits.backButton.contains(px, py)) this.tapThen(() => this.showTitle());
-      return;
-    }
-
-    if (this.state === STATE.MENU) {
-      if (this.menuSoundToggle.contains(px, py)) {
-        this.toggleMute();
-        return;
-      }
-      if (this.menu.backButton.contains(px, py)) {
-        this.tapThen(() => this.showTitle());
-        return;
-      }
-      const idx = this.menu.levelAt(px, py, this.levels.length);
-      if (idx !== -1 && this.progress.isUnlocked(idx)) {
-        Sound.play('tap');
-        this.startLevel(idx);
-      }
-      return;
-    }
-
-    if (this.state === STATE.PLAYING || this.state === STATE.LOSE) {
-      if (this.pauseButton.contains(px, py)) {
-        if (this.state === STATE.PLAYING) this.togglePause();
-        return;
-      }
-      if (this.restartButton.contains(px, py)) {
-        Sound.play('tap');
-        this.restart();
-        return;
-      }
-    }
-
-    if (this.state === STATE.PAUSED) {
-      const b = this.pauseMenu.buttons;
-      if (b.resume.contains(px, py)) this.togglePause();
-      else if (this.pauseMenu.soundToggle.contains(px, py)) this.toggleMute();
-      else if (b.restart.contains(px, py)) this.tapThen(() => this.restart());
-      else if (b.skip.contains(px, py)) this.tapThen(() => this.skipLevel());
-      else if (b.menu.contains(px, py)) this.tapThen(() => this.showMenu());
-    } else if (this.state === STATE.PLAYING) {
-      if (this.camera.blocksInput) {
-        this.camera.hurry();
-        return;
-      }
-      const w = this.camera.toWorld({ x: px, y: py });
-      const bubble = this.candyBubble();
-      if (bubble && bubble.contains(w.x, w.y)) this.popBubble();
-    } else if (this.state === STATE.WIN) {
-      if (!this.winPanel.visible) return;   // aún se está viendo a Om Nom masticar
-      const b = this.winPanel.buttons;
-      if (b.replay.contains(px, py)) this.tapThen(() => this.restart());
-      else if (b.menu.contains(px, py)) this.tapThen(() => this.showMenu());
-      else if (b.next.contains(px, py)) this.tapThen(() => this.nextLevel());
-    } else if (this.state === STATE.LOSE) {
-      this.restart();
-    }
+    dispatchClick(this, px, py);
   }
 
   restart () {
     this.startLevel(this.levelIndex);
   }
 
-  // Botones de menús y paneles: tap y luego la acción (GameController/MenuController.OnButtonPressed).
   tapThen (action) {
     Sound.play('tap');
     action();
   }
 
-  // Botón de silencio: como en DX, el tap suena antes de cambiar el estado.
   toggleMute () {
     Sound.play('tap');
     Sound.toggleMute();
@@ -454,7 +333,6 @@ class Game {
     const pointer = { x: px, y: py };
     const hudState = { starsCollected: this.starsCollected, starsTotal: this.stars.length };
     this.hud.setInteractive(this.state === STATE.PLAYING || this.state === STATE.LOSE);
-    // En la derrota el HUD va encima del aviso para que Reiniciar se vea activo.
     if (this.state !== STATE.LOSE) this.hud.draw(hudState, pointer);
 
     if (this.state === STATE.WIN) {
@@ -479,8 +357,6 @@ class Game {
     }
   }
 
-  // Botón Saltar nivel del menú de pausa: desbloquea el siguiente sin marcar este como
-  // completado y lo empieza. En el último nivel vuelve al menú (LevelQuit en DX).
   skipLevel () {
     if (this.levelIndex >= this.levels.length - 1) {
       this.showMenu();

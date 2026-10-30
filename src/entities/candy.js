@@ -1,4 +1,8 @@
-class Candy {
+import { VerletPoint } from '../core/verlet.js';
+import { Sprites } from '../ui/sprites.js';
+import { SPIKES_T, GFX_T, TUNING, VIEW } from '../data/config.js';
+
+export class Candy {
 
   constructor (x, y, radius) {
     this.x = x;
@@ -6,13 +10,10 @@ class Candy {
     this.radius = radius;
     this.body = null;
     this.point = null;
-    this.broken = null;   // estado del dulce roto
-    this.eaten = false;   // ya se lo tragó Om Nom (deja de dibujarse)
+    this.broken = null;
+    this.eaten = false;
   }
 
-  // La física es el punto de Verlet (peso 1, como en DX); el body de Matter es un sensor que solo
-  // sigue al punto (syncBody) para que el collisionStart de Game detecte estrellas, burbujas, etc.
-  // No es estático porque Matter no busca colisiones entre dos bodies estáticos.
   createBody () {
     this.point = new VerletPoint(this.x, this.y, 1);
     this.body = Matter.Bodies.circle(this.x, this.y, this.radius, {
@@ -27,9 +28,6 @@ class Candy {
     Matter.Body.setVelocity(this.body, { x: 0, y: 0 });
   }
 
-  // Dulce roto (CandyBreak.cs de DX): trozos de obj_candy_01_new que salen hacia arriba,
-  // giran y caen con CandyBreakGravityY. El juego ya está congelado en LOSE, así que el efecto
-  // avanza con millis() desde el momento del golpe en lugar de con update().
   shatter () {
     const T = SPIKES_T;
     const pos = this.body.position;
@@ -48,7 +46,6 @@ class Candy {
     this.broken = { x: pos.x, y: pos.y, start: millis(), pieces };
   }
 
-  // Mientras dura el efecto no se muestra el banner de derrota.
   isBreaking () {
     return !!this.broken && millis() - this.broken.start < SPIKES_T.breakLoseDelay * 1000;
   }
@@ -63,7 +60,6 @@ class Candy {
       push();
       translate(b.x + p.vx * t, b.y + p.vy * t + 0.5 * SPIKES_T.breakGravityY * t * t);
       rotate(p.spin * t * Math.PI / 180);
-      // Cada trozo gira sobre su propio centro, no sobre el del dulce entero.
       Sprites.draw('obj_candy_01_new', p.frame, 0, 0, {
         ax: (f.ox + f.w / 2) / f.sw,
         ay: (f.oy + f.h / 2) / f.sh,
@@ -72,7 +68,6 @@ class Candy {
     }
   }
 
-  // El dulce desaparece al entrar en la boca; Om Nom sigue con la animación de comer.
   hide () {
     this.eaten = true;
   }
@@ -84,7 +79,6 @@ class Candy {
       return;
     }
     if (!this.body) return;
-    // CreateCandyVisual de DX: fondo, cuerpo y brillo de obj_candy_01_new, centrados y a escala 0,71.
     const pos = this.body.position;
     push();
     translate(pos.x, pos.y);
@@ -93,7 +87,6 @@ class Candy {
     pop();
   }
 
-  // Como PointOutOfScreen de DX: margen vertical fijo y uno horizontal del ancho de VIEW.
   isOutOfMap (bounds) {
     if (!this.body) return false;
     const pos = this.body.position;

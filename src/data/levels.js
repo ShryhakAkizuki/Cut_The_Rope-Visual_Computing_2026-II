@@ -1,6 +1,4 @@
-// Los 25 niveles de la Caja 1 (content/maps/1_N.xml del DX) en coordenadas de VIEW:
-// x·3 + offsetX, y·3, con offsetX = (1920 − anchoMapa·3) / 2. Formato en docs/niveles.md.
-const LEVELS = [
+export const LEVELS = [
   {
     name:      'Nivel 1',
     map:       { w: 960, h: 1440 },

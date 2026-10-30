@@ -1,7 +1,6 @@
-// Cámara vertical para los mapas más altos que VIEW (en la Caja 1, solo el nivel 15).
-// Al empezar hace un paneo desde el extremo opuesto al dulce, como StartCamera de DX;
-// después sigue al dulce con un acercamiento exponencial.
-class Camera {
+import { VIEW, CAMERA_T } from '../data/config.js';
+
+export class Camera {
 
   constructor () {
     this.y = 0;
@@ -32,7 +31,6 @@ class Camera {
     return Math.min(this.maxY, Math.max(0, focus.y - VIEW.h / 2));
   }
 
-  // Mientras dura el paneo no se puede jugar; un clic lo acelera (fastenCamera de DX).
   get blocksInput () {
     return this.panning && this.remaining >= CAMERA_T.inputEnableDistance;
   }

@@ -1,5 +1,9 @@
-// Botón rectangular genérico: área (x, y, w, h) en coordenadas de VIEW y dibujo con primitivas.
-class Button {
+import { pointInRect } from './shapes.js';
+import { Sprites } from './sprites.js';
+import { Fonts } from './fonts.js';
+import { UI_T } from '../data/config.js';
+
+export class Button {
 
   constructor (x, y, w, h, label) {
     this.x = x;
@@ -19,7 +23,6 @@ class Button {
   get cx () { return this.x + this.w / 2; }
   get cy () { return this.y + this.h / 2; }
 
-  // Coloca el botón con su centro en (cx, cy).
   centerAt (cx, cy) {
     this.x = cx - this.w / 2;
     this.y = cy - this.h / 2;
@@ -44,10 +47,7 @@ class Button {
   }
 }
 
-// Botón con imagen de una hoja del DX: `upFrame` normal y `downFrame` con el ratón encima
-// (en DX, el estado presionado). El área es el recorte del cuadro, sin su relleno transparente.
-// Con `label`, dibuja el texto centrado con la fuente bitmap `font` (BigFont en DX).
-class SpriteButton extends Button {
+export class SpriteButton extends Button {
 
   constructor (sheet, upFrame, downFrame, label = '', opts = {}) {
     const size = Sprites.quadSize(sheet, upFrame);

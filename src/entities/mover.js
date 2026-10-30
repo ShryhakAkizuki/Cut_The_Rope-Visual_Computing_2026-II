@@ -1,7 +1,6 @@
-// Movimiento en ciclo por `path` (Mover.cs de DX), para las púas del nivel 22 y la estrella del nivel 24.
-// Recorre el punto inicial y los offsets de `path` (ya ×3 en LEVELS) y vuelve al primero;
-// con un solo offset el objeto va y vuelve. La entidad copia `pos` a su body en cada frame.
-class Mover {
+import { SPIKES_T } from '../data/config.js';
+
+export class Mover {
 
   constructor (x, y, path, moveSpeed) {
     this.points = [{ x, y }];
@@ -14,8 +13,6 @@ class Mover {
     this.overrun = 0;
   }
 
-  // Igual que Mover.Update: avanza `speed × delta` px hacia el punto objetivo y, si lo alcanza,
-  // sigue hacia el siguiente con el tiempo que sobra. `delta` en segundos.
   update (delta) {
     const n = this.points.length;
     if (n < 2 || this.speed <= 0) return;
@@ -48,7 +45,6 @@ class Mover {
   }
 }
 
-// Crea el Mover solo si el objeto trae `path` (en la Caja 1: púas del nivel 22 y una estrella del 24).
-function createMover (x, y, path, moveSpeed) {
+export function createMover (x, y, path, moveSpeed) {
   return Array.isArray(path) && path.length >= 2 ? new Mover(x, y, path, moveSpeed) : null;
 }
