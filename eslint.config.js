@@ -59,6 +59,7 @@ export default [
         VerletPoint: 'readonly', calculateScore: 'readonly',
         Sound: 'readonly', ProgressStore: 'readonly',
         Camera: 'readonly', Level: 'readonly', Game: 'readonly',
+        dispatchClick: 'readonly', dispatchKey: 'readonly',
 
         // entities/
         Candy: 'readonly', OmNom: 'readonly', Anchor: 'readonly',

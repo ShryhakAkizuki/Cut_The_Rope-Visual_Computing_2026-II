@@ -79,17 +79,7 @@ class Game {
   get tutorials () { return this.level ? this.level.tutorials : []; }
 
   onKeyDown (key) {
-    const k = String(key).toLowerCase();
-    if (this.state === STATE.TITLE) {
-      if (k === 'enter') this.tapThen(() => this.showMenu());
-      return;
-    }
-    if (this.state === STATE.MENU || this.state === STATE.CREDITS) {
-      if (k === 'escape') this.tapThen(() => this.showTitle());
-      return;
-    }
-    if (k === 'r') this.restart();
-    if (k === 'p' || k === 'escape') this.togglePause();
+    dispatchKey(this, String(key).toLowerCase());
   }
 
   startLevel (idx) {
@@ -282,72 +272,7 @@ class Game {
   }
 
   onInput (px, py) {
-    if (this.state === STATE.TITLE) {
-      const b = this.title.buttons;
-      if (this.title.soundToggle.contains(px, py)) this.toggleMute();
-      else if (b.play.contains(px, py)) this.tapThen(() => this.showMenu());
-      else if (b.credits.contains(px, py)) this.tapThen(() => this.showCredits());
-      return;
-    }
-
-    if (this.state === STATE.CREDITS) {
-      if (this.credits.backButton.contains(px, py)) this.tapThen(() => this.showTitle());
-      return;
-    }
-
-    if (this.state === STATE.MENU) {
-      if (this.menuSoundToggle.contains(px, py)) {
-        this.toggleMute();
-        return;
-      }
-      if (this.menu.backButton.contains(px, py)) {
-        this.tapThen(() => this.showTitle());
-        return;
-      }
-      const idx = this.menu.levelAt(px, py, this.levels.length);
-      if (idx !== -1 && this.progress.isUnlocked(idx)) {
-        Sound.play('tap');
-        this.startLevel(idx);
-      }
-      return;
-    }
-
-    if (this.state === STATE.PLAYING || this.state === STATE.LOSE) {
-      if (this.pauseButton.contains(px, py)) {
-        if (this.state === STATE.PLAYING) this.togglePause();
-        return;
-      }
-      if (this.restartButton.contains(px, py)) {
-        Sound.play('tap');
-        this.restart();
-        return;
-      }
-    }
-
-    if (this.state === STATE.PAUSED) {
-      const b = this.pauseMenu.buttons;
-      if (b.resume.contains(px, py)) this.togglePause();
-      else if (this.pauseMenu.soundToggle.contains(px, py)) this.toggleMute();
-      else if (b.restart.contains(px, py)) this.tapThen(() => this.restart());
-      else if (b.skip.contains(px, py)) this.tapThen(() => this.skipLevel());
-      else if (b.menu.contains(px, py)) this.tapThen(() => this.showMenu());
-    } else if (this.state === STATE.PLAYING) {
-      if (this.camera.blocksInput) {
-        this.camera.hurry();
-        return;
-      }
-      const w = this.camera.toWorld({ x: px, y: py });
-      const bubble = this.candyBubble();
-      if (bubble && bubble.contains(w.x, w.y)) this.popBubble();
-    } else if (this.state === STATE.WIN) {
-      if (!this.winPanel.visible) return;
-      const b = this.winPanel.buttons;
-      if (b.replay.contains(px, py)) this.tapThen(() => this.restart());
-      else if (b.menu.contains(px, py)) this.tapThen(() => this.showMenu());
-      else if (b.next.contains(px, py)) this.tapThen(() => this.nextLevel());
-    } else if (this.state === STATE.LOSE) {
-      this.restart();
-    }
+    dispatchClick(this, px, py);
   }
 
   restart () {
