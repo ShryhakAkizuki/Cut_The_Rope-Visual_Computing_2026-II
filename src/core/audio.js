@@ -42,15 +42,15 @@ const Sound = {
   masterGain: null,
   sfxGain: null,
   musicGain: null,
-  buffers: {},          // clave 'sfx:nombre' o 'music:nombre' → AudioBuffer
-  failed: {},           // claves que no se pudieron cargar
-  warned: {},           // nombres desconocidos ya avisados en consola
+  buffers: {},
+  failed: {},
+  warned: {},
   ready: Promise.resolve(),
-  musicName: null,      // pista pedida (suena o espera a cargar)
+  musicName: null,
   musicSource: null,
   musicTrackGain: null,
   mutedFlag: false,
-  unlockHandler: null,  // listener de desbloqueo mientras el contexto siga suspendido
+  unlockHandler: null,
   suspendedByHide: false,
 
   get muted () {
@@ -61,10 +61,10 @@ const Sound = {
     this.mutedFlag = this.readMuted();
 
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return; // sin Web Audio el juego sigue en silencio
+    if (!Ctx) return;
     try {
       this.ctx = new Ctx();
-    } catch (err) {
+    } catch {
       this.ctx = null;
       return;
     }
@@ -93,7 +93,6 @@ const Sound = {
     for (const name in AUDIO_T.sfx) jobs.push(this.load('sfx:' + name, AUDIO_T.sfx[name]));
     for (const name in AUDIO_T.music) {
       jobs.push(this.load('music:' + name, AUDIO_T.music[name]).then(() => {
-        // Si se pidió esta pista antes de que terminara de cargar, empieza ahora.
         if (this.musicName === name && !this.musicSource) this.startMusic(name);
       }));
     }
@@ -114,7 +113,6 @@ const Sound = {
       });
   },
 
-  // decodeAudioData con promesa y con callbacks (Safari antiguo solo tiene la segunda forma).
   decode (bytes) {
     return new Promise((resolve, reject) => {
       const p = this.ctx.decodeAudioData(bytes, resolve, reject);
@@ -134,7 +132,6 @@ const Sound = {
         this.warnUnknown(name);
         return;
       }
-      // Sin contexto, silenciado o aún bloqueado por el navegador: no se acumulan efectos viejos.
       if (!this.ctx || this.mutedFlag || this.ctx.state !== 'running') return;
       const buffer = this.buffers['sfx:' + name];
       if (!buffer) return;
@@ -143,8 +140,7 @@ const Sound = {
       source.buffer = buffer;
       source.connect(this.sfxGain);
       source.start(0);
-    } catch (err) {
-      // Un sonido nunca debe romper el juego.
+    } catch {
     }
   },
 
@@ -160,9 +156,7 @@ const Sound = {
       this.fadeOutCurrent();
       this.musicName = name;
       if (this.ctx && this.buffers['music:' + name]) this.startMusic(name);
-      // Si no ha cargado, loadAll() la arranca al terminar.
-    } catch (err) {
-      // Igual que play(): silencio antes que error.
+    } catch {
     }
   },
 
@@ -170,8 +164,7 @@ const Sound = {
     try {
       this.musicName = null;
       this.fadeOutCurrent();
-    } catch (err) {
-      // Nada que hacer.
+    } catch {
     }
   },
 
@@ -185,7 +178,6 @@ const Sound = {
     source.buffer = buffer;
     source.loop = true;
     source.connect(trackGain);
-    // Con el contexto suspendido el tiempo no avanza: la pista empieza desde 0 al desbloquear.
     source.start(0);
 
     this.musicSource = source;
@@ -209,8 +201,7 @@ const Sound = {
       } else {
         source.stop();
       }
-    } catch (err) {
-      // Ya estaba parada.
+    } catch {
     }
     source.onended = () => trackGain.disconnect();
   },
@@ -220,13 +211,11 @@ const Sound = {
   setMuted (value) {
     this.mutedFlag = Boolean(value);
     if (this.masterGain) {
-      // La música sigue avanzando en silencio, así al reactivar continúa donde iba.
       this.masterGain.gain.value = this.mutedFlag ? 0 : 1;
     }
     try {
       localStorage.setItem(AUDIO_T.storageKey, this.mutedFlag ? '1' : '0');
-    } catch (err) {
-      // Sin persistencia; el silencio dura hasta recargar.
+    } catch {
     }
   },
 
@@ -238,14 +227,13 @@ const Sound = {
   readMuted () {
     try {
       return localStorage.getItem(AUDIO_T.storageKey) === '1';
-    } catch (err) {
+    } catch {
       return false;
     }
   },
 
   // ---------- desbloqueo y visibilidad ----------
 
-  // Los navegadores crean el AudioContext suspendido hasta un gesto del usuario.
   armUnlock () {
     if (this.unlockHandler) return;
     this.unlockHandler = () => {
@@ -257,7 +245,6 @@ const Sound = {
       this.ctx.resume().then(() => {
         if (this.ctx.state === 'running') this.disarmUnlock();
       }).catch(() => {
-        // El gesto no contó como activación; se reintenta con el siguiente.
       });
     };
     for (const type of ['pointerdown', 'mousedown', 'touchend', 'keydown']) {
@@ -273,8 +260,6 @@ const Sound = {
     this.unlockHandler = null;
   },
 
-  // Con la pestaña oculta se suspende el audio (el juego también se pausa en main.js);
-  // al volver se reanuda o, si el navegador no deja, se espera al siguiente gesto.
   watchVisibility () {
     document.addEventListener('visibilitychange', () => {
       if (!this.ctx) return;

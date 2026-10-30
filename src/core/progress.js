@@ -1,6 +1,3 @@
-// Progreso guardado en localStorage (PROGRESS_KEY): por nivel, mejores estrellas, mejor puntaje,
-// si se completó y si se desbloqueó (Saltar nivel desbloquea el siguiente sin completar el actual).
-// Los campos `bestScores` y `unlocked` son opcionales al leer, así que el formato anterior sigue valiendo.
 class ProgressStore {
 
   constructor (levels) {
@@ -33,7 +30,7 @@ class ProgressStore {
   readStored () {
     try {
       return JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    } catch (err) {
+    } catch {
       return null;
     }
   }
@@ -46,13 +43,10 @@ class ProgressStore {
         completed: this.completed,
         unlocked: this.unlocked,
       }));
-    } catch (err) {
-      // El juego sigue sin persistencia.
+    } catch {
     }
   }
 
-  // Guarda el resultado y desbloquea el siguiente. Devuelve si mejoró una puntuación anterior
-  // (el sello "Puntuación mejorada" de DX solo sale si ya había un puntaje guardado).
   markCompleted (idx, stars, score = 0) {
     const previous = this.bestScores[idx];
     const improved = previous > 0 && score > previous;
@@ -64,7 +58,6 @@ class ProgressStore {
     return improved;
   }
 
-  // Saltar nivel: desbloquea el siguiente sin marcar el actual como completado.
   skip (idx) {
     this.unlock(idx + 1);
     this.save();
