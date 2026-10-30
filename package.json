@@ -1,0 +1,30 @@
+{
+  "name": "cut_the_rope-visual_computing_2026-ii",
+  "version": "1.0.0",
+  "description": "Recreación de *Cut the Rope* en el navegador con p5.js: los 25 niveles de la primera caja (Cardboard Box), con cuerdas, cuerdas automáticas, burbujas, púas, estrellas, tutoriales, música y efectos.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShryhakAkizuki/Cut_The_Rope-Visual_Computing_2026-II.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/ShryhakAkizuki/Cut_The_Rope-Visual_Computing_2026-II/issues"
+  },
+  "homepage": "https://github.com/ShryhakAkizuki/Cut_The_Rope-Visual_Computing_2026-II#readme",
+  "devDependencies": {
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0"
+  }
+}

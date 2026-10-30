@@ -1,4 +1,7 @@
-class Bubble {
+import { Sprites } from '../ui/sprites.js';
+import { BUBBLE_RADIUS, GFX_T } from '../data/config.js';
+
+export class Bubble {
 
     constructor (x, y) {
         this.x = x;
@@ -7,6 +10,8 @@ class Bubble {
         this.body = null;
         this.candy = null;
         this.popped = false;
+        const T = GFX_T;
+        this.stainQuad = T.bubbleStainFirst + Math.floor(Math.random() * (T.bubbleStainLast - T.bubbleStainFirst + 1));
     }
 
     createBody () {
@@ -40,11 +45,13 @@ class Bubble {
     }
 
     draw () {
-        if (this.popped) return;
+        Sprites.draw('obj_bubble', this.stainQuad, this.x, this.y);
+        if (!this.candy) Sprites.draw('obj_bubble', GFX_T.bubbleQuad, this.x, this.y);
+    }
+
+    drawOnCandy () {
+        if (!this.captured) return;
         const c = this.center();
-        stroke(150, 200, 255, 180);
-        strokeWeight(2);
-        fill(80, 160, 255, 90);
-        circle(c.x, c.y, this.radius * 2);
+        Sprites.draw('obj_bubble', GFX_T.bubbleOnCandyQuad, c.x, c.y);
     }
 }

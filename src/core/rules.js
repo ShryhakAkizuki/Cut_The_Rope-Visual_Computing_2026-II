@@ -1,6 +1,7 @@
-function calculateScore ({ starsCollected, time, timeLimit }) {
-  const remaining = Math.max(0, timeLimit - time);
-  const timeBonus = Math.floor(remaining * TUNING.timeBonusPerSecond / 10) * 10;
+import { TUNING } from '../data/config.js';
+
+export function calculateScore ({ starsCollected, time }) {
+  const timeBonus = Math.max(0, TUNING.defaultLevelTime - time) * TUNING.timeBonusPerSecond;
   const starBonus = TUNING.starPoints * starsCollected;
-  return { starBonus, timeBonus, total: starBonus + timeBonus };
+  return { starBonus, timeBonus, total: Math.ceil(timeBonus + starBonus) };
 }

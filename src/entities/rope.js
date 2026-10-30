@@ -1,167 +1,229 @@
-class Rope {
+import { VerletPoint } from '../core/verlet.js';
+import { ROPE_T } from '../data/config.js';
+
+export class Rope {
 
     constructor (anchor, candy, length) {
         this.anchor = anchor;
         this.candy = candy;
         this.requestedLength = length;
-        this.length = 0;
-        this.constraint = null;
-        this.game = null;
-        this.isCut = false;
-        this.pieces = [];
+        this.head = null;
+        this.tail = null;
+        this.parts = [];
+        this.cut = -1;
+        this.cutTime = 0;
+        this.forceWhite = false;
+        this.relaxed = 0;
     }
 
-    create (game) {
-        this.game = game;
+    get isCut () {
+        return this.cut !== -1;
+    }
 
-        const distance = this.distance();
-        this.length = Math.max(distance, this.requestedLength ?? distance);
+    create () {
+        const REST = ROPE_T.restSegmentLength;
+        this.head = new VerletPoint(this.anchor.x, this.anchor.y, ROPE_T.partWeight);
+        this.head.pin = { x: this.anchor.x, y: this.anchor.y };
+        this.tail = this.candy.point;
+        this.parts = [this.head, this.tail];
+        this.tail.addConstraint(this.head, REST);
 
-        this.constraint = Matter.Constraint.create({
-            bodyA: this.anchor.body,
-            bodyB: this.candy.body,
-            length: this.length,
-            stiffness: 1
-        });
-
-        Matter.Composite.add(game.world, [this.constraint]);
-        this.updateTension();
+        const len = this.requestedLength ?? Math.max(0, this.distance() - REST);
+        const n = Math.trunc(len / REST + 2);
+        const off = {
+            x: (this.tail.pos.x - this.head.pos.x) / n,
+            y: (this.tail.pos.y - this.head.pos.y) / n,
+        };
+        this.roll(len, off);
     }
 
     distance () {
-        const a = this.anchor.body.position;
-        const b = this.candy.body.position;
-        return Math.hypot(b.x - a.x, b.y - a.y);
+        return Math.hypot(this.tail.pos.x - this.anchor.x, this.tail.pos.y - this.anchor.y);
     }
 
-    isTaut () {
-        return this.distance() >= this.length - ROPE_T.tautEpsilon;
-    }
-
-    // A Matter constraint also pushes like a rod; with stiffness 0 it applies no force while slack.
-    updateTension () {
-        if (!this.constraint) return;
-        this.constraint.stiffness = this.isTaut() ? 1 : 0;
-    }
-
-    points () {
-        const a = this.anchor.body.position;
-        const b = this.candy.body.position;
-        if (this.isTaut()) return [{ x: a.x, y: a.y }, { x: b.x, y: b.y }];
-
-        const d = this.distance();
-        const sag = Math.sqrt(3 * d * (this.length - d) / 8);
-        const cx = (a.x + b.x) / 2;
-        const cy = (a.y + b.y) / 2 + 2 * sag;
-
-        const pts = [];
-        for (let i = 0; i <= ROPE_T.curveSegments; i++) {
-            const t = i / ROPE_T.curveSegments;
-            const u = 1 - t;
-            pts.push({
-                x: u * u * a.x + 2 * u * t * cx + t * t * b.x,
-                y: u * u * a.y + 2 * u * t * cy + t * t * b.y
-            });
+    roll (len, off) {
+        const REST = ROPE_T.restSegmentLength;
+        let tailRestLength = Math.trunc(this.tail.constraintTo(this.parts[this.parts.length - 2]).restLength);
+        while (len > 0) {
+            const last = this.parts[this.parts.length - 2];
+            if (len >= REST) {
+                const part = new VerletPoint(last.pos.x + off.x, last.pos.y + off.y, ROPE_T.partWeight);
+                this.parts.splice(this.parts.length - 1, 0, part);
+                const c = this.tail.constraintTo(last);
+                c.cp = part;
+                c.restLength = tailRestLength;
+                part.addConstraint(last, REST);
+                len -= REST;
+            } else {
+                const restLength = Math.trunc(len + tailRestLength);
+                if (restLength > REST) {
+                    len = REST;
+                    tailRestLength = restLength - REST;
+                } else {
+                    this.tail.constraintTo(last).restLength = restLength;
+                    len = 0;
+                }
+            }
         }
-        return pts;
+    }
+
+    update (delta) {
+        if (this.cutTime > 0) {
+            this.cutTime = Math.max(0, this.cutTime - delta);
+            if (this.cutTime < ROPE_T.cutFadeTime && this.forceWhite) this.removePart(this.cut);
+            if (this.cutTime === 0) this.release();
+        }
+        if (this.parts.length === 0) return;
+
+        for (const p of this.parts) {
+            if (p !== this.tail) p.updateRopePart(delta);
+        }
+        for (let j = 0; j < ROPE_T.relaxationTimes; j++) {
+            for (const p of this.parts) p.satisfyConstraints();
+        }
     }
 
     tryCut (p1, p2) {
-        if (this.isCut || !this.constraint) return false;
+        if (this.isCut || this.anchor.chain) return false;
 
-        const pts = this.points();
-        let point = null;
-        for (let i = 0; i < pts.length - 1 && !point; i++) {
-            point = segmentIntersection(p1, p2, pts[i], pts[i + 1]);
-        }
-        if (!point) return false;
-
-        Matter.Composite.remove(this.game.world, this.constraint);
-        this.constraint = null;
-        this.isCut = true;
-
-        this.pieces.push(this.createPiece(point));
-
-        return true;
-    }
-
-    createPiece (point) {
-        const world = this.game.world;
-
-        const upperBody = Matter.Bodies.circle(point.x, point.y, 5, {
-            label: 'rope-piece',
-            isSensor: true,
-            frictionAir: 0.02
-        });
-        const lowerBody = Matter.Bodies.circle(point.x, point.y, 5, {
-            label: 'rope-piece',
-            isSensor: true,
-            frictionAir: 0.02
-        });
-
-        const upper = Matter.Constraint.create({
-            bodyA: this.anchor.body,
-            bodyB: upperBody,
-            length: Math.hypot(point.x - this.anchor.body.position.x,
-                                point.y - this.anchor.body.position.y),
-            stiffness: 1
-        });
-
-        const lower = Matter.Constraint.create({
-            bodyA: lowerBody,
-            bodyB: this.candy.body,
-            length: Math.hypot(point.x - this.candy.body.position.x,
-                                point.y - this.candy.body.position.y),
-            stiffness: 1
-        });
-
-        Matter.Composite.add(world, [upperBody, lowerBody, upper, lower]);
-
-        return { upperBody, lowerBody, upper, lower, age: 0 };
-    }
-
-    update (delta_Time) {
-        for (let i = this.pieces.length - 1; i >= 0; i--) {
-            const piece = this.pieces[i];
-            piece.age += delta_Time;
-            if (piece.age >= ROPE_T.pieceLifetime) {
-                Matter.Composite.remove(this.game.world,
-                    [piece.upperBody, piece.lowerBody, piece.upper, piece.lower]);
-                this.pieces.splice(i, 1);
+        for (let j = 0; j < this.parts.length - 1; j++) {
+            if (segmentIntersection(p1, p2, this.parts[j].pos, this.parts[j + 1].pos)) {
+                this.setCut(j);
+                return true;
             }
         }
-        this.updateTension();
+        return false;
     }
 
-    pieceAlpha (age) {
-        if (age < ROPE_T.pieceFadeStart) return 255;
-        const t = (age - ROPE_T.pieceFadeStart) / (ROPE_T.pieceLifetime - ROPE_T.pieceFadeStart);
-        return Math.max(0, Math.round(255 * (1 - t)));
+    setCut (part) {
+        this.cut = part;
+        this.cutTime = ROPE_T.cutTime;
+        this.forceWhite = true;
+    }
+
+    removePart (part) {
+        this.forceWhite = false;
+        const cutPart = this.parts[part];
+        const next = this.parts[part + 1];
+        if (!next) {
+            cutPart.constraints = [];
+        } else if (next.constraintTo(cutPart)) {
+            next.removeConstraint(cutPart);
+            const stub = new VerletPoint(next.pos.x, next.pos.y, ROPE_T.cutPartWeight);
+            stub.prevPos = next.prevPos && { x: next.prevPos.x, y: next.prevPos.y };
+            this.parts.splice(part + 1, 0, stub);
+            stub.addConstraint(cutPart, ROPE_T.restSegmentLength);
+        }
+        for (const p of this.parts) {
+            if (p !== this.tail) p.setWeight(ROPE_T.cutPartWeight);
+        }
+    }
+
+    release () {
+        const own = new Set(this.parts);
+        if (this.tail) this.tail.constraints = this.tail.constraints.filter((c) => !own.has(c.cp));
+        if (this.cut === -1) this.cut = 0;
+        this.cutTime = 0;
+        this.forceWhite = false;
+        this.parts = [];
     }
 
     draw () {
-        if (!this.isCut && this.constraint) {
-            stroke(COLORS.rope);
-            strokeWeight(3);
-            noFill();
-            beginShape();
-            for (const p of this.points()) vertex(p.x, p.y);
-            endShape();
-            return;
+        if (this.parts.length > 0) {
+            const alpha = this.cut === -1 || this.forceWhite ? 1 : this.cutTime / ROPE_T.cutFadeTime;
+            if (this.cut === -1) {
+                this.drawPiece(this.parts, alpha);
+            } else {
+                const head = [];
+                const tail = [];
+                let inTail = false;
+                this.parts.forEach((p, j) => {
+                    const connected = j === 0 || p.constraintTo(this.parts[j - 1]) !== null;
+                    if (!p.pin && !connected) {
+                        inTail = true;
+                        head.push(p);
+                    }
+                    if (!inTail) head.push(p);
+                    else tail.push(p);
+                });
+                this.drawPiece(head, alpha);
+                this.drawPiece(tail, alpha);
+            }
         }
 
-        for (const piece of this.pieces) {
-            const alpha = this.pieceAlpha(piece.age);
-            const u = piece.upperBody.position;
-            const l = piece.lowerBody.position;
-            const c = this.candy.body.position;
-            const a = this.anchor.body.position;
+        if (this.anchor.drawFront) this.anchor.drawFront();
+    }
 
-            stroke(COLORS.rope[0], COLORS.rope[1], COLORS.rope[2], alpha);
-            strokeWeight(3);
-            line(a.x, a.y, u.x, u.y);
-            line(l.x, l.y, c.x, c.y);
+    drawPiece (parts, alpha) {
+        if (parts.length < 3) return;
+        const segmentLength = Math.hypot(parts[1].pos.x - parts[0].pos.x, parts[1].pos.y - parts[0].pos.y);
+        this.relaxed = stretchLevelFor(segmentLength);
+
+        const pts = parts.map((p) => p.pos);
+        const n = (pts.length - 1) * ROPE_T.samplesPerSegment;
+        const samples = [];
+        for (let i = 0; i <= n; i++) samples.push(pathBezier(pts, i / n));
+        drawRopeStripes(samples, ropeDrawColors(Math.round(255 * alpha), segmentLength, this.forceWhite));
+    }
+}
+
+function stretchLevelFor (segmentLength) {
+    const rest = ROPE_T.restSegmentLength;
+    const level = ROPE_T.relaxThresholds.findIndex((t) => segmentLength <= rest + t);
+    return level === -1 ? ROPE_T.relaxThresholds.length : level;
+}
+
+function pathBezier (pts, t) {
+    let p = pts;
+    while (p.length > 1) {
+        const q = [];
+        for (let i = 0; i < p.length - 1; i++) {
+            q.push({ x: p[i].x + (p[i + 1].x - p[i].x) * t, y: p[i].y + (p[i + 1].y - p[i].y) * t });
         }
+        p = q;
+    }
+    return p[0];
+}
+
+function ropeDrawColors (alpha, segmentLength, white = false) {
+    const t = ROPE_T;
+    if (white) {
+        const w = [255, 255, 255];
+        return { base1: w, base2: w, shade1: w, shade2: w, alpha };
+    }
+    const isRed = segmentLength > t.restSegmentLength + t.stretchRedThreshold;
+    const redScale = isRed ? segmentLength / t.restSegmentLength * 2 : 1;
+    const shade = (c, k) => [Math.min(255, c[0] * k * redScale), c[1] * k, c[2] * k];
+    return {
+        base1: t.color1,
+        base2: t.color2,
+        shade1: shade(t.color1, t.shadeFactor1),
+        shade2: shade(t.color2, t.shadeFactor2),
+        alpha,
+    };
+}
+
+function drawRopeStripes (pts, colors) {
+    const n = pts.length - 1;
+    const steps = Math.max(1, n - 1);
+    const size = ROPE_T.stripeSamples;
+    noFill();
+    strokeWeight(ROPE_T.lineWidth);
+    let alternate = false;
+    for (let i = 0; i < n; i += size) {
+        const k = Math.min(1, i / steps);
+        const base = alternate ? colors.base1 : colors.base2;
+        const shade = alternate ? colors.shade1 : colors.shade2;
+        stroke(
+            shade[0] + (base[0] - shade[0]) * k,
+            shade[1] + (base[1] - shade[1]) * k,
+            shade[2] + (base[2] - shade[2]) * k,
+            colors.alpha
+        );
+        beginShape();
+        for (let j = i; j <= Math.min(n, i + size); j++) vertex(pts[j].x, pts[j].y);
+        endShape();
+        alternate = !alternate;
     }
 }
 
